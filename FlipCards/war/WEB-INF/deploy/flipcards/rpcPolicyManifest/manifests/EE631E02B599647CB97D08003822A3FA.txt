@@ -1,0 +1,2 @@
+serviceClass: org.ttdc.flipcards.client.GreetingService
+path: FD90F2AAF52C7161EA1C54C4A5600CEB.gwt.rpc
