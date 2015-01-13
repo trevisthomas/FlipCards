@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
@@ -14,10 +15,10 @@ public class ViewQuiz extends VerticalPanel{
 	
 	private final Label errorLabel = new Label();
 	
-	public ViewQuiz() {
+	public ViewQuiz(QuizOptions options) {
 		add(errorLabel);
 		errorLabel.setVisible(false);
-		add(new Label("Quiz Options"));
+		add(new Label("Quiz Options: " + options.getSize()));
 		
 		final VerticalPanel test = new VerticalPanel();
 		
