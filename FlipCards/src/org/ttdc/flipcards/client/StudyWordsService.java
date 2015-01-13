@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -12,10 +13,10 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("studyWords")
 public interface StudyWordsService extends RemoteService{
-	WordPair addWordPair(String word, String definition) throws IllegalArgumentException;
-	WordPair updateWordPair(String id, String word, String definition) throws IllegalArgumentException;
-	Boolean deleteWordPair(String id) throws IllegalArgumentException;
-	List<WordPair> getAllWordPairs();
+	WordPair addWordPair(String word, String definition) throws IllegalArgumentException, NotLoggedInException;
+	WordPair updateWordPair(String id, String word, String definition) throws IllegalArgumentException, NotLoggedInException;
+	Boolean deleteWordPair(String id) throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> getAllWordPairs() throws NotLoggedInException;
 }
 
 

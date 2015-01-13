@@ -3,7 +3,10 @@ package org.ttdc.flipcards.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ttdc.flipcards.client.services.LoginService;
+import org.ttdc.flipcards.client.services.LoginServiceAsync;
 import org.ttdc.flipcards.shared.FieldVerifier;
+import org.ttdc.flipcards.shared.LoginInfo;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -16,6 +19,7 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -31,6 +35,14 @@ import com.google.gwt.user.client.ui.Widget;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class FlipCards implements EntryPoint {
+
+	private LoginInfo loginInfo = null;
+	private VerticalPanel loginPanel = new VerticalPanel();
+	private Label loginLabel = new Label(
+			"Please sign in to your Google Account to access the StockWatcher application.");
+	private Anchor signInLink = new Anchor("Sign In");
+	private Anchor signOutLink = new Anchor("Sign Out");
+
 	/**
 	 * The message displayed to the user when the server cannot be reached or
 	 * returns an error.
@@ -40,27 +52,59 @@ public class FlipCards implements EntryPoint {
 			+ "connection and try again.";
 
 	/**
-	 * Create a remote service proxy to talk to the server-side Greeting service.
+	 * Create a remote service proxy to talk to the server-side Greeting
+	 * service.
 	 */
 	private final GreetingServiceAsync greetingService = GWT
 			.create(GreetingService.class);
-	
-	
-	
-	public void onModuleLoad(){
-		showAddWordsView();
+
+	public void onModuleLoad() {
+		// Check login status using login service.
+		LoginServiceAsync loginService = GWT.create(LoginService.class);
+		loginService.login(GWT.getHostPageBaseURL(),
+				new AsyncCallback<LoginInfo>() {
+					public void onFailure(Throwable error) {
+					}
+
+					public void onSuccess(LoginInfo result) {
+						loginInfo = result;
+						if (loginInfo.isLoggedIn()) {
+							signOutLink.setHref(loginInfo.getLogoutUrl());
+							RootPanel.get("logout").add(signOutLink);
+							showAddWordsView();
+						} else {
+							loadLogin();
+						}
+					}
+				});
+
 	}
+
 	
-	public static void showAddWordsView(){
+	private void loadLogin() {
+		// Assemble login panel.
+		signInLink.setHref(loginInfo.getLoginUrl());
+		loginPanel.add(loginLabel);
+		loginPanel.add(signInLink);
+		RootPanel.get("flipcards").clear();
+		RootPanel.get("flipcards").add(loginPanel);
+	}
+
+	public static void showAddWordsView() {
 		RootPanel.get("flipcards").clear();
 		RootPanel.get("flipcards").add(new ViewAddWords());
 	}
-	
+
 	public static void showStudyView() {
 		RootPanel.get("flipcards").clear();
-		RootPanel.get("flipcards").add(new ViewQuiz());
+		RootPanel.get("flipcards").add(new ViewQuizConfigure());
 	}
 	
+	public static void replaceView(Widget view){
+		RootPanel.get("flipcards").clear();
+		RootPanel.get("flipcards").add(view);
+	}
+
 	/**
 	 * This is the entry point method.
 	 */
@@ -130,7 +174,8 @@ public class FlipCards implements EntryPoint {
 			}
 
 			/**
-			 * Send the name from the nameField to the server and wait for a response.
+			 * Send the name from the nameField to the server and wait for a
+			 * response.
 			 */
 			private void sendNameToServer() {
 				// First, we validate the input.
