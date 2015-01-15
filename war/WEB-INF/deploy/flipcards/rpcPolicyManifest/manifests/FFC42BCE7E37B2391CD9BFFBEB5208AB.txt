@@ -1,0 +1,2 @@
+serviceClass: org.ttdc.flipcards.client.services.LoginService
+path: 380A3DD6254734877ADCEBAC21A6333E.gwt.rpc

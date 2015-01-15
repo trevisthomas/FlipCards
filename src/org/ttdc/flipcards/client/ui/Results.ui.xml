@@ -1,0 +1,22 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+  <g:HTMLPanel>
+  	<g:Label ui:field="errorLabel"/>
+  	<table>
+  		<tr>
+			<td><g:Label ui:field='asked'/></td>
+		</tr>
+		<tr>
+			<td><g:Label ui:field='correct'/></td>
+		</tr>
+		<tr>	
+			<td><g:Label ui:field='score'/></td>
+		</tr>
+		<tr>	
+			<td><g:Button ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button> <g:Button ui:field='newQuizButton'>New Quiz</g:Button></td>
+		</tr>    
+    </table>
+  </g:HTMLPanel>
+
+</ui:UiBinder>

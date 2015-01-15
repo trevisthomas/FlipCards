@@ -3,6 +3,7 @@ package org.ttdc.flipcards.client;
 import java.util.List;
 
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -16,6 +17,8 @@ public interface StudyWordsService extends RemoteService{
 	WordPair addWordPair(String word, String definition) throws IllegalArgumentException, NotLoggedInException;
 	WordPair updateWordPair(String id, String word, String definition) throws IllegalArgumentException, NotLoggedInException;
 	Boolean deleteWordPair(String id) throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> generateQuiz(QuizOptions quizOptions) throws IllegalArgumentException, NotLoggedInException;
+	void answerQuestion(String id, Boolean correct) throws IllegalArgumentException, NotLoggedInException;
 	List<WordPair> getAllWordPairs() throws NotLoggedInException;
 }
 
