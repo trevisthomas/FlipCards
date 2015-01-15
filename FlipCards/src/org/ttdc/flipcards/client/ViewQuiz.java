@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.client.ui.FlipCard;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -24,20 +25,24 @@ public class ViewQuiz extends VerticalPanel{
 		
 		add(test);
 		
-		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
-			
+		studyWordsService.generateQuiz(options, new AsyncCallback<List<WordPair>>() {
 			@Override
 			public void onSuccess(List<WordPair> result) {
 				for(WordPair pair : result){
 					test.add(new Label(pair.getWord()));
+//					test.add(new FlipCard(pair));
 				}
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				errorLabel.setText(caught.getMessage());
-				errorLabel.setVisible(true);
+				showError(caught.getMessage());
 			}
 		});
+	}
+	
+	void showError(String errorMessage){
+		errorLabel.setText(errorMessage);
+		errorLabel.setVisible(true);
 	}
 }

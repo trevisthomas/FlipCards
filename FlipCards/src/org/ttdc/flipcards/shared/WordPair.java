@@ -2,34 +2,23 @@ package org.ttdc.flipcards.shared;
 
 import java.io.Serializable;
 import java.util.Date;
+import org.ttdc.flipcards.server.PersistantWordPair;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class WordPair implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5138759608971399534L;
 
-	@Persistent
 	private String word;
-	@Persistent
 	private String definition;
-	@Persistent
-	private Date createDate;
-
+	private Date createDate = new Date();
+	private String dictionaryId;
 	private int testedCount;
 	private int correctCount;
-
-	@PrimaryKey
-//	@Persistent(valueStrategy = IdGeneratorStrategy.UUIDSTRING)
-	@Persistent
 	private String id;
+	private String user;
 
 	public WordPair() {
 
@@ -39,10 +28,11 @@ public class WordPair implements Serializable {
 		return id;
 	}
 
-	public WordPair(String id, String word, String definition) {
+	public WordPair(String id, String word, String definition, String dictionaryId) {
 		this.id = id;
 		this.word = word;
 		this.definition = definition;
+		this.dictionaryId = dictionaryId;
 	}
 	
 //	public WordPair(String word, String definition) {
@@ -50,7 +40,6 @@ public class WordPair implements Serializable {
 //		this.word = word;
 //		this.definition = definition;
 //	}
-
 
 	public String getWord() {
 		return word;
@@ -80,8 +69,20 @@ public class WordPair implements Serializable {
 		return createDate;
 	}
 
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
+	public String getUser() {
+		return user;
 	}
 
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getDictionaryId() {
+		return dictionaryId;
+	}
+
+	public void setDictionaryId(String dictionaryId) {
+		this.dictionaryId = dictionaryId;
+	}
+	
 }

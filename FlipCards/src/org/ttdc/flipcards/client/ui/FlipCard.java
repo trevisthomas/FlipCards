@@ -1,0 +1,153 @@
+package org.ttdc.flipcards.client.ui;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.ttdc.flipcards.client.FlipCards;
+import org.ttdc.flipcards.client.StudyWordsService;
+import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.shared.QuizOptions;
+import org.ttdc.flipcards.shared.WordPair;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.Widget;
+
+public class FlipCard extends Composite {
+	interface MyUiBinder extends UiBinder<Widget, FlipCard> {
+	}
+
+	private static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
+	private final StudyWordsServiceAsync studyWordsService = GWT
+			.create(StudyWordsService.class); // Not sure if i should share this
+												// or not?
+
+	@UiField
+	Label wordLabel;
+	@UiField
+	Label definitionLabel;
+	@UiField
+	Button yesButton;
+	@UiField
+	Button noButton;
+	@UiField
+	Button flipButton;
+	@UiField
+	Label errorLabel;
+
+	private List<WordPair> wordPairs;
+	private int currentIndex = 0;
+	private WordPair currentPair;
+	private final QuizOptions options;
+	
+	private List<WordPair> incorrectWordPairs = new ArrayList<WordPair>();
+
+	public FlipCard(QuizOptions options, List<WordPair> wordPairList) {
+		this.options = options;
+		initWidget(uiBinder.createAndBindUi(this));
+		
+		errorLabel.setVisible(false);
+		yesButton.setEnabled(false);
+		noButton.setEnabled(false);
+		flipButton.setEnabled(false);
+		wordLabel.setVisible(false);
+		definitionLabel.setVisible(false);
+
+		if(wordPairList != null){
+			wordPairs = wordPairList;
+			nextWord();
+			return;
+		}
+		else {
+		studyWordsService.generateQuiz(options,
+				new AsyncCallback<List<WordPair>>() {
+					@Override
+					public void onSuccess(List<WordPair> result) {
+						wordPairs = result;
+						nextWord();
+					}
+
+					@Override
+					public void onFailure(Throwable caught) {
+						showError(caught.getMessage());
+					}
+				});
+		}
+	}
+	
+	public FlipCard(QuizOptions options) {
+		this(options, null);
+	}
+
+	private void nextWord() {
+		yesButton.setEnabled(false);
+		noButton.setEnabled(false);
+		flipButton.setEnabled(true);
+		if (currentIndex >= wordPairs.size()) {
+//			Window.alert("You're done.");
+			showScore();
+		} else {
+			currentPair = wordPairs.get(currentIndex++); 
+			definitionLabel.setVisible(false);
+			wordLabel.setVisible(true);
+			wordLabel.setText(currentPair.getWord());
+			definitionLabel.setText(currentPair.getDefinition());
+		}
+	}
+
+	private void showScore() {
+		//test
+//		showError("Asked: "+wordPairs.size() +"<br> Correct: " + (wordPairs.size() - incorrectWordPairs.size()) + " <BR>Score: "+ ((double)(wordPairs.size() - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100 +"%" );
+		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs));
+	}
+
+	@UiHandler("flipButton")
+	void handleFlipButton(ClickEvent e) {
+		// Window.alert("Hello, AJAX");
+		wordLabel.setVisible(!wordLabel.isVisible());
+		definitionLabel.setVisible(!definitionLabel.isVisible());
+		yesButton.setEnabled(true);
+		noButton.setEnabled(true);
+	}
+
+	@UiHandler("noButton")
+	void handleNoButton(ClickEvent e) {
+		incorrectWordPairs.add(currentPair);
+		updateWordScore(false);
+		nextWord();
+	}
+
+	@UiHandler("yesButton")
+	void handleYesButton(ClickEvent e) {
+		updateWordScore(true);
+		nextWord();
+	}
+
+	private void updateWordScore(boolean correct) {
+		studyWordsService.answerQuestion(currentPair.getId(), correct, new AsyncCallback<Void> (){
+			@Override
+			public void onFailure(Throwable caught) {
+				showError(caught.getMessage());
+			}
+			
+			@Override
+			public void onSuccess(Void result) {
+				//Nothing to do?
+			}
+		});
+	}
+
+	void showError(String errorMessage) {
+		errorLabel.setText(errorMessage);
+		errorLabel.setVisible(true);
+	}
+}

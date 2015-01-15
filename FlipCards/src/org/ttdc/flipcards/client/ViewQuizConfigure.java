@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.client.ui.FlipCard;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -60,7 +61,9 @@ public class ViewQuizConfigure  extends VerticalPanel{
 				else{
 					options.setSize(Integer.parseInt(howManyWordsListBox.getValue(howManyWordsListBox.getSelectedIndex())));
 				}
-				FlipCards.replaceView(new ViewQuiz(options));
+//				FlipCards.replaceView(new ViewQuiz(options));
+				FlipCards.replaceView(new FlipCard(options));
+				
 			}
 		});
 		

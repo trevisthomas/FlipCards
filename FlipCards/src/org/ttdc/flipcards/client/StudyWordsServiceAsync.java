@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -16,4 +17,9 @@ public interface StudyWordsServiceAsync {
 			AsyncCallback<WordPair> callback);
 
 	void deleteWordPair(String id, AsyncCallback<Boolean> callback);
+
+	void generateQuiz(QuizOptions quizOptions,
+			AsyncCallback<List<WordPair>> callback);
+
+	void answerQuestion(String id, Boolean correct, AsyncCallback<Void> callback);
 }
