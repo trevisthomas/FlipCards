@@ -51,6 +51,8 @@ public class ViewQuizConfigure  extends VerticalPanel{
 		add(formTable);
 		add(startTestButton);
 		
+		add(test);
+		
 		startTestButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -61,13 +63,15 @@ public class ViewQuizConfigure  extends VerticalPanel{
 				else{
 					options.setSize(Integer.parseInt(howManyWordsListBox.getValue(howManyWordsListBox.getSelectedIndex())));
 				}
-//				FlipCards.replaceView(new ViewQuiz(options));
+				
+				//TODO real dict id!
+				options.setDictionaryId(ViewAddWords.DICTIONARY_ID_DEFAULT);
 				FlipCards.replaceView(new FlipCard(options));
 				
 			}
 		});
 		
-		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
+		studyWordsService.getAllWordPairs(ViewAddWords.DICTIONARY_ID_DEFAULT, new AsyncCallback<List<WordPair>>() {
 			@Override
 			public void onSuccess(List<WordPair> result) {
 				for(WordPair pair : result){

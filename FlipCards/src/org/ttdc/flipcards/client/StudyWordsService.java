@@ -14,12 +14,12 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("studyWords")
 public interface StudyWordsService extends RemoteService{
-	WordPair addWordPair(String word, String definition) throws IllegalArgumentException, NotLoggedInException;
+	WordPair addWordPair(String dictionaryId, String word, String definition) throws IllegalArgumentException, NotLoggedInException;
 	WordPair updateWordPair(String id, String word, String definition) throws IllegalArgumentException, NotLoggedInException;
 	Boolean deleteWordPair(String id) throws IllegalArgumentException, NotLoggedInException;
-	List<WordPair> generateQuiz(QuizOptions quizOptions) throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> generateQuiz(QuizOptions quizOptions) throws NotLoggedInException;
 	void answerQuestion(String id, Boolean correct) throws IllegalArgumentException, NotLoggedInException;
-	List<WordPair> getAllWordPairs() throws NotLoggedInException;
+	List<WordPair> getAllWordPairs(String dictionaryId) throws NotLoggedInException;
 }
 
 
