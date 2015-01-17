@@ -1,5 +1,7 @@
 package org.ttdc.flipcards.server;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.UserStat;
 import org.ttdc.flipcards.shared.WordPair;
+import org.w3c.dom.ranges.RangeException;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -52,7 +55,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public WordPair addWordPair(String word, String definition)
+	public WordPair addWordPair(String dictionaryId, String word, String definition)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		UUID uuid = java.util.UUID.randomUUID();
@@ -67,7 +70,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		PersistenceManager pm = getPersistenceManager();
 
 		try {
-			PersistantWordPair pair = new PersistantWordPair(uuid.toString(), word, definition, "DICT_ID", getUser());
+			Card pair = new Card(uuid.toString(), word, definition, dictionaryId, getUser());
 			pm.makePersistent(pair);
 			return convert(pair);
 		} catch (Exception e) {
@@ -79,14 +82,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 	}
 	
-	WordPair convert(PersistantWordPair pair){
+	WordPair convert(Card pair){
 		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(), pair.getDefinition(), pair.getDictionaryId());
 		gwtPair.setUser(pair.getUser().getNickname());
 		return gwtPair;
 	}
 
 	@Override
-	public List<WordPair> getAllWordPairs() throws NotLoggedInException {
+	public List<WordPair> getAllWordPairs(String dictionaryId) throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		// List<String> symbols = new ArrayList<String>();
@@ -94,11 +97,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 		List<WordPair> wordPairs = new ArrayList<>();
 		try {
-			Query q = pm.newQuery(PersistantWordPair.class);
-			// q.declareParameters("com.google.appengine.api.users.User u");
+			Query q = pm.newQuery(Card.class, "dictionaryId == d");
+			 q.declareParameters("java.lang.String d");
 			// q.setOrdering("createDate");
-			List<PersistantWordPair> result = (List<PersistantWordPair>) q.execute();
-			for (PersistantWordPair pair : result) {
+			List<Card> result = (List<Card>) q.execute(dictionaryId);
+			for (Card pair : result) {
 //				wordPairs.add(pm.detachCopy(pair));  //http://bpossolo.blogspot.com/2013/03/upgrading-gae-app-from-jpa1-to-jpa2.html
 				wordPairs.add(convert(pair));
 			}
@@ -134,24 +137,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		Transaction trans = pm.currentTransaction();
 		long deleteCount = 0;
 		try {
-			Query q = pm.newQuery(PersistantWordPair.class, "id == identity");
+			Query q = pm.newQuery(Card.class, "id == identity");
 			q.declareParameters("java.lang.String identity");
-			List<PersistantWordPair> wordPairs = (List<PersistantWordPair>) q.execute(id);
-			for (PersistantWordPair pair : wordPairs) {
+			List<Card> wordPairs = (List<Card>) q.execute(id);
+			for (Card pair : wordPairs) {
 				if (id.equals(pair.getId())) {
-					deleteCount++;
-					trans.begin();
-					
-					
-					Query q2 = pm.newQuery(UserStat.class, "wordPairId == identity");
-					q2.declareParameters("java.lang.String identity");
-					List<UserStat> quizStats = (List<UserStat>) q2.execute(id);
-					
 					pm.deletePersistent(pair);
-					for(UserStat stat : quizStats){
-						pm.deletePersistent(stat);
-					}
-					trans.commit();
+					deleteCount++;
 				}
 			}
 			if (deleteCount != 1) {
@@ -178,30 +170,42 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		Transaction trans = pm.currentTransaction();
 		try {
 			trans.begin();
-			Query q = pm.newQuery(UserStat.class, "wordPairId == identity");
+			Query q = pm.newQuery(Card.class, "id == identity");
 			q.declareParameters("java.lang.String identity");
-			List<UserStat> quizStats = (List<UserStat>) q.execute(id);
+			List<Card> quizStats = (List<Card>) q.execute(id);
 			
+			if(quizStats.size() != 1){
+				throw new RuntimeException("Failed to update score.");
+			}
 			
 			//Query for the word, and then put the dictionary id into the UserStat.  You need it there for the filtering to work
 			
-			UserStat userStat;
-			if(quizStats == null || quizStats.size() == 0){
-				userStat = new UserStat(getUser(), id);
-				pm.makePersistent(userStat);
-			} else if(quizStats.size() > 1) {
-				LOG.log(Level.WARNING, "Failed to find stats for " + id +" multiple user stats.  Internal error.");
-				throw new RuntimeException("Failed to process answer: "+id+"!");
-			} else {
-				userStat = quizStats.get(0);
-			}
-			userStat.setDateStamp(new Date());
+			Card card = quizStats.get(0);
 			if(!correct){
-				userStat.setIncorrectCount(userStat.getIncorrectCount() + 1);
+				card.setIncorrectCount(card.getIncorrectCount() + 1);
 			}
-			userStat.setViewCount(userStat.getViewCount() + 1);
-			userStat.setDifficulty((double)userStat.getIncorrectCount() / (double)userStat.getViewCount());
+			card.setLastUpdate(new Date());
+			card.setViewCount(card.getViewCount() + 1);
+			card.setDifficulty((double)card.getIncorrectCount() / (double)card.getViewCount());
 			trans.commit();
+			
+//			UserStat userStat;
+//			if(quizStats == null || quizStats.size() == 0){
+//				userStat = new UserStat(getUser(), id);
+//				pm.makePersistent(userStat);
+//			} else if(quizStats.size() > 1) {
+//				LOG.log(Level.WARNING, "Failed to find stats for " + id +" multiple user stats.  Internal error.");
+//				throw new RuntimeException("Failed to process answer: "+id+"!");
+//			} else {
+//				userStat = quizStats.get(0);
+//			}
+//			userStat.setDateStamp(new Date());
+//			if(!correct){
+//				userStat.setIncorrectCount(userStat.getIncorrectCount() + 1);
+//			}
+//			userStat.setViewCount(userStat.getViewCount() + 1);
+//			userStat.setDifficulty((double)userStat.getIncorrectCount() / (double)userStat.getViewCount());
+//			trans.commit();
 		}
 		catch (Exception e) {
 			trans.rollback();
@@ -223,66 +227,121 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		
 		try {
 			
-			Query q = pm.newQuery(UserStat.class, "user == u");
-			q.declareParameters("com.google.appengine.api.users.User u");
+//			Query q = pm.newQuery(UserStat.class, "user == u && dictionaryId == d");
+//			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String d");
+//			q.setOrdering("difficulty desc");
+			
+			
+			Query q = pm.newQuery(Card.class, "user == u && dictionaryId == d");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String d");
 			q.setOrdering("difficulty desc");
 			
 			if(quizOptions.getSize() > 0){
 //				userStats = (List<UserStat>) q.execute(getUser(), quizOptions.getSize());
 				q.setRange(0, quizOptions.getSize());
 			} 
-			userStats = (List<UserStat>) q.execute(getUser());
-			
-			
-			List<String> wordPairIds = new ArrayList<>();
-			for(UserStat stat : userStats){
-				wordPairIds.add(stat.getWordPairId());
+			List<Card> cards = (List<Card>) q.execute(getUser(), quizOptions.getDictionaryId());
+			for (Card card : cards) {
+				wordPairs.add(convert(card));
 			}
 			
-			Query q2 = pm.newQuery(PersistantWordPair.class, ":p.contains(id)");
-//			q2.execute(wordPairIds);
-//			q2.declareParameters();
-			List<PersistantWordPair> result = (List<PersistantWordPair>) q2.execute(wordPairIds);
+		
 			
-			//This goofy map business is to insure that the results are in the same order that the id's are in.  I don't think that 'contains' guarantees that.
-			Map<String, PersistantWordPair> wordPairMap = new HashMap<>();
-			for (PersistantWordPair pair : result) {
-				wordPairMap.put(pair.getId(), pair);
-			}
-			for(String id : wordPairIds){
-				wordPairs.add(convert(wordPairMap.get(id)));
-			}
-			
-
-			//User must be new, or the app is new.  Lets get some words for them. But we don't want dups!
-			if(wordPairs.size() < quizOptions.getSize()){
-				//Getting the total number of words requested
-				Query q3 = pm.newQuery(PersistantWordPair.class);
-				if(quizOptions.getSize() > 0){
-					q3.setRange(0, quizOptions.getSize());
-				}
-				result = (List<PersistantWordPair>)q3.execute();
-				//Then skip the ones that were already added.
-				for (PersistantWordPair pair : result) {
-					if(!wordPairIds.contains(pair.getId())){
-						wordPairs.add(convert(pair));
-					}
-				}
-			}
-			
-			
-//			Query q = pm.newQuery(PersistantWordPair.class);
+//			Query q = pm.newQuery(Card.class);
 //			// q.declareParameters("com.google.appengine.api.users.User u");
 //			// q.setOrdering("createDate");
-//			List<PersistantWordPair> result = (List<PersistantWordPair>) q.execute(quizOptions.getSize());
+//			List<Card> result = (List<Card>) q.execute(quizOptions.getSize());
 //			
-//			for (PersistantWordPair pair : result) {
+//			for (Card pair : result) {
 ////				wordPairs.add(pm.detachCopy(pair));
 //				wordPairs.add(convert(pair));
 //			}
-		} finally {
+		} catch (Exception e) {
+			//throw new RuntimeException("Failed to update score.");
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			LOG.warning(sw.toString());
+			throw new RuntimeException("Internal server error.");
+		} 
+		
+		finally {
 			pm.close();
 		}
 		return wordPairs;
 	}
+	
+	
+//	@Override
+//	public List<WordPair> generateQuiz(QuizOptions quizOptions)
+//			throws IllegalArgumentException, NotLoggedInException {
+//		checkLoggedIn();
+//		PersistenceManager pm = getPersistenceManager();
+//		List<WordPair> wordPairs = new ArrayList<>();
+//		List<UserStat> userStats = new ArrayList<>();
+//		
+//		try {
+//			
+//			Query q = pm.newQuery(UserStat.class, "user == u");
+//			q.declareParameters("com.google.appengine.api.users.User u");
+//			q.setOrdering("difficulty desc");
+//			
+//			if(quizOptions.getSize() > 0){
+////				userStats = (List<UserStat>) q.execute(getUser(), quizOptions.getSize());
+//				q.setRange(0, quizOptions.getSize());
+//			} 
+//			userStats = (List<UserStat>) q.execute(getUser());
+//			
+//			
+//			List<String> wordPairIds = new ArrayList<>();
+//			for(UserStat stat : userStats){
+//				wordPairIds.add(stat.getWordPairId());
+//			}
+//			
+//			Query q2 = pm.newQuery(Card.class, ":p.contains(id)");
+////			q2.execute(wordPairIds);
+////			q2.declareParameters();
+//			List<Card> result = (List<Card>) q2.execute(wordPairIds);
+//			
+//			//This goofy map business is to insure that the results are in the same order that the id's are in.  I don't think that 'contains' guarantees that.
+//			Map<String, Card> wordPairMap = new HashMap<>();
+//			for (Card pair : result) {
+//				wordPairMap.put(pair.getId(), pair);
+//			}
+//			for(String id : wordPairIds){
+//				wordPairs.add(convert(wordPairMap.get(id)));
+//			}
+//			
+//
+//			//User must be new, or the app is new.  Lets get some words for them. But we don't want dups!
+//			if(wordPairs.size() < quizOptions.getSize()){
+//				//Getting the total number of words requested
+//				Query q3 = pm.newQuery(Card.class);
+//				if(quizOptions.getSize() > 0){
+//					q3.setRange(0, quizOptions.getSize());
+//				}
+//				result = (List<Card>)q3.execute();
+//				//Then skip the ones that were already added.
+//				for (Card pair : result) {
+//					if(!wordPairIds.contains(pair.getId())){
+//						wordPairs.add(convert(pair));
+//					}
+//				}
+//			}
+//			
+//			
+////			Query q = pm.newQuery(Card.class);
+////			// q.declareParameters("com.google.appengine.api.users.User u");
+////			// q.setOrdering("createDate");
+////			List<Card> result = (List<Card>) q.execute(quizOptions.getSize());
+////			
+////			for (Card pair : result) {
+//////				wordPairs.add(pm.detachCopy(pair));
+////				wordPairs.add(convert(pair));
+////			}
+//		} finally {
+//			pm.close();
+//		}
+//		return wordPairs;
+//	}
 }

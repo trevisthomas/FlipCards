@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.client.ui.QuizSelection;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
@@ -31,6 +32,8 @@ public class ViewAddWords extends VerticalPanel{
 	
 	private final StudyWordsServiceAsync studyWordsService = GWT.create(StudyWordsService.class); //Not sure if i should share this or not?
 	
+	public final static String DICTIONARY_ID_DEFAULT = "default_id"; //Probably only for testing, or until i build real ones.
+	
 	public ViewAddWords() {
 		final VerticalPanel addWordsOuterPanel = new VerticalPanel(); 
 		final HorizontalPanel newPairPanel = new HorizontalPanel();
@@ -55,6 +58,7 @@ public class ViewAddWords extends VerticalPanel{
 			@Override
 			public void onClick(ClickEvent event) {
 				FlipCards.showStudyView();
+//				FlipCards.replaceView(new QuizSelection());
 			}
 		});
 		
@@ -78,7 +82,7 @@ public class ViewAddWords extends VerticalPanel{
 	}
 	
 	private void loadWords() {
-		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
+		studyWordsService.getAllWordPairs(DICTIONARY_ID_DEFAULT, new AsyncCallback<List<WordPair>>() {
 			
 			@Override
 			public void onSuccess(List<WordPair> result) {
@@ -167,7 +171,7 @@ public class ViewAddWords extends VerticalPanel{
 		}
 		
 		
-		studyWordsService.addWordPair(word, definition, new AsyncCallback<WordPair>() {
+		studyWordsService.addWordPair(DICTIONARY_ID_DEFAULT, word, definition, new AsyncCallback<WordPair>() {
 			
 			@Override
 			public void onSuccess(WordPair result) {
