@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -38,13 +39,11 @@ public class FlipCard extends Composite {
 	@UiField
 	Label definitionLabel;
 	@UiField
-	Button yesButton;
+	PushButton yesButton;
 	@UiField
-	Button noButton;
+	PushButton noButton;
 	@UiField
-	Button flipButton;
-	@UiField
-	Label errorLabel;
+	PushButton flipButton;
 	@UiField
 	Anchor surrenderAnchor;
 	@UiField
@@ -61,14 +60,16 @@ public class FlipCard extends Composite {
 		this.options = options;
 		initWidget(uiBinder.createAndBindUi(this));
 		
-		errorLabel.setVisible(false);
 		yesButton.setEnabled(false);
 		noButton.setEnabled(false);
 		flipButton.setEnabled(false);
-		wordLabel.setVisible(false);
+		wordLabel.setVisible(true);
+		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
 		surrenderAnchor.setText("I Surrender");
 
+		yesButton.setStylePrimaryName("fixme");
+		
 		if(wordPairList != null){
 			wordPairs = wordPairList;
 			nextWord();
