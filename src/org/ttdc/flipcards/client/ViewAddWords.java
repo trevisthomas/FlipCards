@@ -3,6 +3,7 @@ package org.ttdc.flipcards.client;
 import java.util.List;
 
 import org.ttdc.flipcards.client.ui.QuizSelection;
+import org.ttdc.flipcards.client.ui.Upload;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
@@ -57,8 +58,8 @@ public class ViewAddWords extends VerticalPanel{
 		studyButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				FlipCards.showStudyView();
-//				FlipCards.replaceView(new QuizSelection());
+//				FlipCards.showStudyView();
+				FlipCards.replaceView(new QuizSelection());
 			}
 		});
 		
@@ -75,6 +76,8 @@ public class ViewAddWords extends VerticalPanel{
 		wordsFlexTable.setText(row, 1, "Definition");
 		wordsFlexTable.setText(row, 2, "Remove");
 		
+		
+		add(new Upload());
 		add(addWordsOuterPanel);
 		add(wordsFlexTable);
 		
@@ -171,7 +174,7 @@ public class ViewAddWords extends VerticalPanel{
 		}
 		
 		
-		studyWordsService.addWordPair(DICTIONARY_ID_DEFAULT, word, definition, new AsyncCallback<WordPair>() {
+		studyWordsService.addWordPair(word, definition, new AsyncCallback<WordPair>() {
 			
 			@Override
 			public void onSuccess(WordPair result) {

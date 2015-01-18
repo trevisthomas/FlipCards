@@ -1,0 +1,15 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	
+	
+	<g:FormPanel ui:field="formPanel">
+	    <g:FlowPanel ui:field="inputPane">
+	    	<g:Label ui:field="errorMessageLabel"></g:Label>
+	    	<g:FileUpload name="myFile" ui:field="fileUpload"/>
+	        <g:SubmitButton ui:field="submitButton">Upload</g:SubmitButton>
+	        <g:Button ui:field="closeButton">Close uploader</g:Button>
+    	</g:FlowPanel>
+	</g:FormPanel>
+	
+</ui:UiBinder> 

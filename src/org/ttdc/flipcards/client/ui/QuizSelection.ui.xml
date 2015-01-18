@@ -7,7 +7,22 @@
 		}
 	</ui:style>
 	<g:HTMLPanel>
-		Hello,
-		<g:Button styleName="{style.important}" ui:field="button" />
+		<table>
+			<tr><td>How many cards?</td></tr>
+			<tr><td><g:ListBox ui:field="cardCountListBox"/></td></tr>
+			<tr><td>What Order?</td></tr>
+			<tr><td><g:ListBox ui:field="orderListBox"/></td></tr>
+			<tr><td>Show what first?</td></tr>
+			<tr><td>
+				<g:RadioButton ui:field="cardSideTerm" name="cardSideGroup" value="false"/>
+                <g:RadioButton ui:field="cardSideDefinition" name="cardSideGroup" value="true"/>
+                <g:RadioButton ui:field="cardSideRandom" name="cardSideGroup" value="false"/>
+			</td></tr>
+			<tr><td>Tag filters?</td></tr>
+			<tr><td>comming soon...</td></tr>
+		</table>
+				
+		<g:Button styleName="{style.important}" ui:field="goButton" />
 	</g:HTMLPanel>
 </ui:UiBinder> 
+

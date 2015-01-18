@@ -65,7 +65,7 @@ public class Results extends Composite {
 	
 	@UiHandler("newQuizButton")
 	void handleNewQuiz(ClickEvent e) {
-		FlipCards.showStudyView();
+		FlipCards.replaceView(new QuizSelection());
 	}
 	
 	

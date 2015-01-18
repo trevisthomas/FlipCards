@@ -18,6 +18,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -43,6 +44,9 @@ public class FlipCard extends Composite {
 	Button flipButton;
 	@UiField
 	Label errorLabel;
+	
+	@UiField
+	FlexTable debugDumpFlexTable;
 
 	private List<WordPair> wordPairs;
 	private int currentIndex = 0;
@@ -73,6 +77,7 @@ public class FlipCard extends Composite {
 					@Override
 					public void onSuccess(List<WordPair> result) {
 						wordPairs = result;
+						debugDump(wordPairs);
 						nextWord();
 					}
 
@@ -81,6 +86,20 @@ public class FlipCard extends Composite {
 						showError(caught.getMessage());
 					}
 				});
+		}
+	}
+	
+	private void debugDump(List<WordPair> words){
+		int row = 0;
+		debugDumpFlexTable.setText(row, 0, "Word");
+		debugDumpFlexTable.setText(row, 1, "Definition");
+		debugDumpFlexTable.setText(row, 2, "Tested Count");
+		
+		for(WordPair word : words){
+			row++;
+			debugDumpFlexTable.setText(row, 0, word.getWord());
+			debugDumpFlexTable.setText(row, 1, word.getDefinition());
+			debugDumpFlexTable.setText(row, 2, "" +word.getTestedCount());
 		}
 	}
 	
