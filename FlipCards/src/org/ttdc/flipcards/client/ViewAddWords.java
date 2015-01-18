@@ -85,7 +85,7 @@ public class ViewAddWords extends VerticalPanel{
 	}
 	
 	private void loadWords() {
-		studyWordsService.getAllWordPairs(DICTIONARY_ID_DEFAULT, new AsyncCallback<List<WordPair>>() {
+		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
 			
 			@Override
 			public void onSuccess(List<WordPair> result) {

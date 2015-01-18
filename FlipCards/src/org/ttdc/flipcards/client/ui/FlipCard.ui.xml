@@ -5,19 +5,18 @@
   	<g:Label ui:field="errorLabel"/>
   	<table>
   		<tr>
-  			<td colspan="3">
-  			<g:Label ui:field='wordLabel'/>
-  			<g:Label ui:field='definitionLabel'/>
+  			<td>
+  			<g:Label styleName="flipCardText" ui:field='wordLabel'/>
+  			<g:Label styleName="flipCardText" ui:field='definitionLabel'/>
   			</td>
   		</tr>
 		<tr>
-			<td><g:Button ui:field='yesButton'>Yup</g:Button></td>
-			<td><g:Button ui:field='flipButton'>Flip</g:Button></td>
-			<td><g:Button ui:field='noButton'>Nope</g:Button></td>
+			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='flipButton'>Flip</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
 		</tr>    
     </table>
     
     <g:FlexTable ui:field="debugDumpFlexTable"/>
+    <div><g:Anchor styleName="surrender" ui:field="surrenderAnchor"/></div>
   </g:HTMLPanel>
 
 </ui:UiBinder>

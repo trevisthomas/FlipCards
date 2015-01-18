@@ -41,7 +41,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			.getPersistenceManagerFactory("transactions-optional");
 
 	// private static List<WordPair> wordPairs = new ArrayList<>();
-	private static Map<String, WordPair> wordPairs = new HashMap<>();
+	// private static Map<String, WordPair> wordPairs = new HashMap<>();
 
 	private PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
@@ -70,13 +70,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		UUID uuid = java.util.UUID.randomUUID();
-		//
-		// WordPair pair = new WordPair(uuid.toString(), word, definition);
-		//
-		// System.err.println("Created: " + pair.getId() + ": " + word);
-		//
-		// wordPairs.put(pair.getId(), pair);
-		// checkLoggedIn();
+		if(exists(word) != null){
+			throw new IllegalArgumentException("Coudld not be added.  A card with this term already exists.");
+		}
 
 		PersistenceManager pm = getPersistenceManager();
 
@@ -127,7 +123,10 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(),
 				pair.getDefinition());
 
-		gwtPair.setUser(pair.getUser().getNickname());
+		if(pair.getUser() != null){
+			//This should only happen when there are orphaned words in the system. You need to fix the uploader so that this is not needed.
+			gwtPair.setUser(pair.getUser().getNickname());
+		}
 		return gwtPair;
 	}
 
@@ -140,29 +139,27 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			gwtPair = new WordPair(pair.getId(), pair.getWord(),
 					pair.getDefinition());
 		}
-		gwtPair.setUser(pair.getUser().getNickname());
+		if(pair.getUser() != null){
+			gwtPair.setUser(pair.getUser().getNickname());
+		}
 		return gwtPair;
 	}
 
 	@Override
-	public List<WordPair> getAllWordPairs(String dictionaryId)
-			throws NotLoggedInException {
+	public List<WordPair> getAllWordPairs() throws NotLoggedInException {
 		checkLoggedIn();
+		
 		PersistenceManager pm = getPersistenceManager();
-		// List<String> symbols = new ArrayList<String>();
-		// return new ArrayList<>(wordPairs.values());
-
 		List<WordPair> wordPairs = new ArrayList<>();
 		try {
-			// Query q = pm.newQuery(Card.class, "dictionaryId == d");
-			// q.declareParameters("java.lang.String d");
-			Query q = pm.newQuery(Card.class);
+			Query q = pm.newQuery(Card.class, "user == u");
 			q.setOrdering("createDate");
-			List<Card> result = (List<Card>) q.execute();
-			for (Card pair : result) {
-				// wordPairs.add(pm.detachCopy(pair));
-				// //http://bpossolo.blogspot.com/2013/03/upgrading-gae-app-from-jpa1-to-jpa2.html
-				wordPairs.add(convert(pair));
+			List<Card> cards = (List<Card>) q.execute(getUser());
+			int i = 1;
+			for (Card card : cards) {
+				WordPair pair = convert(card);
+				pair.setDisplayOrder(i++);
+				wordPairs.add(pair);
 			}
 
 		} finally {
@@ -173,9 +170,36 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public WordPair updateWordPair(String id, String word, String definition)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		Transaction trans = pm.currentTransaction();
+		
+		Card exists = exists(word);
+		//Does it exist, and is not me!
+		if(exists != null && !exists.getId().equals(id)){
+			throw new IllegalArgumentException("Already exists");
+		}
+		
+		try {
+			Query q = pm.newQuery(Card.class, "user == u && id == i");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String i");
+			List<Card> cards = (List<Card>) q.execute(getUser(), id);
+			trans.begin();
+			Card card = cards.get(0);
+			card.setWord(word);
+			card.setDefinition(definition);
+			trans.commit();
+			
+			return convert(card);
+		} catch (Exception e) {
+			trans.rollback();
+			LOG.log(Level.WARNING, e.getMessage());
+			throw e;
+		} finally {
+			pm.close();
+		}
+
 	}
 
 	/*
@@ -219,6 +243,22 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 
 		return deleteCount == 1;
+	}
+	
+	Card exists(String term){
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Query q = pm.newQuery(Card.class, "word == w");
+			q.declareParameters("java.lang.String w");
+			List<Card> cards = (List<Card>) q.execute(term);
+			
+			return cards.get(0);
+		} catch (Exception e) {
+			LOG.log(Level.WARNING, e.getMessage());
+		} finally {
+			pm.close();
+		}
+		return null;
 	}
 
 	@Override
@@ -327,13 +367,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				}
 				switch (quizOptions.getCardSide()) {
 				case DEFINITION:
-					switchEm = false;
+					switchEm = true;
 					break;
 				case RANDOM:
 					switchEm = random.nextBoolean();
 					break;
 				case TERM:
-					switchEm = true;
+					switchEm = false;
 					break;
 				}
 				wordPairs.add(convert(card, switchEm));

@@ -1,2 +1,0 @@
-serviceClass: org.ttdc.flipcards.client.StudyWordsService
-path: 5B0B1778C771A4456191BCDC1425CFF2.gwt.rpc

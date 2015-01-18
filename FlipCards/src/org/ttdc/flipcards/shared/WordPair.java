@@ -18,6 +18,7 @@ public class WordPair implements Serializable {
 	private int correctCount;
 	private String id;
 	private String user;
+	private int displayOrder;
 
 	public WordPair() {
 
@@ -74,4 +75,13 @@ public class WordPair implements Serializable {
 	public void setUser(String user) {
 		this.user = user;
 	}
+
+	public int getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(int displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+	
 }

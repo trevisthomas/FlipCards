@@ -6,6 +6,8 @@
 			font-weight: bold;
 		}
 	</ui:style>
+	
+	
 	<g:HTMLPanel>
 		<table>
 			<tr><td>How many cards?</td></tr>
@@ -22,7 +24,8 @@
 			<tr><td>comming soon...</td></tr>
 		</table>
 				
-		<g:Button styleName="{style.important}" ui:field="goButton" />
+		<g:Button ui:field="goButton" />
+		<g:Button ui:field="editCardsButton" />
 	</g:HTMLPanel>
 </ui:UiBinder> 
 

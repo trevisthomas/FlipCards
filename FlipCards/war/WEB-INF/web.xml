@@ -16,6 +16,13 @@
     <servlet-class>org.ttdc.flipcards.server.StudyWordsServiceImpl</servlet-class>
   </servlet>
   
+  <servlet>
+    <servlet-name>upload</servlet-name>
+    <servlet-class>org.ttdc.flipcards.server.UploadService</servlet-class>
+  </servlet>
+  
+  
+  
   <servlet-mapping>
     <servlet-name>studyWordsServlet</servlet-name>
     <url-pattern>/flipcards/studyWords</url-pattern>
@@ -29,6 +36,11 @@
   <servlet-mapping>
     <servlet-name>loginService</servlet-name>
     <url-pattern>/flipcards/login</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>upload</servlet-name>
+    <url-pattern>/flipcards/upload</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

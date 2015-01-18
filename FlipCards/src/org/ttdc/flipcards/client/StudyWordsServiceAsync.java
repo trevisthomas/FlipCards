@@ -11,7 +11,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface StudyWordsServiceAsync {
 	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
-	void getAllWordPairs(String dictionaryId, AsyncCallback<List<WordPair>> callback);
+	void getAllWordPairs(AsyncCallback<List<WordPair>> callback);
 
 	void updateWordPair(String id, String word, String definition,
 			AsyncCallback<WordPair> callback);

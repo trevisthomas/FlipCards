@@ -6,7 +6,7 @@ h1 {
   font-size: 2em;
   font-weight: bold;
   color: #777777;
-  margin: 40px 0px 70px;
+  margin: 4px 0px 10px;
   text-align: center;
 }
 
@@ -32,3 +32,45 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+.surrender{
+	
+}
+
+.flipCardText{
+	display: block;
+	color: #777777;
+	font-weight: bolder;
+  	font-size: 50pt;
+}
+
+
+#logout{
+   position:absolute;
+   top:0;
+   right:0;
+   margin-right: 10px;
+}
+
+* {
+	margin: 0;
+}
+html, body {
+	height: 100%;
+}
+.wrapper {
+	min-height: 100%;
+	height: auto !important; /* This line and the next line are not necessary unless you need IE6 support */
+	height: 100%;
+	margin: 0 auto -155px; /* the bottom margin is the negative value of the footer's height */
+}
+.footer, .push {
+	height: 155px; /* .push must be the same height as .footer */
+}
+
+/*
+
+Sticky Footer by Ryan Fait
+http://ryanfait.com/
+
+*/
