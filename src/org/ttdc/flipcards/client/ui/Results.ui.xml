@@ -14,6 +14,9 @@
 			<td><g:Label ui:field='score'/></td>
 		</tr>
 		<tr>	
+			<td><g:Label ui:field='unanswered'/></td>
+		</tr>
+		<tr>	
 			<td><g:Button ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button> <g:Button ui:field='newQuizButton'>New Quiz</g:Button></td>
 		</tr>    
     </table>

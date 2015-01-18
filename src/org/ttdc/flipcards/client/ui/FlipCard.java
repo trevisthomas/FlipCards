@@ -16,6 +16,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -44,7 +45,8 @@ public class FlipCard extends Composite {
 	Button flipButton;
 	@UiField
 	Label errorLabel;
-	
+	@UiField
+	Anchor surrenderAnchor;
 	@UiField
 	FlexTable debugDumpFlexTable;
 
@@ -65,6 +67,7 @@ public class FlipCard extends Composite {
 		flipButton.setEnabled(false);
 		wordLabel.setVisible(false);
 		definitionLabel.setVisible(false);
+		surrenderAnchor.setText("I Surrender");
 
 		if(wordPairList != null){
 			wordPairs = wordPairList;
@@ -77,18 +80,19 @@ public class FlipCard extends Composite {
 					@Override
 					public void onSuccess(List<WordPair> result) {
 						wordPairs = result;
-						debugDump(wordPairs);
+//						debugDump(wordPairs);
 						nextWord();
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
-						showError(caught.getMessage());
+						FlipCards.showErrorMessage(caught.getMessage());
 					}
 				});
 		}
 	}
 	
+	//A debug method
 	private void debugDump(List<WordPair> words){
 		int row = 0;
 		debugDumpFlexTable.setText(row, 0, "Word");
@@ -107,6 +111,7 @@ public class FlipCard extends Composite {
 		this(options, null);
 	}
 
+	
 	private void nextWord() {
 		yesButton.setEnabled(false);
 		noButton.setEnabled(false);
@@ -126,7 +131,7 @@ public class FlipCard extends Composite {
 	private void showScore() {
 		//test
 //		showError("Asked: "+wordPairs.size() +"<br> Correct: " + (wordPairs.size() - incorrectWordPairs.size()) + " <BR>Score: "+ ((double)(wordPairs.size() - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100 +"%" );
-		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs));
+		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs, currentIndex));
 	}
 
 	@UiHandler("flipButton")
@@ -150,12 +155,17 @@ public class FlipCard extends Composite {
 		updateWordScore(true);
 		nextWord();
 	}
+	
+	@UiHandler("surrenderAnchor")
+	void surrenderAnchorClicked(ClickEvent e) {
+		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs, currentIndex-1));
+	}
 
 	private void updateWordScore(boolean correct) {
 		studyWordsService.answerQuestion(currentPair.getId(), correct, new AsyncCallback<Void> (){
 			@Override
 			public void onFailure(Throwable caught) {
-				showError(caught.getMessage());
+				FlipCards.showErrorMessage(caught.getMessage());
 			}
 			
 			@Override
@@ -163,10 +173,5 @@ public class FlipCard extends Composite {
 				//Nothing to do?
 			}
 		});
-	}
-
-	void showError(String errorMessage) {
-		errorLabel.setText(errorMessage);
-		errorLabel.setVisible(true);
 	}
 }

@@ -37,12 +37,15 @@ public class QuizSelection extends Composite {
 	RadioButton cardSideDefinition;
 	@UiField
 	RadioButton cardSideRandom;
+	@UiField
+	Button editCardsButton;
 
 	public QuizSelection() {
 		initWidget(uiBinder.createAndBindUi(this));
 		goButton.setText("Go!");
+		editCardsButton.setText("Edit Cards");
 		
-		cardCountListBox.addItem("3"); //testing
+		cardCountListBox.addItem("3");
 		cardCountListBox.addItem("10");
 		cardCountListBox.addItem("20");
 		cardCountListBox.addItem("30");
@@ -61,6 +64,11 @@ public class QuizSelection extends Composite {
 		cardSideDefinition.setText(CardSide.DEFINITION.toString());
 		cardSideRandom.setText(CardSide.RANDOM.toString());
 		
+	}
+	
+	@UiHandler("editCardsButton")
+	void onEditCardsClick(ClickEvent e) {
+		FlipCards.replaceView(new CardManager());
 	}
 
 	@UiHandler("goButton")

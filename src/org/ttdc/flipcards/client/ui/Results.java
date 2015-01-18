@@ -35,23 +35,31 @@ public class Results extends Composite {
 	@UiField
 	Label score;
 	@UiField
+	Label unanswered;
+	@UiField
 	Button studyWrongWordsButton;
 	@UiField
 	Button newQuizButton;
+	
 	
 	private final QuizOptions options;
 	private List<WordPair> wordPairs;
 	private List<WordPair> incorrectWordPairs;
 	
-	public Results(QuizOptions options, List<WordPair> wordPairs, List<WordPair> incorrectWordPairs) {
+	public Results(QuizOptions options, List<WordPair> wordPairs, List<WordPair> incorrectWordPairs, int questionsAsked) {
 		initWidget(uiBinder.createAndBindUi(this));
 		this.options = options;
 		this.wordPairs = wordPairs;
 		this.incorrectWordPairs = incorrectWordPairs;
 		
-		asked.setText("Asked: "+wordPairs.size());
-		correct.setText("Correct: "+(wordPairs.size() - incorrectWordPairs.size()));
-		score.setText("Score: "+(((double)(wordPairs.size() - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100) +"%");
+		asked.setText("Asked: "+questionsAsked);
+		correct.setText("Correct: "+(questionsAsked - incorrectWordPairs.size()));
+//		score.setText("Score: "+(((double)((wordPairs.size() - questionsAsked) - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100) +"%");
+		
+		score.setText("Score: "+(((double)(questionsAsked - incorrectWordPairs.size()) / (double)questionsAsked) * 100) +"%");
+		if( wordPairs.size() - questionsAsked > 0){
+			unanswered.setText("Unanswered: " + (wordPairs.size() - questionsAsked));
+		}
 		
 		if(incorrectWordPairs.size() == 0){
 			studyWrongWordsButton.setVisible(false);
