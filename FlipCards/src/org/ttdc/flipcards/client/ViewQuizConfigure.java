@@ -65,7 +65,7 @@ public class ViewQuizConfigure  extends VerticalPanel{
 				}
 				
 				//TODO real dict id!
-				options.setDictionaryId(ViewAddWords.DICTIONARY_ID_DEFAULT);
+//				options.setDictionaryId(ViewAddWords.DICTIONARY_ID_DEFAULT);
 				FlipCards.replaceView(new FlipCard(options));
 				
 			}

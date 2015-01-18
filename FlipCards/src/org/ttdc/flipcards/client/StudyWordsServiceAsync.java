@@ -9,7 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 //Nice, got an error when this didnt exist and then the red dot auto created it for me.
 public interface StudyWordsServiceAsync {
-	void addWordPair(String dictionaryId, String word, String definition, AsyncCallback<WordPair> callback);
+	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
 	void getAllWordPairs(String dictionaryId, AsyncCallback<List<WordPair>> callback);
 
@@ -22,4 +22,8 @@ public interface StudyWordsServiceAsync {
 			AsyncCallback<List<WordPair>> callback);
 
 	void answerQuestion(String id, Boolean correct, AsyncCallback<Void> callback);
+
+	void getFileUploadUrl(AsyncCallback<String> callback);
+
+	void assignSelfToUserlessWords(AsyncCallback<Void> callback);
 }

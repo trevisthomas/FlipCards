@@ -16,6 +16,8 @@
 			<td><g:Button ui:field='noButton'>Nope</g:Button></td>
 		</tr>    
     </table>
+    
+    <g:FlexTable ui:field="debugDumpFlexTable"/>
   </g:HTMLPanel>
 
 </ui:UiBinder>

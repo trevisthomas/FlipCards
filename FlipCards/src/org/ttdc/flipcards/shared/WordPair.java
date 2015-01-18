@@ -14,7 +14,6 @@ public class WordPair implements Serializable {
 	private String word;
 	private String definition;
 	private Date createDate = new Date();
-	private String dictionaryId;
 	private int testedCount;
 	private int correctCount;
 	private String id;
@@ -28,11 +27,10 @@ public class WordPair implements Serializable {
 		return id;
 	}
 
-	public WordPair(String id, String word, String definition, String dictionaryId) {
+	public WordPair(String id, String word, String definition) {
 		this.id = id;
 		this.word = word;
 		this.definition = definition;
-		this.dictionaryId = dictionaryId;
 	}
 	
 //	public WordPair(String word, String definition) {
@@ -76,13 +74,4 @@ public class WordPair implements Serializable {
 	public void setUser(String user) {
 		this.user = user;
 	}
-
-	public String getDictionaryId() {
-		return dictionaryId;
-	}
-
-	public void setDictionaryId(String dictionaryId) {
-		this.dictionaryId = dictionaryId;
-	}
-	
 }
