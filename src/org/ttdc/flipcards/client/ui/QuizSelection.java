@@ -45,7 +45,6 @@ public class QuizSelection extends Composite {
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
 		
-		cardCountListBox.addItem("3");
 		cardCountListBox.addItem("10");
 		cardCountListBox.addItem("20");
 		cardCountListBox.addItem("30");
@@ -53,6 +52,7 @@ public class QuizSelection extends Composite {
 		cardCountListBox.addItem("50");
 		cardCountListBox.addItem("100");
 		cardCountListBox.addItem("All");
+		cardCountListBox.setSelectedIndex(1);
 		
 		orderListBox.addItem(CardOrder.RANDOM.toString(), CardOrder.RANDOM.name());
 		orderListBox.addItem(CardOrder.EASIEST.toString(), CardOrder.EASIEST.name());

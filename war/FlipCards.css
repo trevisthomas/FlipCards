@@ -2,6 +2,11 @@
 
 
 /** Example rules used by the template application (remove for your app) */
+
+a {
+   outline: 0;
+}
+
 h1 {
   font-size: 2em;
   font-weight: bold;
@@ -37,6 +42,11 @@ h1 {
 	
 }
 
+.flipCardButton{
+	padding:50px 70px;
+	margin:20px;	
+}
+
 .flipCardText{
 	display: block;
 	color: #777777;
@@ -55,8 +65,13 @@ h1 {
 * {
 	margin: 0;
 }
+
+.fixme{
+	margin:10px;
+}
 html, body {
 	height: 100%;
+	outline: 0;
 }
 .wrapper {
 	min-height: 100%;

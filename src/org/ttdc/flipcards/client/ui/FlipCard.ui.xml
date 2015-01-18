@@ -1,22 +1,60 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-    xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+	xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+	<ui:with field='res' type='org.ttdc.flipcards.client.ui.Resources' />
 
-  <g:HTMLPanel>
-  	<g:Label ui:field="errorLabel"/>
-  	<table>
-  		<tr>
-  			<td>
-  			<g:Label styleName="flipCardText" ui:field='wordLabel'/>
-  			<g:Label styleName="flipCardText" ui:field='definitionLabel'/>
-  			</td>
-  		</tr>
-		<tr>
-			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='flipButton'>Flip</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
-		</tr>    
-    </table>
-    
-    <g:FlexTable ui:field="debugDumpFlexTable"/>
-    <div><g:Anchor styleName="surrender" ui:field="surrenderAnchor"/></div>
-  </g:HTMLPanel>
+	<ui:style>
+		.removeDefaults {
+			border: 0;
+			background: none;
+		}
+	</ui:style>
+
+	<g:HTMLPanel>
+		<div>
+			<g:Anchor styleName="surrender" ui:field="surrenderAnchor" />
+		</div>
+		<table>
+			<tr>
+				<td>
+					<g:Label styleName="flipCardText" ui:field='wordLabel' />
+					<g:Label styleName="flipCardText" ui:field='definitionLabel' />
+				</td>
+			</tr>
+			<tr>
+				<td>
+		<g:HorizontalPanel>
+			<g:PushButton ui:field='yesButton' styleName="fixme">
+				<g:upFace image='{res.yesUp}'/>
+				<g:upHoveringFace  image='{res.yesUpHover}'/>
+				<g:downFace image='{res.noDown}' />
+				<g:downHoveringFace image='{res.yesDown}' />
+				<g:upDisabledFace image='{res.yesDisabled}' />
+				<g:downDisabledFace image='{res.yesDisabled}' />
+			</g:PushButton>
+			<g:PushButton ui:field='flipButton' styleName="fixme">
+				<g:upFace image='{res.flipUp}'/>
+				<g:upHoveringFace  image='{res.flipUpHover}'/>
+				<g:downFace image='{res.noDown}' />
+				<g:downHoveringFace image='{res.flipDown}' />
+				<g:upDisabledFace image='{res.flipDisabled}' />
+				<g:downDisabledFace image='{res.flipDisabled}' />
+			</g:PushButton>
+			<g:PushButton ui:field='noButton' styleName="fixme">
+				<g:upFace image='{res.noUp}'/>
+				<g:upHoveringFace  image='{res.noUpHover}'/>
+				<g:downFace image='{res.noDown}' />
+				<g:downHoveringFace image='{res.noDown}' />
+				<g:upDisabledFace image='{res.noDisabled}' />
+				<g:downDisabledFace image='{res.noDisabled}' />
+			</g:PushButton>
+		</g:HorizontalPanel>					
+				</td>
+			</tr>
+		</table>
+		
+
+		<g:FlexTable ui:field="debugDumpFlexTable" />
+
+	</g:HTMLPanel>
 
 </ui:UiBinder>

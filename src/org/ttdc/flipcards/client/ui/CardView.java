@@ -55,7 +55,7 @@ public class CardView extends Composite {
 	}
 
 	@UiHandler("wraperGrid")
-	void onClick(DoubleClickEvent e){
+	void onClick(ClickEvent e){ //DoubleClickEvent
 		CardEdit cardEdit = new CardEdit(this, card);
 		mainHtmlPanel.clear();
 		mainHtmlPanel.add(cardEdit);
