@@ -1,8 +1,9 @@
 package org.ttdc.flipcards.client.ui;
 
+import java.util.List;
+
 import org.ttdc.flipcards.client.FlipCards;
-import org.ttdc.flipcards.client.StudyWordsService;
-import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
@@ -10,12 +11,11 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -26,34 +26,49 @@ public class CardEdit extends Composite {
 	
 	private WordPair card;
 	private CardView cardView;
-
+		
 	interface CardEditUiBinder extends UiBinder<Widget, CardEdit> {
 	}
 
 	@UiField
 	Button updateButton;
-	
 	@UiField
 	Button deleteButton;
-	
 	@UiField 
 	TextBox termTextBox;
-	
+	@UiField
+	FlowPanel tagMeFlowPanel;
 	@UiField 
 	TextBox definitionTextBox;
 	@UiField
 	Anchor closeAnchor;
 	
 
-	public CardEdit(CardView cardView, WordPair card) {
+	public CardEdit(CardView cardView, WordPair c) {
 		initWidget(uiBinder.createAndBindUi(this));
-		this.card = card;
+		this.card = c;
 		this.cardView = cardView;
 		updateButton.setText("Update");
 		deleteButton.setText("Delete");
 		closeAnchor.setText("close");
 		termTextBox.setText(card.getWord());
 		definitionTextBox.setText(card.getDefinition());
+		
+		//Load tags
+		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
+			@Override
+			public void onSuccess(List<Tag> result) {
+				for(Tag tag : result){
+					tagMeFlowPanel.add(new TagEditor(card, tag));
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+		});
+
 	}
 
 	@UiHandler("updateButton")

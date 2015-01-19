@@ -1,7 +1,10 @@
 package org.ttdc.flipcards.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.ttdc.flipcards.server.PersistantWordPair;
 
 
@@ -19,6 +22,7 @@ public class WordPair implements Serializable {
 	private String id;
 	private String user;
 	private int displayOrder;
+	private List<Tag> tags = new ArrayList<>();
 
 	public WordPair() {
 
@@ -33,12 +37,14 @@ public class WordPair implements Serializable {
 		this.word = word;
 		this.definition = definition;
 	}
-	
-//	public WordPair(String word, String definition) {
-//		this.id = id;
-//		this.word = word;
-//		this.definition = definition;
-//	}
+
+	public List<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<Tag> tagNameIds) {
+		this.tags = tagNameIds;
+	}
 
 	public String getWord() {
 		return word;

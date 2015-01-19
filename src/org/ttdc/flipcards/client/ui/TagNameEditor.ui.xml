@@ -1,12 +1,10 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
-	<ui:style>
-		.important {
-			font-weight: bold;
-		}
-	</ui:style>
 	<g:HTMLPanel>
-		<g:CheckBox ui:field="checkBox"/>
+		<g:HorizontalPanel>
+			<g:Label ui:field="tagNameLabel" />
+			<g:Button  ui:field="deleteButton" />
+		</g:HorizontalPanel>
 	</g:HTMLPanel>
 </ui:UiBinder> 

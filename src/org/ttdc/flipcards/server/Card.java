@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Index;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -65,6 +66,7 @@ public class Card implements Serializable {
 	private User user;
 	@PrimaryKey
 	@Persistent
+	@Index(name="CARD_ID_IDX")
 	private String id;
 	@Persistent
 	private Long incorrectCount = 0L;
