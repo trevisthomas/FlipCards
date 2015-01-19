@@ -11,18 +11,16 @@ import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PushButton;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class FlipCard extends Composite {
@@ -33,7 +31,8 @@ public class FlipCard extends Composite {
 	private final StudyWordsServiceAsync studyWordsService = GWT
 			.create(StudyWordsService.class); // Not sure if i should share this
 												// or not?
-
+//	private NumberFormat formatter = new NumberFormat("#0.0000");
+	
 	@UiField
 	Label wordLabel;
 	@UiField
@@ -48,6 +47,9 @@ public class FlipCard extends Composite {
 	Anchor surrenderAnchor;
 	@UiField
 	FlexTable debugDumpFlexTable;
+	@UiField
+	Anchor debugAnchor; 
+	
 
 	private List<WordPair> wordPairs;
 	private int currentIndex = 0;
@@ -67,6 +69,8 @@ public class FlipCard extends Composite {
 		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
 		surrenderAnchor.setText("I Surrender");
+		debugDumpFlexTable.setVisible(false);
+		debugAnchor.setText("debug");
 
 //		yesButton.setStylePrimaryName("fixme");
 		
@@ -81,7 +85,7 @@ public class FlipCard extends Composite {
 					@Override
 					public void onSuccess(List<WordPair> result) {
 						wordPairs = result;
-//						debugDump(wordPairs);
+						debugDump(wordPairs);
 						nextWord();
 					}
 
@@ -99,12 +103,16 @@ public class FlipCard extends Composite {
 		debugDumpFlexTable.setText(row, 0, "Word");
 		debugDumpFlexTable.setText(row, 1, "Definition");
 		debugDumpFlexTable.setText(row, 2, "Tested Count");
+		debugDumpFlexTable.setText(row, 3, "Correct");
+		debugDumpFlexTable.setText(row, 4, "Difficulty");
 		
 		for(WordPair word : words){
 			row++;
 			debugDumpFlexTable.setText(row, 0, word.getWord());
 			debugDumpFlexTable.setText(row, 1, word.getDefinition());
 			debugDumpFlexTable.setText(row, 2, "" +word.getTestedCount());
+			debugDumpFlexTable.setText(row, 3, "" +word.getCorrectCount());
+			debugDumpFlexTable.setText(row, 4, NumberFormat.getFormat("#0.000000").format(word.getDifficulty()));
 		}
 	}
 	
@@ -155,6 +163,11 @@ public class FlipCard extends Composite {
 	void handleYesButton(ClickEvent e) {
 		updateWordScore(true);
 		nextWord();
+	}
+	
+	@UiHandler("debugAnchor")
+	void debugClicked(ClickEvent e){
+		debugDumpFlexTable.setVisible(!debugDumpFlexTable.isVisible());
 	}
 	
 	@UiHandler("surrenderAnchor")

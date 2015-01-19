@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,9 +126,24 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 	
-	WordPair convert(Card pair) throws NotLoggedInException{
-		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(),
-				pair.getDefinition());
+	WordPair convert(Card pair,boolean switchEm) throws NotLoggedInException{
+		
+		
+//		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(),
+//				pair.getDefinition());
+		
+		WordPair gwtPair;
+		if (switchEm) {
+			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
+					pair.getWord());
+		} else {
+			gwtPair = new WordPair(pair.getId(), pair.getWord(),
+					pair.getDefinition());
+		}
+		
+		gwtPair.setCorrectCount(pair.getViewCount() - pair.getIncorrectCount());
+		gwtPair.setTestedCount(pair.getViewCount());
+		gwtPair.setDifficulty(pair.getDifficulty());
 		
 		Map<String,Tag> allTags = getAllTagsMap();
 		List<TagAssociation> tagAssociations = getTagAssociations(pair.getId());
@@ -145,19 +162,21 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return gwtPair;
 	}
 
-	WordPair convert(Card pair, boolean switchEm) {
-		WordPair gwtPair;
-		if (switchEm) {
-			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
-					pair.getWord());
-		} else {
-			gwtPair = new WordPair(pair.getId(), pair.getWord(),
-					pair.getDefinition());
-		}
-		if(pair.getUser() != null){
-			gwtPair.setUser(pair.getUser().getNickname());
-		}
-		return gwtPair;
+	WordPair convert(Card pair) throws NotLoggedInException{
+//		WordPair gwtPair;
+//		if (switchEm) {
+//			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
+//					pair.getWord());
+//		} else {
+//			gwtPair = new WordPair(pair.getId(), pair.getWord(),
+//					pair.getDefinition());
+//		}
+//		if(pair.getUser() != null){
+//			gwtPair.setUser(pair.getUser().getNickname());
+//		}
+//		return gwtPair;
+		return convert(pair, false);
+		
 	}
 
 	@Override
@@ -189,34 +208,40 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		
-		PersistenceManager pm = getPersistenceManager();
+		List<Card> cards = getCards(tagIds);
+		
 		List<WordPair> wordPairs = new ArrayList<>();
-
-		for(String tagId : tagIds){
-			List<WordPair> list = getWordPairs(tagId);
-			wordPairs.addAll(list); //Probably should de dup
+		int i = 1;
+		for (Card card : cards) {
+			WordPair pair = convert(card);
+			pair.setDisplayOrder(i++);
+			wordPairs.add(pair);
 		}
 		
 		return wordPairs;
 	}
+
+	private List<Card> getCards(List<String> tagIds) throws NotLoggedInException {
+		Set<Card> cardSet = new HashSet<>();
+		for(String tagId : tagIds){
+			List<Card> list = getCards(tagId);
+			cardSet.addAll(list); //Probably should de dup.  Ok the set should de dup
+		}
+		return new ArrayList<>(cardSet);
+	}
 	
-	public List<WordPair> getWordPairs(String tagId)
+	public List<Card> getCards(String tagId)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		
 		PersistenceManager pm = getPersistenceManager();
-		List<WordPair> wordPairs = new ArrayList<>();
+		List<Card> wordPairs = new ArrayList<>();
 		try {
 			Query q = pm.newQuery(TagAssociation.class, "user == u && tagId == tid");
 			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String tid");
 			List<TagAssociation> tagAsses = (List<TagAssociation>) q.execute(getUser(), tagId);
 
-//			Query q = pm.newQuery(TagAssociation.class, "tagId == tid");
-//			q.declareParameters("java.lang.String tid");
-//			List<TagAssociation> tagAsses = (List<TagAssociation>) q.execute(tagId);
-			
 			List<String> cardIds = new ArrayList<>();
-			
 			for(TagAssociation ta : tagAsses){
 				cardIds.add(ta.getCardId());
 			}
@@ -228,18 +253,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			Query q2 = pm.newQuery(Card.class, ":p.contains(id)");
 			q2.setOrdering("createDate");
 			List<Card> cards = (List<Card>) q2.execute(cardIds);
-			
-			int i = 1;
-			for (Card card : cards) {
-				WordPair pair = convert(card);
-				pair.setDisplayOrder(i++);
-				wordPairs.add(pair);
-			}
+			return cards;
 
 		} finally {
 			pm.close();
 		}
-		return wordPairs;
 	}
 
 	@Override
@@ -410,12 +428,20 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		List<Card> disconnectedCards;
 		try {
 
-			Query q = pm.newQuery(Card.class, "user == u");
-			List<Card> cards = (List<Card>) q.execute(getUser());
-			disconnectedCards = new ArrayList<>(cards.size());
+			List<Card> cards = new ArrayList<>();
+			if(quizOptions.getTagIds().isEmpty()){
+				Query q = pm.newQuery(Card.class, "user == u");
+				cards = (List<Card>) q.execute(getUser());
+			} else {
+				cards = getCards(quizOptions.getTagIds());
+			}
+			
+			disconnectedCards = new ArrayList<>(cards.size()); //Removing the cards from the persistant container so that i can sort.
 			for (Card c : cards) {
 				disconnectedCards.add(c);
 			}
+			
+			
 
 			switch (quizOptions.getCardOrder()) {
 			case EASIEST:
@@ -513,6 +539,32 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	@Override
+	public Tag updateTagName(String tagId, String name)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		
+		PersistenceManager pm = getPersistenceManager();
+		List<Tag> tags = new ArrayList<>();
+		try {
+			Query q = pm.newQuery(PersistantTagName.class, "tagId == i");
+			q.declareParameters("java.lang.String i");
+			List<PersistantTagName> serverTags  = (List<PersistantTagName>) q.execute(tagId);
+			PersistantTagName tagName = serverTags.get(0);
+			if(tagName != null){
+				tagName.setTagName(name);
+			}
+			pm.flush();
+			return new Tag(tagName.getTagId(), tagName.getTagName());
+
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to retrieve");
+		} finally {
+			pm.close();
+		}
+	}
+	
+	@Override
 	public void deleteTagName(String tagId) throws IllegalArgumentException,
 			NotLoggedInException {
 		checkLoggedIn();
@@ -537,6 +589,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throw new IllegalArgumentException("faild tag opperation");
 		}
 		finally {
+			pm.flush();
 			pm.close();
 		}
 	}
@@ -556,6 +609,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throw new IllegalArgumentException("Failed to remove tag");
 		}
 		finally {
+			pm.flush();
 			pm.close();
 		}
 	}
@@ -596,6 +650,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			LOG.info(e.getMessage());
 			throw new IllegalArgumentException("Failed to retrieve");
 		} finally {
+			pm.flush();
 			pm.close();
 		}
 		return tags;

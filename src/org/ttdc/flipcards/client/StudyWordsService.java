@@ -27,6 +27,7 @@ public interface StudyWordsService extends RemoteService{
 	List<Tag> getAllTagNames() throws IllegalArgumentException, NotLoggedInException;
 	Tag createTag(String name) throws IllegalArgumentException, NotLoggedInException;
 	void deleteTagName(String tagId) throws IllegalArgumentException, NotLoggedInException;
+	Tag updateTagName(String tagId, String name) throws IllegalArgumentException, NotLoggedInException;
 	void deTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
 	void applyTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
 	List<WordPair> getWordPairs(List<String> tagIds) throws IllegalArgumentException, NotLoggedInException;

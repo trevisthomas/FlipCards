@@ -61,6 +61,13 @@ h1 {
    right:0;
    margin-right: 10px;
 }
+.debug{
+   position:absolute;
+   top:0;
+   right:0;
+   margin-right: 90px;
+}
+
 
 * {
 	margin: 0;

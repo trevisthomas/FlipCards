@@ -40,5 +40,7 @@ public interface StudyWordsServiceAsync {
 	void deleteTagName(String tagId, AsyncCallback<Void> callback);
 
 	void deTag(String tagId, String cardId, AsyncCallback<Void> callback);
+
+	void updateTagName(String tagId, String name, AsyncCallback<Tag> callback);
 	
 }
