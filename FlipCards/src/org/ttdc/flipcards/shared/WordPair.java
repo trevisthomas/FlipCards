@@ -17,11 +17,12 @@ public class WordPair implements Serializable {
 	private String word;
 	private String definition;
 	private Date createDate = new Date();
-	private int testedCount;
-	private int correctCount;
+	private long testedCount;
+	private long correctCount;
+	private double difficulty;
 	private String id;
 	private String user;
-	private int displayOrder;
+	private long displayOrder;
 	private List<Tag> tags = new ArrayList<>();
 
 	public WordPair() {
@@ -54,19 +55,19 @@ public class WordPair implements Serializable {
 		return definition;
 	}
 
-	public int getTestedCount() {
+	public long getTestedCount() {
 		return testedCount;
 	}
 
-	public void setTestedCount(int testedCount) {
+	public void setTestedCount(long testedCount) {
 		this.testedCount = testedCount;
 	}
 
-	public int getCorrectCount() {
+	public long getCorrectCount() {
 		return correctCount;
 	}
 
-	public void setCorrectCount(int correctCount) {
+	public void setCorrectCount(long correctCount) {
 		this.correctCount = correctCount;
 	}
 
@@ -82,12 +83,58 @@ public class WordPair implements Serializable {
 		this.user = user;
 	}
 
-	public int getDisplayOrder() {
+	public long getDisplayOrder() {
 		return displayOrder;
 	}
 
-	public void setDisplayOrder(int displayOrder) {
+	public void setDisplayOrder(long displayOrder) {
 		this.displayOrder = displayOrder;
+	}
+	
+	public double getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(double difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((definition == null) ? 0 : definition.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((word == null) ? 0 : word.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WordPair other = (WordPair) obj;
+		if (definition == null) {
+			if (other.definition != null)
+				return false;
+		} else if (!definition.equals(other.definition))
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		if (word == null) {
+			if (other.word != null)
+				return false;
+		} else if (!word.equals(other.word))
+			return false;
+		return true;
 	}
 	
 }

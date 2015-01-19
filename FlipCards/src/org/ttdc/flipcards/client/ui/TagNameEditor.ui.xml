@@ -3,7 +3,8 @@
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
 	<g:HTMLPanel>
 		<g:HorizontalPanel>
-			<g:Label ui:field="tagNameLabel" />
+			<g:TextBox ui:field="tagNameEditor" />
+			<g:Button  ui:field="updateButton" /> 
 			<g:Button  ui:field="deleteButton" />
 		</g:HorizontalPanel>
 	</g:HTMLPanel>

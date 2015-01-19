@@ -20,8 +20,8 @@
                 <g:RadioButton ui:field="cardSideDefinition" name="cardSideGroup" value="true"/>
                 <g:RadioButton ui:field="cardSideRandom" name="cardSideGroup" value="false"/>
 			</td></tr>
-			<tr><td>Tag filters?</td></tr>
-			<tr><td>comming soon...</td></tr>
+			<tr><td>Tag filters</td></tr>
+			<tr><td><g:CheckBox ui:field="allCheckbox">All</g:CheckBox> <g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel></td></tr>
 		</table>
 				
 		<g:Button ui:field="goButton" />

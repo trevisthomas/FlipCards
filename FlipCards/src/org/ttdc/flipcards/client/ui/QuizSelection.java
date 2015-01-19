@@ -1,9 +1,15 @@
 package org.ttdc.flipcards.client.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.CardSide;
 import org.ttdc.flipcards.shared.QuizOptions;
+import org.ttdc.flipcards.shared.Tag;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -11,8 +17,11 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -39,11 +48,20 @@ public class QuizSelection extends Composite {
 	RadioButton cardSideRandom;
 	@UiField
 	Button editCardsButton;
+	@UiField
+	FlowPanel tagFilterPanel;
+	@UiField
+	CheckBox allCheckbox;
+	
+	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
+	
 
 	public QuizSelection() {
 		initWidget(uiBinder.createAndBindUi(this));
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
+		
+		allCheckbox.setValue(true);
 		
 		cardCountListBox.addItem("10");
 		cardCountListBox.addItem("20");
@@ -64,11 +82,41 @@ public class QuizSelection extends Composite {
 		cardSideDefinition.setText(CardSide.DEFINITION.toString());
 		cardSideRandom.setText(CardSide.RANDOM.toString());
 		
+		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
+			
+			@Override
+			public void onSuccess(List<Tag> result) {
+				for(Tag tag : result){
+					CheckBox checkBox = new CheckBox();
+					checkBox.setText(tag.getTagName());
+					tagFilterPanel.add(checkBox);
+					filterCheckBoxesMap.put(tag.getTagId(), checkBox);
+				}
+				setupFilterCheckboxes();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+				
+			}
+		});
 	}
 	
 	@UiHandler("editCardsButton")
 	void onEditCardsClick(ClickEvent e) {
 		FlipCards.replaceView(new CardManager());
+	}
+	
+	@UiHandler("allCheckbox")
+	void onCheckAllClicked(ClickEvent e){
+		setupFilterCheckboxes();
+	}
+
+	private void setupFilterCheckboxes() {
+		for(String tagId : filterCheckBoxesMap.keySet()){
+			filterCheckBoxesMap.get(tagId).setEnabled(!allCheckbox.getValue());
+		}
 	}
 
 	@UiHandler("goButton")
@@ -88,6 +136,15 @@ public class QuizSelection extends Composite {
 		}	
 		else{
 			options.setSize(Integer.parseInt(cardCountListBox.getValue(cardCountListBox.getSelectedIndex())));
+		}
+		
+		//Apply the filter checks only if all is not selected
+		if(!allCheckbox.getValue()){
+			for(String tagId : filterCheckBoxesMap.keySet()){
+				if(filterCheckBoxesMap.get(tagId).getValue()){
+					options.getTagIds().add(tagId);
+				}
+			}	
 		}
 		
 		FlipCards.replaceView(new FlipCard(options));

@@ -20,6 +20,9 @@
 		<div>
 			<g:Anchor styleName="surrender" ui:field="surrenderAnchor" />
 		</div>
+		<div class="debug">
+			<g:Anchor styleName="surrender" ui:field="debugAnchor" />
+		</div>
 		<table>
 			<tr>
 				<td>

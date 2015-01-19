@@ -72,7 +72,7 @@ public class CardManager extends Composite {
 	Label dataHeaderLabel;
 	
 	
-	private int lastIndex;
+	private long lastIndex;
 
 	public CardManager() {
 		initWidget(uiBinder.createAndBindUi(this));
@@ -220,6 +220,7 @@ public class CardManager extends Composite {
 	void onTagFilterChange(ChangeEvent e){
 		String selected = tagListBox.getValue(tagListBox.getSelectedIndex());
 		//Window.alert("Sel:" +selected);
+		dataHeaderLabel.setText("Loading...");
 		cardBrowserPanel.clear(); //Show wait icon.
 		loadWords(selected);
 	}
