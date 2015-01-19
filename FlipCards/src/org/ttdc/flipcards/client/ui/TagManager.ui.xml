@@ -7,6 +7,10 @@
 		}
 	</ui:style>
 	<g:HTMLPanel>
-		<g:CheckBox ui:field="checkBox"/>
+		<table>
+			<tr><td>Tag Name:</td><td><g:TextBox ui:field="tagNameTextBox" /></td></tr>
+			<tr><td colspan="2"><g:Button ui:field="createTagButton" /><g:Button ui:field="closeEditorButton" /></td></tr>
+		</table>
+		<g:VerticalPanel ui:field="tagNamesPanel"></g:VerticalPanel>
 	</g:HTMLPanel>
 </ui:UiBinder> 

@@ -1,19 +1,16 @@
 package org.ttdc.flipcards.client.ui;
 
+import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -45,13 +42,28 @@ public class CardView extends Composite {
 		this.card = card;
 		initWidget(uiBinder.createAndBindUi(this));
 		loadCardToUi(card);
-		//tagsLabel
 	}
 
 	private void loadCardToUi(WordPair card) {
 		termLabel.setText(card.getWord());
 		definitionLabel.setText(card.getDefinition());
 		numberLabel.setText(""+card.getDisplayOrder());
+		
+		if(card.getTags().size() > 0){
+			StringBuilder builder = new StringBuilder();
+			builder.append("(");
+			for(Tag tag : card.getTags()){
+				builder.append(tag.getTagName());
+				boolean last = card.getTags().get(card.getTags().size() - 1).equals(tag);
+				if(!last){
+					builder.append(", ");
+				}
+			}
+			builder.append(")");
+			tagsLabel.setText(builder.toString());
+		} else {
+			tagsLabel.setText("");
+		}
 	}
 
 	@UiHandler("wraperGrid")

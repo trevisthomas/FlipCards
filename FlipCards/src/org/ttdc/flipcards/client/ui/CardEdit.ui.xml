@@ -9,6 +9,7 @@
 				<tr><td>Term:</td><td>Definition:</td></tr>
 				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td></tr>
 				<tr><td colspan="2"><g:Button ui:field="updateButton"/><g:Button ui:field="deleteButton"/></td></tr>
+				<tr><td colspan="2"><g:FlowPanel ui:field="tagMeFlowPanel"/></td></tr>
 			</table>
 		</div>
 	</g:HTMLPanel>

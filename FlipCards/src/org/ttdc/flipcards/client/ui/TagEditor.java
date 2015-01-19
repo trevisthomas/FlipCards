@@ -1,47 +1,88 @@
 package org.ttdc.flipcards.client.ui;
 
+import org.ttdc.flipcards.client.FlipCards;
+import org.ttdc.flipcards.shared.Tag;
+import org.ttdc.flipcards.shared.WordPair;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Widget;
 
-public class TagEditor extends Composite implements HasText {
+public class TagEditor extends Composite{
 
+	private final WordPair pair;
+	private final Tag tag;
 	private static TagEditorUiBinder uiBinder = GWT
 			.create(TagEditorUiBinder.class);
 
 	interface TagEditorUiBinder extends UiBinder<Widget, TagEditor> {
 	}
 
-	public TagEditor() {
-		initWidget(uiBinder.createAndBindUi(this));
-	}
-
 	@UiField
-	Button button;
+	CheckBox checkBox;
 
-	public TagEditor(String firstName) {
+	public TagEditor(WordPair pair, Tag tag) {
 		initWidget(uiBinder.createAndBindUi(this));
-		button.setText(firstName);
+		this.pair = pair;
+		this.tag = tag;
+		checkBox.setText(tag.getTagName());
+		if(pair.getTags().contains(tag)){
+			checkBox.setValue(true);
+		}
+		
+		//Set the check box to checked if the word pair is tagged to this tagName
 	}
 
-	@UiHandler("button")
+	@UiHandler("checkBox")
 	void onClick(ClickEvent e) {
-		Window.alert("Hello!");
+		boolean isChecked = checkBox.getValue();	
+		
+		if(isChecked){
+			//Tag
+			tag();
+		} else {
+			//DeTag
+			deTag();
+		}
+		
 	}
 
-	public void setText(String text) {
-		button.setText(text);
+	private void tag() {
+		FlipCards.studyWordsService.applyTag(tag.getTagId(), pair.getId(), new AsyncCallback<Void>() {
+			@Override
+			public void onSuccess(Void result) {
+				checkBox.setValue(true);
+				pair.getTags().add(tag); //These are a hack really. I could just reload the damned thing when the editor is restored.
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+		});
+		
 	}
 
-	public String getText() {
-		return button.getText();
+	private void deTag() {
+		FlipCards.studyWordsService.deTag(tag.getTagId(), pair.getId(), new AsyncCallback<Void>() {
+			@Override
+			public void onSuccess(Void result) {
+				checkBox.setValue(false);
+				pair.getTags().remove(tag);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+		});
+		
 	}
 
 }

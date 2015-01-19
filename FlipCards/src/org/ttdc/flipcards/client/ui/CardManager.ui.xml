@@ -13,14 +13,23 @@
 				<tr><td>Term:</td><td>Definition:</td></tr>
 				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td></tr>
 				<tr><td colspan="2"><g:Button ui:field="addCardButton"/><g:Button ui:field="csvUploadButton"/><g:Button ui:field="closeCardManagerButton"/></td></tr>
+				<tr><td colspan="2"><g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">tag filter</g:Anchor></td></tr>
 			</table>
 		</div>
 		
 		<g:VerticalPanel ui:field="uploadCsvPanel"/>
 		
+		<g:HorizontalPanel ui:field="tagFilterPanel">
+			<g:ListBox ui:field="tagListBox"/>
+			<g:Button ui:field="goButton" />
+		</g:HorizontalPanel>
+		
 		<div>
+			<g:Label ui:field="dataHeaderLabel"/>
 			<g:VerticalPanel ui:field="cardBrowserPanel"/>
 		</div>
+		
+		
 	</g:HTMLPanel>
 	
 	

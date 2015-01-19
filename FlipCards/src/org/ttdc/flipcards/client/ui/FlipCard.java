@@ -39,11 +39,11 @@ public class FlipCard extends Composite {
 	@UiField
 	Label definitionLabel;
 	@UiField
-	PushButton yesButton;
+	Button yesButton;
 	@UiField
-	PushButton noButton;
+	Button noButton;
 	@UiField
-	PushButton flipButton;
+	Button flipButton;
 	@UiField
 	Anchor surrenderAnchor;
 	@UiField
@@ -68,7 +68,7 @@ public class FlipCard extends Composite {
 		definitionLabel.setVisible(false);
 		surrenderAnchor.setText("I Surrender");
 
-		yesButton.setStylePrimaryName("fixme");
+//		yesButton.setStylePrimaryName("fixme");
 		
 		if(wordPairList != null){
 			wordPairs = wordPairList;

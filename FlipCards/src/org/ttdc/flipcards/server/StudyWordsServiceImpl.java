@@ -18,9 +18,12 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
+import org.eclipse.jetty.util.log.Log;
 import org.ttdc.flipcards.client.StudyWordsService;
+
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.QuizOptions;
+import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.UserStat;
 import org.ttdc.flipcards.shared.WordPair;
 import org.w3c.dom.ranges.RangeException;
@@ -87,6 +90,8 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			pm.close();
 		}
 	}
+	
+	
 
 	@Override
 	public void assignSelfToUserlessWords() throws NotLoggedInException {
@@ -118,13 +123,23 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			pm.close();
 		}
 	}
-
-	WordPair convert(Card pair) {
+	
+	WordPair convert(Card pair) throws NotLoggedInException{
 		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(),
 				pair.getDefinition());
+		
+		Map<String,Tag> allTags = getAllTagsMap();
+		List<TagAssociation> tagAssociations = getTagAssociations(pair.getId());
 
-		if(pair.getUser() != null){
-			//This should only happen when there are orphaned words in the system. You need to fix the uploader so that this is not needed.
+		for(TagAssociation tagAss : tagAssociations){
+			Tag tag = allTags.get(tagAss.getTagId());
+			if(tag != null){ //This happened in dev after mucking with the db schema. I have a Tag with a null tagId in the ass db.
+				gwtPair.getTags().add(tag);
+			}
+		}
+		if(pair.getUser() == null){
+			LOG.info("Tried to convert a card with a null user some how. CardId: " + pair.getId());
+		} else {
 			gwtPair.setUser(pair.getUser().getNickname());
 		}
 		return gwtPair;
@@ -153,8 +168,67 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		List<WordPair> wordPairs = new ArrayList<>();
 		try {
 			Query q = pm.newQuery(Card.class, "user == u");
+			q.declareParameters("com.google.appengine.api.users.User u");
 			q.setOrdering("createDate");
 			List<Card> cards = (List<Card>) q.execute(getUser());
+			int i = 1;
+			for (Card card : cards) {
+				WordPair pair = convert(card);
+				pair.setDisplayOrder(i++);
+				wordPairs.add(pair);
+			}
+
+		} finally {
+			pm.close();
+		}
+		return wordPairs;
+	}
+	
+	@Override
+	public List<WordPair> getWordPairs(List<String> tagIds)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		
+		PersistenceManager pm = getPersistenceManager();
+		List<WordPair> wordPairs = new ArrayList<>();
+
+		for(String tagId : tagIds){
+			List<WordPair> list = getWordPairs(tagId);
+			wordPairs.addAll(list); //Probably should de dup
+		}
+		
+		return wordPairs;
+	}
+	
+	public List<WordPair> getWordPairs(String tagId)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		
+		PersistenceManager pm = getPersistenceManager();
+		List<WordPair> wordPairs = new ArrayList<>();
+		try {
+			Query q = pm.newQuery(TagAssociation.class, "user == u && tagId == tid");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String tid");
+			List<TagAssociation> tagAsses = (List<TagAssociation>) q.execute(getUser(), tagId);
+
+//			Query q = pm.newQuery(TagAssociation.class, "tagId == tid");
+//			q.declareParameters("java.lang.String tid");
+//			List<TagAssociation> tagAsses = (List<TagAssociation>) q.execute(tagId);
+			
+			List<String> cardIds = new ArrayList<>();
+			
+			for(TagAssociation ta : tagAsses){
+				cardIds.add(ta.getCardId());
+			}
+			
+			if(cardIds.isEmpty()){
+				return wordPairs;
+			}
+			
+			Query q2 = pm.newQuery(Card.class, ":p.contains(id)");
+			q2.setOrdering("createDate");
+			List<Card> cards = (List<Card>) q2.execute(cardIds);
+			
 			int i = 1;
 			for (Card card : cards) {
 				WordPair pair = convert(card);
@@ -225,12 +299,19 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			Query q = pm.newQuery(Card.class, "id == identity");
 			q.declareParameters("java.lang.String identity");
 			List<Card> wordPairs = (List<Card>) q.execute(id);
+			trans.begin();
 			for (Card pair : wordPairs) {
 				if (id.equals(pair.getId())) {
 					pm.deletePersistent(pair);
 					deleteCount++;
 				}
 			}
+			
+			Query q2 = pm.newQuery(TagAssociation.class, "cardId == cid");
+			q2.declareParameters("java.lang.String cid");
+			LOG.info("Also deleted " +q2.deletePersistentAll(id) + " tag associations.");
+			
+			trans.commit();
 			if (deleteCount != 1) {
 				LOG.log(Level.WARNING, "word pair deleted " + deleteCount
 						+ " pairs. How is that possible?");
@@ -393,6 +474,153 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			pm.close();
 		}
 		return wordPairs;
+	}
+	
+	@Override
+	public void applyTag(String tagId, String cardId)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		try{
+			TagAssociation tag = new TagAssociation(getUser(), tagId, cardId);
+			pm.makePersistent(tag);
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to add tag");
+		}
+		finally {
+			pm.close();
+		}
+	}
+	
+	@Override
+	public Tag createTag(String name)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		try{
+			UUID uuid = java.util.UUID.randomUUID();
+			PersistantTagName tagName = new PersistantTagName(getUser(), uuid.toString(), name);
+			pm.makePersistent(tagName);
+			return new Tag(tagName.getTagId(), tagName.getTagName());
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to add tag");
+		}
+		finally {
+			pm.close();
+		}
+	}
+	
+	@Override
+	public void deleteTagName(String tagId) throws IllegalArgumentException,
+			NotLoggedInException {
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		Transaction trans = pm.currentTransaction();
+		try{
+			Query q = pm.newQuery(TagAssociation.class, "tagId == i");
+			q.declareParameters("java.lang.String i");
+			
+			Query q2 = pm.newQuery(PersistantTagName.class, "tagId == i");
+			q2.declareParameters("java.lang.String i");
+			
+			trans.begin();
+				
+			LOG.info("Deleted: "+q.deletePersistentAll(tagId) + " tags...");
+			LOG.info("Deleted: "+q2.deletePersistentAll(tagId) + " tagNames");
+			
+			trans.commit();
+		} catch (Exception e) {
+			trans.rollback();
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("faild tag opperation");
+		}
+		finally {
+			pm.close();
+		}
+	}
+	
+	@Override
+	public void deTag(String tagId, String cardId)
+			throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		try{
+			Query q = pm.newQuery(TagAssociation.class, "tagId == tid && cardId == cid");
+			q.declareParameters("java.lang.String tid, java.lang.String cid");
+			long deleted = q.deletePersistentAll(tagId, cardId);
+			LOG.info("Detaged: "+deleted + " items");
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to remove tag");
+		}
+		finally {
+			pm.close();
+		}
+	}
+	
+	/**
+	 * Created for loading tag associations.  
+	 * 
+	 * Should i have just created an index and let google do this?
+	 */
+	public Map<String, Tag> getAllTagsMap() throws IllegalArgumentException,
+			NotLoggedInException{
+		Map<String, Tag> map = new HashMap<>();
+		List<Tag> tags = getAllTagNames();
+		for(Tag tag : tags){
+			map.put(tag.getTagId(), tag);
+		}
+		return map;
+	}
+	
+	
+	
+	@Override
+	public List<Tag> getAllTagNames() throws IllegalArgumentException,
+			NotLoggedInException {
+		checkLoggedIn();
+		
+		PersistenceManager pm = getPersistenceManager();
+		List<Tag> tags = new ArrayList<>();
+		try {
+			Query q = pm.newQuery(PersistantTagName.class);
+			List<PersistantTagName> serverTagNames  = (List<PersistantTagName>) q.execute();
+			
+			for(PersistantTagName serverTagName : serverTagNames){
+				tags.add(new Tag(serverTagName.getTagId(), serverTagName.getTagName()));
+			}
+
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to retrieve");
+		} finally {
+			pm.close();
+		}
+		return tags;
+	}
+	
+	public List<TagAssociation> getTagAssociations(String cardId) throws IllegalArgumentException,
+			NotLoggedInException {
+		checkLoggedIn();
+		
+		PersistenceManager pm = getPersistenceManager();
+		List<TagAssociation> tagAsses = new ArrayList<>();
+		
+		try {
+			
+			Query q = pm.newQuery(TagAssociation.class, "user == u && cardId == cid");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String cid");
+			tagAsses  = (List<TagAssociation>) q.execute(getUser(), cardId);
+			
+		} catch (Exception e) {
+			LOG.info(e.getMessage());
+			throw new IllegalArgumentException("Failed to retrieve tag associations");
+		} finally {
+			pm.close();
+		}
+		return tagAsses;
 	}
 
 	// @Override

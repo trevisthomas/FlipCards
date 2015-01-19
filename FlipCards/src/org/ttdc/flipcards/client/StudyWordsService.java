@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.QuizOptions;
+import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -22,6 +23,13 @@ public interface StudyWordsService extends RemoteService{
 	List<WordPair> getAllWordPairs() throws NotLoggedInException;
 	String getFileUploadUrl() throws NotLoggedInException;
 	void assignSelfToUserlessWords() throws NotLoggedInException;
+	
+	List<Tag> getAllTagNames() throws IllegalArgumentException, NotLoggedInException;
+	Tag createTag(String name) throws IllegalArgumentException, NotLoggedInException;
+	void deleteTagName(String tagId) throws IllegalArgumentException, NotLoggedInException;
+	void deTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
+	void applyTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> getWordPairs(List<String> tagIds) throws IllegalArgumentException, NotLoggedInException;
 }
 
 

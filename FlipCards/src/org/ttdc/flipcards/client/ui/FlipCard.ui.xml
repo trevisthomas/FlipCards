@@ -2,12 +2,19 @@
 	xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:with field='res' type='org.ttdc.flipcards.client.ui.Resources' />
 
+
+<ui:image field='underTopGlow' image='{res.yesUp}' />
+ <!-- 	
 	<ui:style>
 		.removeDefaults {
 			border: 0;
 			background: none;
 		}
+		
+		@sprite .underMenuGlow {gwt-image: 'underTopGlow'}
 	</ui:style>
+	
+	 -->
 
 	<g:HTMLPanel>
 		<div>
@@ -20,9 +27,16 @@
 					<g:Label styleName="flipCardText" ui:field='definitionLabel' />
 				</td>
 			</tr>
+			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='flipButton'>Flip</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
 			<tr>
 				<td>
 		<g:HorizontalPanel>
+		<!-- 
+			<g:VerticalPanel styleName='{style.underMenuGlow}' ui:field='testPanel'/>
+			 -->
+			
+			
+			<!--
 			<g:PushButton ui:field='yesButton' styleName="fixme">
 				<g:upFace image='{res.yesUp}'/>
 				<g:upHoveringFace  image='{res.yesUpHover}'/>
@@ -47,6 +61,7 @@
 				<g:upDisabledFace image='{res.noDisabled}' />
 				<g:downDisabledFace image='{res.noDisabled}' />
 			</g:PushButton>
+			-->
 		</g:HorizontalPanel>					
 				</td>
 			</tr>
