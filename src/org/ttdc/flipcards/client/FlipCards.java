@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.ttdc.flipcards.client.services.LoginService;
 import org.ttdc.flipcards.client.services.LoginServiceAsync;
+import org.ttdc.flipcards.client.services.StagingCardService;
+import org.ttdc.flipcards.client.services.StagingCardServiceAsync;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.QuizSelection;
 import org.ttdc.flipcards.shared.FieldVerifier;
@@ -54,6 +56,7 @@ public class FlipCards implements EntryPoint {
 			+ "connection and try again.";
 
 	public final static StudyWordsServiceAsync studyWordsService = GWT.create(StudyWordsService.class);
+	public final static StagingCardServiceAsync stagingCardService = GWT.create(StagingCardService.class);
 	
 	public static void showErrorMessage(String message){
 		RootPanel.get("systemError").clear();

@@ -7,8 +7,8 @@
 	    	<g:Label ui:field="errorMessageLabel"></g:Label>
 	    	<g:FileUpload name="myFile" ui:field="fileUpload"/>
 	        <g:SubmitButton ui:field="submitButton">Upload</g:SubmitButton>
-	        <g:Button ui:field="closeButton">Take Ownership</g:Button>
+	        <g:Button ui:field="closeButton">Close</g:Button>
     	</g:FlowPanel>
-	</g:FormPanel>
+    </g:FormPanel>
 	
 </ui:UiBinder> 

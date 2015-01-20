@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.Widget;
@@ -82,10 +83,12 @@ public class QuizSelection extends Composite {
 		cardSideDefinition.setText(CardSide.DEFINITION.toString());
 		cardSideRandom.setText(CardSide.RANDOM.toString());
 		
+		tagFilterPanel.add(new Label("Loading..."));
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
 			
 			@Override
 			public void onSuccess(List<Tag> result) {
+				tagFilterPanel.clear();
 				for(Tag tag : result){
 					CheckBox checkBox = new CheckBox();
 					checkBox.setText(tag.getTagName());

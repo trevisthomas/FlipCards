@@ -1,0 +1,31 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		.important {
+			font-weight: bold;
+		}
+	</ui:style>
+	<g:HTMLPanel>
+		<g:Anchor ui:field="closeAnchor">close</g:Anchor>
+		
+		<table>
+				<tr><td ><g:Button ui:field="uploadButton"/><g:Button ui:field="refreshButton"/></td></tr>
+				<tr><td colspan="2"><g:VerticalPanel ui:field="uploadPanel"></g:VerticalPanel></td></tr>
+		</table>
+		<g:VerticalPanel ui:field="stagingPanel"></g:VerticalPanel>
+		
+		<div>	
+			<table class="">
+				<tr><td colspan="3">Stage words for the future here</td></tr>
+				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
+				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td><td><g:Button ui:field="addButton"/></td></tr>
+				<tr><td colspan="3"></td></tr>
+				<tr><td colspan="3"></td></tr>
+			</table>
+		</div>
+		
+		
+	</g:HTMLPanel>
+</ui:UiBinder> 
+

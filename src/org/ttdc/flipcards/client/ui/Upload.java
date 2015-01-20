@@ -29,8 +29,6 @@ public class Upload extends Composite {
 	@UiField
 	FormPanel formPanel;
 	@UiField
-	Button closeButton;
-	@UiField
 	Label errorMessageLabel;
 	
 //	<g:Label ui:field="errorMessageLabel"></g:Label>
@@ -54,26 +52,25 @@ public class Upload extends Composite {
 				errorMessageLabel.setText(caught.getMessage());
 			}
 		});
-		
-		
-//		BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
-//		formPanel.setAction(blobstoreService.createUploadUrl("/flipcards/upload"));
 	}
-	
 	@UiHandler("closeButton")
 	void handleCloseButton(ClickEvent e) {
-		studyWordsService.assignSelfToUserlessWords(new AsyncCallback<Void>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				errorMessageLabel.setText(caught.getMessage());
-			}
-			
-			@Override
-			public void onSuccess(Void result) {
-				Window.Location.reload();
-			}
-		});
-		
+		removeFromParent();
 	}
+	
+//	@UiHandler("closeButton")
+//	void handleCloseButton(ClickEvent e) {
+//		studyWordsService.assignSelfToUserlessWords(new AsyncCallback<Void>() {
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				errorMessageLabel.setText(caught.getMessage());
+//			}
+//			
+//			@Override
+//			public void onSuccess(Void result) {
+//				Window.Location.reload();
+//			}
+//		});
+//	}
 
 }

@@ -38,6 +38,13 @@ public class UploadService extends HttpServlet {
 	private static final Logger LOG = Logger
 			.getLogger(StudyWordsServiceImpl.class.getName());
 	
+	/**
+	 * This is a really bad hack that i put into place so that the upload service can 
+	 * see a real user... wait i had an idea.
+	 */
+	public static User lastUser;
+
+	
 //	@Override
 //    public void doGet(HttpServletRequest req, HttpServletResponse resp)
 //            throws IOException {
@@ -94,15 +101,35 @@ public class UploadService extends HttpServlet {
 					new BlobstoreInputStream(blobKeys.get(0))));
 			int lineCount = 0;
 			String line;
+			String definition;
+			String term;
 			while ((line = reader.readLine()) != null
 					&& lineCount++ < MAX_LINE_COUNT) {
 
-				String definition = line.substring(line.indexOf("\",\"") + 3,
-						line.length() - 1);
-				String term = line.substring(1, line.indexOf("\",\""));
-
-				WordPair wp = new WordPair(null, term, definition);
-				wordPairs.add(wp);
+//				String definition = line.substring(line.indexOf("\",\"") + 3,
+//						line.length() - 1);
+//				String term = line.substring(1, line.indexOf("\",\""));
+				try{
+					if(line.contains("\t")){ //If there is a tab (like google docks tsv) use that
+						String[] pairArray = line.split("\t");
+						
+						definition = ""+pairArray[1];
+						term = ""+pairArray[0];
+					} else {
+						//Presumes "","" format (like that study blue.  If you need it without the quote you gotta make changes.
+						definition = line.substring(line.indexOf("\",\"") + 3,
+								line.length() - 1);
+						term = line.substring(1, line.indexOf("\",\""));
+						
+					}
+					WordPair wp = new WordPair(null, term.trim(), definition.trim());
+					wordPairs.add(wp);
+				}
+				catch (Exception e) {
+					LOG.log(Level.WARNING, "badness on line: " + line);
+				}
+				
+				
 			}
 			LOG.info("File upload parsed. Found: " + wordPairs.size()
 					+ " word pairs. Saving to datastore");
@@ -137,18 +164,17 @@ public class UploadService extends HttpServlet {
 	
 	private void writeWordPair(String word, String definition){
 		UUID uuid = java.util.UUID.randomUUID();
-		//
-		// WordPair pair = new WordPair(uuid.toString(), word, definition);
-		//
-		// System.err.println("Created: " + pair.getId() + ": " + word);
-		//
-		// wordPairs.put(pair.getId(), pair);
-		// checkLoggedIn();
-
 		PersistenceManager pm = getPersistenceManager();
-
+		
+		try{
+			StagingCardServiceImpl.checkDoesTermExist(word, lastUser);
+		} catch (Exception e) {
+			LOG.log(Level.WARNING, word + " already exists.");
+			return;
+		}
+		
 		try {
-			Card pair = new Card(uuid.toString(), word, definition, null);
+			CardStaging pair = new CardStaging(uuid.toString(), word, definition, lastUser);
 			pm.makePersistent(pair);
 		} catch (Exception e) {
 			LOG.log(Level.WARNING, e.getMessage());
