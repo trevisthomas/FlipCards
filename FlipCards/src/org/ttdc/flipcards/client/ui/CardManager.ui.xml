@@ -9,15 +9,13 @@
 	<g:HTMLPanel>
 		<div>	
 			<table>
-				<tr><td colspan="2">Add New Cards</td></tr>
-				<tr><td>Term:</td><td>Definition:</td></tr>
-				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td></tr>
-				<tr><td colspan="2"><g:Button ui:field="addCardButton"/><g:Button ui:field="csvUploadButton"/><g:Button ui:field="closeCardManagerButton"/></td></tr>
-				<tr><td colspan="2"><g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">tag filter</g:Anchor></td></tr>
+				<tr><td colspan="3">Add New Cards</td></tr>
+				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
+				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/> <g:Button ui:field="addCardButton"/></td></tr>
+				<tr><td colspan="2"><g:Button ui:field="closeCardManagerButton"/></td></tr>
+				<tr><td colspan="2"><g:Anchor ui:field="stagingAnchor">view staging</g:Anchor> | <g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">tag filter</g:Anchor></td></tr>
 			</table>
 		</div>
-		
-		<g:VerticalPanel ui:field="uploadCsvPanel"/>
 		
 		<g:HorizontalPanel ui:field="tagFilterPanel">
 			<g:ListBox ui:field="tagListBox"/>

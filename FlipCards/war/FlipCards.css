@@ -90,9 +90,11 @@ html, body {
 	height: 155px; /* .push must be the same height as .footer */
 }
 
-/*
+.widerTextBox{
+	width:400px;
+}
 
-Sticky Footer by Ryan Fait
-http://ryanfait.com/
+.stagingIndexLabel{
+	width:40px;
+}
 
-*/

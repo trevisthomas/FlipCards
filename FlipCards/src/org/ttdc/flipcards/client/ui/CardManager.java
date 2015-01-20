@@ -6,6 +6,7 @@ import java.util.List;
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.client.ui.staging.StagingManager;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -53,11 +54,7 @@ public class CardManager extends Composite {
 	@UiField
 	VerticalPanel cardBrowserPanel;
 	@UiField
-	Button csvUploadButton;
-	@UiField
 	Button closeCardManagerButton;
-	@UiField
-	VerticalPanel uploadCsvPanel;
 	@UiField
 	Anchor tagEditorAnchor;
 	@UiField
@@ -78,7 +75,6 @@ public class CardManager extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 
 		addCardButton.setText("Add Card");
-		csvUploadButton.setText("Upload CSV");
 		TextBoxKeyDownHandler keyDownHandler = new TextBoxKeyDownHandler();
 		termTextBox.addKeyDownHandler(keyDownHandler);
 		definitionTextBox.addKeyDownHandler(keyDownHandler);
@@ -139,10 +135,12 @@ public class CardManager extends Composite {
 
 		if (word.length() == 0) {
 			FlipCards.showErrorMessage("Word can't be blank");
+			return;
 		}
 
 		if (definition.length() == 0) {
 			FlipCards.showErrorMessage("Definition can't be blank");
+			return;
 		}
 
 		studyWordsService.addWordPair(word, definition,
@@ -179,14 +177,16 @@ public class CardManager extends Composite {
 		FlipCards.replaceView(new QuizSelection());
 	}
 
+	@UiHandler("stagingAnchor")
+	void onViewStagingClick(ClickEvent e) {
+		FlipCards.replaceView(new StagingManager());
+	}
+	
 	@UiHandler("addCardButton")
 	void onClick(ClickEvent e) {
 		saveNewCard();
 	}
-	@UiHandler("csvUploadButton")
-	void onCsvUploadClick(ClickEvent e) {
-		uploadCsvPanel.add(new Upload());
-	}
+
 	@UiHandler("tagEditorAnchor")
 	void onShowTagEditorClick(ClickEvent e) {
 		TagManager.show();

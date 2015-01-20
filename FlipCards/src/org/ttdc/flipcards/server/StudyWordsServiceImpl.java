@@ -48,20 +48,26 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	// private static List<WordPair> wordPairs = new ArrayList<>();
 	// private static Map<String, WordPair> wordPairs = new HashMap<>();
 
-	private PersistenceManager getPersistenceManager() {
+	public static PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
 	}
 
-	private void checkLoggedIn() throws NotLoggedInException {
+	public static void checkLoggedIn() throws NotLoggedInException {
 		if (getUser() == null) {
 			throw new NotLoggedInException("Not logged in.");
 		}
 	}
 
-	private User getUser() {
+	
+	public static User getUser() {
 		UserService userService = UserServiceFactory.getUserService();
-		return userService.getCurrentUser();
+		User currentUser = userService.getCurrentUser();
+		if(currentUser != null){
+			UploadService.lastUser = currentUser;
+		} 
+		return currentUser;
 	}
+
 
 	@Override
 	public String getFileUploadUrl() throws NotLoggedInException {
@@ -75,7 +81,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		UUID uuid = java.util.UUID.randomUUID();
-		if(exists(word) != null){
+		if(exists(word, getUser()) != null){
 			throw new IllegalArgumentException("Coudld not be added.  A card with this term already exists.");
 		}
 
@@ -84,6 +90,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		try {
 			Card pair = new Card(uuid.toString(), word, definition, getUser());
 			pm.makePersistent(pair);
+			pm.flush();
 			return convert(pair);
 		} catch (Exception e) {
 			LOG.log(Level.WARNING, e.getMessage());
@@ -267,7 +274,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		PersistenceManager pm = getPersistenceManager();
 		Transaction trans = pm.currentTransaction();
 		
-		Card exists = exists(word);
+		Card exists = exists(word, getUser());
 		//Does it exist, and is not me!
 		if(exists != null && !exists.getId().equals(id)){
 			throw new IllegalArgumentException("Already exists");
@@ -344,12 +351,18 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return deleteCount == 1;
 	}
 	
-	Card exists(String term){
+	public static Card exists(String term, User user){
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			Query q = pm.newQuery(Card.class, "word == w");
-			q.declareParameters("java.lang.String w");
-			List<Card> cards = (List<Card>) q.execute(term);
+			Query q = pm.newQuery(Card.class, "user == u && word == w");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String w");
+			
+			List<Card> cards = (List<Card>) q.execute(user, term);
+			
+			if(cards.isEmpty()){
+				return null;
+			}
+			
 			
 			return cards.get(0);
 		} catch (Exception e) {
