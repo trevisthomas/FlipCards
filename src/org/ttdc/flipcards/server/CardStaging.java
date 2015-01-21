@@ -2,6 +2,7 @@ package org.ttdc.flipcards.server;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Embedded;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.Index;
 import javax.jdo.annotations.PersistenceCapable;
@@ -20,16 +21,17 @@ public class CardStaging {
 	private Date createDate = new Date();
 	@Persistent
 	private User user;
+	private String owner;
 	@PrimaryKey
 	@Persistent
 	@Index(name="STAGING_CARD_ID_IDX")
 	private String id;
 	
-	public CardStaging(String id, String word, String definition, User user) {
+	public CardStaging(String id, String word, String definition, String owner) {
 		this.id = id;
 		this.word = word;
 		this.definition = definition;
-		this.user = user;
+		this.owner = owner;
 	}
 	
 	public String getWord() {
@@ -61,5 +63,13 @@ public class CardStaging {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 }

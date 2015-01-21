@@ -3,7 +3,9 @@ package org.ttdc.flipcards.client.services;
 import java.util.List;
 
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.User;
 import org.ttdc.flipcards.shared.WordPair;
+
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -20,8 +22,9 @@ public interface StagingCardService  extends RemoteService {
 
 	void promote(String id) throws IllegalArgumentException, NotLoggedInException;
 	
-	List<WordPair> getStagedCards() throws IllegalArgumentException, NotLoggedInException;
-	
-	
+	List<String> getStagingFriends() throws IllegalArgumentException, NotLoggedInException;
+
+	List<WordPair> getStagedCards(String owner)
+			throws IllegalArgumentException, NotLoggedInException;
 }
 

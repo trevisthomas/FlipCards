@@ -118,6 +118,7 @@ public class FlipCards implements EntryPoint {
 //	}
 //	
 	public static void replaceView(Widget view){
+		RootPanel.get("systemError").clear();
 		RootPanel.get("flipcards").clear();
 		RootPanel.get("flipcards").add(view);
 	}

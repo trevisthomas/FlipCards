@@ -7,13 +7,16 @@
 		}
 	</ui:style>
 	<g:HTMLPanel>
+		<div>
+			<g:Anchor ui:field="stagingAnchor">view staging</g:Anchor> | <g:Anchor ui:field="quizAnchor">take quiz</g:Anchor>
+		</div>	
+		
 		<div>	
 			<table>
 				<tr><td colspan="3">Add New Cards</td></tr>
 				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
-				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/> <g:Button ui:field="addCardButton"/></td></tr>
-				<tr><td colspan="2"><g:Button ui:field="closeCardManagerButton"/></td></tr>
-				<tr><td colspan="2"><g:Anchor ui:field="stagingAnchor">view staging</g:Anchor> | <g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">tag filter</g:Anchor></td></tr>
+				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/> <g:Button ui:field="addCardButton"/><g:Button ui:field="refreshButton"/></td></tr>
+				<tr><td colspan="2"><g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">tag filter</g:Anchor></td></tr>
 			</table>
 		</div>
 		

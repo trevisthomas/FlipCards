@@ -25,7 +25,9 @@
 		</table>
 				
 		<g:Button ui:field="goButton" />
-		<g:Button ui:field="editCardsButton" />
+		<div>
+			<g:Anchor ui:field="editCardsButton" /> | <g:Anchor ui:field="stagingButton" />
+		</div>
 	</g:HTMLPanel>
 </ui:UiBinder> 
 

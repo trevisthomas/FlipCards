@@ -7,24 +7,29 @@
 		}
 	</ui:style>
 	<g:HTMLPanel>
-		<g:Anchor ui:field="closeAnchor">close</g:Anchor>
-		
+		<div>
+			<g:Anchor ui:field="viewCardEditorAnchor">edit cards</g:Anchor> | <g:Anchor ui:field="quizAnchor">take quiz</g:Anchor>
+		</div>
+		<!-- 
 		<table>
-				<tr><td ><g:Button ui:field="uploadButton"/><g:Button ui:field="refreshButton"/></td></tr>
-				<tr><td colspan="2"><g:VerticalPanel ui:field="uploadPanel"></g:VerticalPanel></td></tr>
+				<tr><td ></td></tr>
+				<tr><td colspan="2"></td></tr>
 		</table>
-		<g:VerticalPanel ui:field="stagingPanel"></g:VerticalPanel>
+		 -->
 		
 		<div>	
 			<table class="">
 				<tr><td colspan="3">Stage words for the future here</td></tr>
 				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
 				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td><td><g:Button ui:field="addButton"/></td></tr>
-				<tr><td colspan="3"></td></tr>
-				<tr><td colspan="3"></td></tr>
+				<tr><td colspan="3"><g:Button ui:field="uploadButton"/><g:Button ui:field="refreshButton"/></td></tr>
+				<tr><td colspan="3">Filter by Owner:<g:ListBox ui:field="friendsListBox"></g:ListBox><g:Button ui:field="goButton">Go</g:Button></td></tr>
 			</table>
 		</div>
 		
+		<g:VerticalPanel ui:field="uploadPanel"></g:VerticalPanel>
+		
+		<g:VerticalPanel ui:field="stagingPanel"></g:VerticalPanel>
 		
 	</g:HTMLPanel>
 </ui:UiBinder> 

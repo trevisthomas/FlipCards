@@ -52,6 +52,7 @@ public class StagingCardView extends Composite {
 	
 	void loadWordPair(WordPair wordPair){
 		indexLabel.setText(""+wordPair.getDisplayOrder());
+//		indexLabel.setText(""+wordPair.getUser());
 		termTextBox.setText(wordPair.getWord());
 		definitionTextBox.setText(wordPair.getDefinition());
 		

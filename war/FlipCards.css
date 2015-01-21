@@ -98,3 +98,11 @@ html, body {
 	width:40px;
 }
 
+#menu ul{
+  list-style: none;
+}
+
+#menu li{
+  display: inline;
+}
+

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ttdc.flipcards.client.FlipCards;
+import org.ttdc.flipcards.client.ui.staging.StagingManager;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.CardSide;
 import org.ttdc.flipcards.shared.QuizOptions;
@@ -18,6 +19,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -48,11 +50,13 @@ public class QuizSelection extends Composite {
 	@UiField
 	RadioButton cardSideRandom;
 	@UiField
-	Button editCardsButton;
+	Anchor editCardsButton;
 	@UiField
 	FlowPanel tagFilterPanel;
 	@UiField
 	CheckBox allCheckbox;
+	@UiField
+	Anchor stagingButton;
 	
 	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
 	
@@ -61,7 +65,7 @@ public class QuizSelection extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
-		
+		stagingButton.setText("View Staging");
 		allCheckbox.setValue(true);
 		
 		cardCountListBox.addItem("10");
@@ -120,6 +124,11 @@ public class QuizSelection extends Composite {
 		for(String tagId : filterCheckBoxesMap.keySet()){
 			filterCheckBoxesMap.get(tagId).setEnabled(!allCheckbox.getValue());
 		}
+	}
+	
+	@UiHandler("stagingButton")
+	void onStagingClicked(ClickEvent e){
+		FlipCards.replaceView(new StagingManager());
 	}
 
 	@UiHandler("goButton")
