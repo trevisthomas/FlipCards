@@ -1,6 +1,7 @@
 package org.ttdc.flipcards.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
 
 		try {
-			CardStaging card = new CardStaging(uuid.toString(), term, definition, getUser());
+			CardStaging card = new CardStaging(uuid.toString(), term, definition, getUser().getEmail());
 			pm.makePersistent(card);
 			return convert(card);
 		} catch (Exception e) {
@@ -64,17 +65,20 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 	}
 
 	@Override
-	public List<WordPair> getStagedCards() throws IllegalArgumentException,
+	public List<WordPair> getStagedCards(String owner) throws IllegalArgumentException,
 			NotLoggedInException {
 		StudyWordsServiceImpl.checkLoggedIn();
 		
 		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
 		List<WordPair> wordPairs = new ArrayList<>();
 		try {
-			Query q = pm.newQuery(CardStaging.class, "user == u");
-			q.declareParameters("com.google.appengine.api.users.User u");
+			
+//			getConvertStagedUsers();
+			
+			Query q = pm.newQuery(CardStaging.class, "owner == o");
+			q.declareParameters("java.lang.String o");
 			q.setOrdering("createDate");
-			List<CardStaging> cards = (List<CardStaging>) q.execute(getUser());
+			List<CardStaging> cards = (List<CardStaging>) q.execute(owner.trim().isEmpty() ? getUser().getEmail() : owner);
 			
 //			//Until i figure out how to import as a user, the user field will be null for imported ones.
 //			Query q = pm.newQuery(CardStaging.class);
@@ -94,7 +98,29 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		return wordPairs;
 	}
 	
-	
+	/*
+	 * Just a temp method to fix data.  Only run this once.
+	 */
+	public void getConvertStagedUsers() throws IllegalArgumentException,
+			NotLoggedInException {
+		StudyWordsServiceImpl.checkLoggedIn();
+		
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		List<WordPair> wordPairs = new ArrayList<>();
+		try {
+			Query q = pm.newQuery(CardStaging.class);
+			List<CardStaging> cards = (List<CardStaging>) q.execute();
+			for (CardStaging card : cards) {
+				card.setOwner(getUser().getEmail());
+				card.setUser(null);
+				pm.flush();
+			}
+
+		} finally {
+			pm.close();
+		}
+	}
+
 	@Override
 	public void delete(String id) throws IllegalArgumentException,
 			NotLoggedInException {
@@ -102,8 +128,21 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		try{
 			Query q = pm.newQuery(CardStaging.class, "id == i");
 			q.declareParameters("java.lang.String i");
-			LOG.info("Deleted: "+q.deletePersistentAll(id) + " card.");
-		} catch (Exception e) {
+			List<CardStaging> cards = (List<CardStaging>)q.execute(id);
+			
+			if(getUser().getEmail().equals(cards.get(0).getOwner())){
+				LOG.info("Deleted: "+q.deletePersistentAll(id) + " card.");
+			} 
+			else{
+				LOG.info("Cant delete card owned by someone else.");
+				throw new IllegalArgumentException("Cant delete card owned by someone else.");
+			}
+			
+		} 
+		catch (IllegalArgumentException e){
+			throw e;
+		}
+		catch (Exception e) {
 			LOG.info(e.getMessage());
 			throw new IllegalArgumentException("failed to delete card from staging");
 		}
@@ -135,7 +174,9 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 			
 			Card pair = new Card(uuid.toString(), card.getWord(), card.getDefinition(), getUser());
 			pm.makePersistent(pair);
-			pm.deletePersistent(card); 
+			if(getUser().getEmail().equals(card.getOwner())){
+				pm.deletePersistent(card); 
+			}
 			pm.flush();
 
 		} finally {
@@ -151,29 +192,42 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		StudyWordsServiceImpl.checkLoggedIn();
 		
 		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
-		checkDoesTermExist(word, getUser());
+
+		CardStaging exists = exists(word, getUser());
 		try {
 			Query q = pm.newQuery(CardStaging.class, "id == i");
 			q.declareParameters("java.lang.String i");
 			List<CardStaging> cards  = (List<CardStaging>) q.execute(id);
 			CardStaging card = cards.get(0);
-			if(card != null){
+			
+			if(exists != null && !card.getId().equals(exists.getId())){
+				throw new IllegalArgumentException("A card with this term already exists in staging.");
+			}
+			if(getUser().getEmail().equals(cards.get(0).getOwner())){
 				card.setWord(word);
 				card.setDefinition(definition);
+			}
+			else{
+				LOG.info("Cant delete card owned by someone else.");
+				throw new IllegalArgumentException("Can't update card owned by someone else.");
 			}
 			pm.flush();
 			return convert(card);
 
-		} catch (Exception e) {
+		} 
+		catch (IllegalArgumentException e){
+			throw e;
+		}
+		catch (Exception e) {
 			LOG.info(e.getMessage());
-			throw new IllegalArgumentException("Failed to retrieve");
+			throw new IllegalArgumentException("Failed to delete");
 		} finally {
 			pm.close();
 		}
 	}
 
 	public static void checkDoesTermExist(String word, User user) {
-		if(StudyWordsServiceImpl.exists(word, user) != null){
+		if(existsPubished(word, user) != null){
 			throw new IllegalArgumentException("A card with this term already exists in the card stack.");
 		}
 		
@@ -186,19 +240,55 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 	WordPair convert(CardStaging pair){
 		WordPair gwtPair;
 		gwtPair = new WordPair(pair.getId(), pair.getWord(), pair.getDefinition());
-		if(pair.getUser() != null){
-			gwtPair.setUser(pair.getUser().getNickname());
-		}
+		gwtPair.setUser(pair.getOwner());
 		return gwtPair;
+	}
+	
+	@Override
+	public List<String> getStagingFriends() throws IllegalArgumentException,
+			NotLoggedInException {
+		StudyWordsServiceImpl.checkLoggedIn();
+		
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		List<String> firends = new ArrayList<>();
+		try {
+//			Query q = pm.newQuery(CardStaging.class, "user == u");
+//			q.declareParameters("com.google.appengine.api.users.User u");
+//			q.setOrdering("createDate");
+//			List<CardStaging> cards = (List<CardStaging>) q.execute(getUser());
+			
+//			//Until i figure out how to import as a user, the user field will be null for imported ones.
+//			Query q = pm.newQuery(CardStaging.class, );
+//			q.setOrdering("createDate");
+//			List<CardStaging> cards = (List<CardStaging>) q.execute();
+			
+			Query q = pm.newQuery(CardStaging.class);
+			q.setResult("distinct owner");
+			List<String> users = (List<String>) q.execute();
+			
+			for(String o : users){
+				firends.add(o);
+			}
+
+		} catch (Exception e) {
+			LOG.log(Level.WARNING, e.getMessage());
+		}
+		finally {
+			pm.close();
+		}
+		return firends;
 	}
 	
 	public static CardStaging exists(String term, User user){
 		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
 		try {
-			Query q = pm.newQuery(CardStaging.class, "user == u && word == w");
-			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String w");
+			Query q = pm.newQuery(CardStaging.class, "owner == o && word == w");
+			q.declareParameters("java.lang.String o, java.lang.String w");
+			List<CardStaging> cards = (List<CardStaging>) q.execute(user.getEmail(), term);
 			
-			List<CardStaging> cards = (List<CardStaging>) q.execute(user, term);
+//			Query q = pm.newQuery(CardStaging.class, "word == w");
+//			q.declareParameters("java.lang.String w");
+//			List<CardStaging> cards = (List<CardStaging>) q.execute(term);
 			
 			if(cards.isEmpty()){
 				return null;
@@ -213,6 +303,29 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		return null;
 	}
 	
+	public static Card existsPubished(String term, User user){
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		try {
+			Query q = pm.newQuery(Card.class, "user == u && word == w");
+			q.declareParameters("com.google.appengine.api.users.User u, java.lang.String w");
+			List<Card> cards = (List<Card>) q.execute(user, term);
+//			Query q = pm.newQuery(Card.class, "word == w");
+//			q.declareParameters("java.lang.String w");
+//			List<Card> cards = (List<Card>) q.execute(term);
+			
+			if(cards.isEmpty()){
+				return null;
+			}
+			
+			
+			return cards.get(0);
+		} catch (Exception e) {
+			LOG.log(Level.WARNING, e.getMessage());
+		} finally {
+			pm.close();
+		}
+		return null;
+	}
 	
 	
 	

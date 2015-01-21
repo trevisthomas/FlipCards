@@ -174,7 +174,7 @@ public class UploadService extends HttpServlet {
 		}
 		
 		try {
-			CardStaging pair = new CardStaging(uuid.toString(), word, definition, lastUser);
+			CardStaging pair = new CardStaging(uuid.toString(), word, definition, lastUser.getEmail());
 			pm.makePersistent(pair);
 		} catch (Exception e) {
 			LOG.log(Level.WARNING, e.getMessage());

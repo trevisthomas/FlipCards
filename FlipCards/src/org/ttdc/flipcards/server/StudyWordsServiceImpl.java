@@ -444,6 +444,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			List<Card> cards = new ArrayList<>();
 			if(quizOptions.getTagIds().isEmpty()){
 				Query q = pm.newQuery(Card.class, "user == u");
+				q.declareParameters("com.google.appengine.api.users.User u");
 				cards = (List<Card>) q.execute(getUser());
 			} else {
 				cards = getCards(quizOptions.getTagIds());

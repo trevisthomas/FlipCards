@@ -54,7 +54,7 @@ public class CardManager extends Composite {
 	@UiField
 	VerticalPanel cardBrowserPanel;
 	@UiField
-	Button closeCardManagerButton;
+	Anchor quizAnchor;
 	@UiField
 	Anchor tagEditorAnchor;
 	@UiField
@@ -67,9 +67,12 @@ public class CardManager extends Composite {
 	HorizontalPanel tagFilterPanel;
 	@UiField
 	Label dataHeaderLabel;
+	@UiField
+	Button refreshButton;
 	
 	
 	private long lastIndex;
+	private String lastSelectedFilter = NONE;
 
 	public CardManager() {
 		initWidget(uiBinder.createAndBindUi(this));
@@ -78,10 +81,11 @@ public class CardManager extends Composite {
 		TextBoxKeyDownHandler keyDownHandler = new TextBoxKeyDownHandler();
 		termTextBox.addKeyDownHandler(keyDownHandler);
 		definitionTextBox.addKeyDownHandler(keyDownHandler);
-		closeCardManagerButton.setText("Close Editor");
+		
 		goButton.setText("Apply Filter");
 		tagFilterPanel.setVisible(false);
 		dataHeaderLabel.setText("Loading...");
+		refreshButton.setText("Refresh");
 		loadWords();
 	}
 
@@ -105,6 +109,9 @@ public class CardManager extends Composite {
 	}
 	
 	private void loadWords(String tagId) {
+		dataHeaderLabel.setText("Loading...");
+		cardBrowserPanel.clear();
+		lastSelectedFilter = tagId;
 		if(NONE.equals(tagId)){
 			loadWords();
 			return;
@@ -172,7 +179,14 @@ public class CardManager extends Composite {
 		}
 	}
 	
-	@UiHandler("closeCardManagerButton")
+	
+	
+	@UiHandler("refreshButton")
+	void onRefreshClick(ClickEvent e) {
+		loadWords(lastSelectedFilter);
+	}
+	
+	@UiHandler("quizAnchor")
 	void onCloseClick(ClickEvent e) {
 		FlipCards.replaceView(new QuizSelection());
 	}
