@@ -6,6 +6,9 @@ import java.util.List;
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.client.ui.CardEdit.CardEditObserver;
+import org.ttdc.flipcards.shared.CardOrder;
+import org.ttdc.flipcards.shared.CardSide;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -15,15 +18,20 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class FlipCard extends Composite {
+public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	interface MyUiBinder extends UiBinder<Widget, FlipCard> {
 	}
 
@@ -41,20 +49,33 @@ public class FlipCard extends Composite {
 	Button yesButton;
 	@UiField
 	Button noButton;
-	@UiField
-	Button flipButton;
+	
 	@UiField
 	Anchor surrenderAnchor;
 	@UiField
 	FlexTable debugDumpFlexTable;
 	@UiField
 	Anchor debugAnchor; 
+	@UiField
+	Anchor lingueeAnchor;
+	@UiField
+	Anchor spanishDictAnchor;
+	@UiField
+	HTMLPanel definePanel;
+	@UiField
+	Anchor editAnchor;
+	@UiField
+	VerticalPanel editCardPanel;
 	
+	
+//	http://www.linguee.com/english-spanish/search?source=spanish&query=facile
+//		http://www.spanishdict.com/translate/amor
 
 	private List<WordPair> wordPairs;
 	private int currentIndex = 0;
 	private WordPair currentPair;
 	private final QuizOptions options;
+	boolean spanishFirst = false;
 	
 	private List<WordPair> incorrectWordPairs = new ArrayList<WordPair>();
 
@@ -64,15 +85,37 @@ public class FlipCard extends Composite {
 		
 		yesButton.setEnabled(false);
 		noButton.setEnabled(false);
-		flipButton.setEnabled(false);
+//		flipButton.setEnabled(false);
 		wordLabel.setVisible(true);
 		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
 		surrenderAnchor.setText("I Surrender");
 		debugDumpFlexTable.setVisible(false);
 		debugAnchor.setText("debug");
+		editAnchor.setText("Edit");
+		lingueeAnchor.setText("Linguee");
+		spanishDictAnchor.setText("Spanish Dict");
+		lingueeAnchor.setTarget("_blank");
+		spanishDictAnchor.setTarget("_blank");
+		definePanel.setVisible(false);
+		
 
 //		yesButton.setStylePrimaryName("fixme");
+		
+		switch(options.getCardSide()){
+			case TERM:{
+				spanishFirst = true;
+				break;
+			}
+			case RANDOM:{
+				spanishFirst = Random.nextBoolean();
+				break;
+			}
+			case DEFINITION:{
+				spanishFirst = false;
+				break;
+			}
+		}
 		
 		if(wordPairList != null){
 			wordPairs = wordPairList;
@@ -124,18 +167,44 @@ public class FlipCard extends Composite {
 	private void nextWord() {
 		yesButton.setEnabled(false);
 		noButton.setEnabled(false);
-		flipButton.setEnabled(true);
+//		flipButton.setEnabled(true);
 		if (currentIndex >= wordPairs.size()) {
 //			Window.alert("You're done.");
 			showScore();
 		} else {
+			
+			definePanel.setVisible(false);
+			
 			currentPair = wordPairs.get(currentIndex++); 
 			definitionLabel.setVisible(false);
 			wordLabel.setVisible(true);
+			loadWordPair();
+		}
+	}
+
+	private void loadWordPair() {
+		if(spanishFirst){
 			wordLabel.setText(currentPair.getWord());
 			definitionLabel.setText(currentPair.getDefinition());
 		}
+		else {
+			wordLabel.setText(currentPair.getDefinition());
+			definitionLabel.setText(currentPair.getWord());
+		}
+		
+		spanishDictAnchor.setHref("http://www.spanishdict.com/translate/"+currentPair.getWord());
+		lingueeAnchor.setHref("http://www.linguee.com/english-spanish/search?source=spanish&query="+currentPair.getWord());
 	}
+	
+	@UiHandler("wordLabel")
+	void handleFlipWordLabel(ClickEvent e) {
+		handleFlipButton(e);
+	}
+	@UiHandler("definitionLabel")
+	void handleFlipDefinitionLabel(ClickEvent e) {
+		handleFlipButton(e);
+	}
+	
 
 	private void showScore() {
 		//test
@@ -143,15 +212,24 @@ public class FlipCard extends Composite {
 		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs, currentIndex));
 	}
 
-	@UiHandler("flipButton")
+//	@UiHandler("flipButton")
 	void handleFlipButton(ClickEvent e) {
 		// Window.alert("Hello, AJAX");
 		wordLabel.setVisible(!wordLabel.isVisible());
 		definitionLabel.setVisible(!definitionLabel.isVisible());
 		yesButton.setEnabled(true);
 		noButton.setEnabled(true);
+		definePanel.setVisible(true);
+		editCardPanel.clear();
 	}
 
+	
+	
+	@UiHandler("editAnchor")
+	void handleEditAnchorClick(ClickEvent e) {
+		editCardPanel.clear();
+		editCardPanel.add(new CardEdit(this, currentPair));
+	}
 	@UiHandler("noButton")
 	void handleNoButton(ClickEvent e) {
 		incorrectWordPairs.add(currentPair);
@@ -187,5 +265,23 @@ public class FlipCard extends Composite {
 				//Nothing to do?
 			}
 		});
+	}
+	
+	@Override
+	public void onCardDeleted() {
+		nextWord();
+		editCardPanel.clear();
+	}
+	
+	@Override
+	public void onCardUpdated(WordPair result) {
+		currentPair = result; //Hmn
+		loadWordPair();
+		editCardPanel.clear();
+	}
+	
+	@Override
+	public void onCardEditClose(WordPair card) {
+		editCardPanel.clear();
 	}
 }

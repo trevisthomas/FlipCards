@@ -1,47 +1,46 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.5" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
   <!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>org.ttdc.flipcards.server.GreetingServiceImpl</servlet-class>
-  </servlet>
   
+  <servlet>
+    <servlet-name>upload</servlet-name>
+    <servlet-class>org.ttdc.flipcards.server.UploadService</servlet-class>
+  </servlet>
   <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/flipcards/greet</url-pattern>
+    <servlet-name>upload</servlet-name>
+    <url-pattern>/flipcards/upload</url-pattern>
   </servlet-mapping>
   
   <servlet>
     <servlet-name>studyWordsServlet</servlet-name>
     <servlet-class>org.ttdc.flipcards.server.StudyWordsServiceImpl</servlet-class>
   </servlet>
-  
-  <servlet>
-    <servlet-name>upload</servlet-name>
-    <servlet-class>org.ttdc.flipcards.server.UploadService</servlet-class>
-  </servlet>
-  
-  
-  
   <servlet-mapping>
     <servlet-name>studyWordsServlet</servlet-name>
     <url-pattern>/flipcards/studyWords</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping> 
+  
+  
   
    <servlet>
     <servlet-name>loginService</servlet-name>
     <servlet-class>org.ttdc.flipcards.server.LoginServiceImpl</servlet-class>
   </servlet>
-
   <servlet-mapping>
     <servlet-name>loginService</servlet-name>
     <url-pattern>/flipcards/login</url-pattern>
   </servlet-mapping>
   
+  <servlet>
+    <servlet-name>stagingService</servlet-name>
+    <servlet-class>org.ttdc.flipcards.server.StagingCardServiceImpl</servlet-class>
+  </servlet>
   <servlet-mapping>
-    <servlet-name>upload</servlet-name>
-    <url-pattern>/flipcards/upload</url-pattern>
+    <servlet-name>stagingService</servlet-name>
+    <url-pattern>/flipcards/staging</url-pattern>
   </servlet-mapping>
+  
+  
   
   <!-- Default page to serve -->
   <welcome-file-list>

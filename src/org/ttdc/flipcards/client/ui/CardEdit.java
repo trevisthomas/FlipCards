@@ -8,6 +8,9 @@ import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -25,7 +28,7 @@ public class CardEdit extends Composite {
 			.create(CardEditUiBinder.class);
 	
 	private WordPair card;
-	private CardView cardView;
+	private CardEditObserver cardView;
 		
 	interface CardEditUiBinder extends UiBinder<Widget, CardEdit> {
 	}
@@ -43,8 +46,13 @@ public class CardEdit extends Composite {
 	@UiField
 	Anchor closeAnchor;
 	
+	interface CardEditObserver{
+		void onCardUpdated(WordPair result);
+		void onCardDeleted();
+		void onCardEditClose(WordPair card);
+	}
 
-	public CardEdit(CardView cardView, WordPair c) {
+	public CardEdit(CardEditObserver cardView, WordPair c) {
 		initWidget(uiBinder.createAndBindUi(this));
 		this.card = c;
 		this.cardView = cardView;
@@ -53,6 +61,9 @@ public class CardEdit extends Composite {
 		closeAnchor.setText("close");
 		termTextBox.setText(card.getWord());
 		definitionTextBox.setText(card.getDefinition());
+		TextBoxKeyDownHandler handler = new TextBoxKeyDownHandler();
+		definitionTextBox.addKeyDownHandler(handler);
+		termTextBox.addKeyDownHandler(handler);
 		
 		//Load tags
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
@@ -73,6 +84,10 @@ public class CardEdit extends Composite {
 
 	@UiHandler("updateButton")
 	void onUpdateClick(ClickEvent e) {
+		performUpdate();
+	}
+
+	private void performUpdate() {
 		String word = termTextBox.getText().trim();
 		String definition = definitionTextBox.getText().trim();
 
@@ -89,7 +104,7 @@ public class CardEdit extends Composite {
 			public void onSuccess(WordPair result) {
 				FlipCards.showMessage("Card updated");
 				result.setDisplayOrder(card.getDisplayOrder()); //This is probably dumb.
-				cardView.restore(result); 
+				cardView.onCardUpdated(result); 
 			}
 			@Override
 			public void onFailure(Throwable caught) {
@@ -98,9 +113,19 @@ public class CardEdit extends Composite {
 		});
 	}
 	
+	private class TextBoxKeyDownHandler implements KeyDownHandler {
+		@Override
+		public void onKeyDown(KeyDownEvent event) {
+			FlipCards.clearErrorMessage();
+			if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+				performUpdate();
+			}
+		}
+	}
+	
 	@UiHandler("closeAnchor")
 	void onCloseClick(ClickEvent e) {
-		cardView.restore(card); 
+		cardView.onCardEditClose(card); 
 	}
 	
 	@UiHandler("deleteButton")
@@ -111,7 +136,7 @@ public class CardEdit extends Composite {
 			public void onSuccess(Boolean result) {
 				if(result == true){
 					FlipCards.showMessage("Card deleted");
-					cardView.destroy();
+					cardView.onCardDeleted();
 				}
 				else {
 					FlipCards.showErrorMessage("Server failed to remove");

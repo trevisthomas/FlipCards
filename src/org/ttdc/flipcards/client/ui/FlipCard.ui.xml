@@ -30,7 +30,7 @@
 					<g:Label styleName="flipCardText" ui:field='definitionLabel' />
 				</td>
 			</tr>
-			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='flipButton'>Flip</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
+			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
 			<tr>
 				<td>
 		<g:HorizontalPanel>
@@ -69,7 +69,13 @@
 				</td>
 			</tr>
 		</table>
-		
+
+	<g:HTMLPanel ui:field="definePanel">
+		<g:Anchor ui:field="editAnchor" /> | 
+		<g:Anchor ui:field="lingueeAnchor" /> | 
+		<g:Anchor ui:field="spanishDictAnchor" />
+	</g:HTMLPanel>
+	<g:VerticalPanel ui:field="editCardPanel"></g:VerticalPanel>		
 
 		<g:FlexTable ui:field="debugDumpFlexTable" />
 

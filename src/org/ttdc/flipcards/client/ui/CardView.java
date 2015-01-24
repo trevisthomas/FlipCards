@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class CardView extends Composite {
+public class CardView extends Composite implements CardEdit.CardEditObserver{
 
 	private static CardViewUiBinder uiBinder = GWT
 			.create(CardViewUiBinder.class);
@@ -73,13 +73,19 @@ public class CardView extends Composite {
 		mainHtmlPanel.add(cardEdit);
 	}
 	
-	public void restore(WordPair card){
+	public void onCardUpdated(WordPair card){
 		mainHtmlPanel.clear();
 		mainHtmlPanel.add(wraperGrid);
 		loadCardToUi(card);
 	}
 	
-	public void destroy(){
+	@Override
+	public void onCardEditClose(WordPair card) {
+		mainHtmlPanel.clear();
+		mainHtmlPanel.add(wraperGrid);
+	}
+	
+	public void onCardDeleted(){
 		removeFromParent();
 	}
 
