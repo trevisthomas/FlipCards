@@ -133,20 +133,17 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 	
-	WordPair convert(Card pair,boolean switchEm) throws NotLoggedInException{
+	WordPair convert(Card pair) throws NotLoggedInException{
 		
 		
 //		WordPair gwtPair = new WordPair(pair.getId(), pair.getWord(),
 //				pair.getDefinition());
 		
 		WordPair gwtPair;
-		if (switchEm) {
-			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
-					pair.getWord());
-		} else {
-			gwtPair = new WordPair(pair.getId(), pair.getWord(),
-					pair.getDefinition());
-		}
+		
+		gwtPair = new WordPair(pair.getId(), pair.getWord(),
+				pair.getDefinition());
+		
 		
 		gwtPair.setCorrectCount(pair.getViewCount() - pair.getIncorrectCount());
 		gwtPair.setTestedCount(pair.getViewCount());
@@ -169,22 +166,22 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return gwtPair;
 	}
 
-	WordPair convert(Card pair) throws NotLoggedInException{
-//		WordPair gwtPair;
-//		if (switchEm) {
-//			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
-//					pair.getWord());
-//		} else {
-//			gwtPair = new WordPair(pair.getId(), pair.getWord(),
-//					pair.getDefinition());
-//		}
-//		if(pair.getUser() != null){
-//			gwtPair.setUser(pair.getUser().getNickname());
-//		}
-//		return gwtPair;
-		return convert(pair, false);
-		
-	}
+//	WordPair convert(Card pair) throws NotLoggedInException{
+////		WordPair gwtPair;
+////		if (switchEm) {
+////			gwtPair = new WordPair(pair.getId(), pair.getDefinition(),
+////					pair.getWord());
+////		} else {
+////			gwtPair = new WordPair(pair.getId(), pair.getWord(),
+////					pair.getDefinition());
+////		}
+////		if(pair.getUser() != null){
+////			gwtPair.setUser(pair.getUser().getNickname());
+////		}
+////		return gwtPair;
+//		return convert(pair, false);
+//		
+//	}
 
 	@Override
 	public List<WordPair> getAllWordPairs() throws NotLoggedInException {
@@ -486,18 +483,18 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				if (count++ == quizOptions.getSize()) {
 					break;
 				}
-				switch (quizOptions.getCardSide()) {
-				case DEFINITION:
-					switchEm = true;
-					break;
-				case RANDOM:
-					switchEm = random.nextBoolean();
-					break;
-				case TERM:
-					switchEm = false;
-					break;
-				}
-				wordPairs.add(convert(card, switchEm));
+//				switch (quizOptions.getCardSide()) {
+//				case DEFINITION:
+//					switchEm = true;
+//					break;
+//				case RANDOM:
+//					switchEm = random.nextBoolean();
+//					break;
+//				case TERM:
+//					switchEm = false;
+//					break;
+//				}
+				wordPairs.add(convert(card));
 				LOG.info(card.toString());
 			}
 
