@@ -21,15 +21,17 @@
 			<table class="">
 				<tr><td colspan="3">Stage words for the future here</td></tr>
 				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
-				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td><td><g:Button ui:field="addButton"/></td></tr>
+				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td><td><g:Button ui:field="addButton"/> <g:Anchor ui:field="spanishDictButton"/> | <g:Anchor ui:field="lingueeButton"/></td></tr>
 				<tr><td colspan="3"><g:Button ui:field="uploadButton"/><g:Button ui:field="refreshButton"/></td></tr>
 				<tr><td colspan="3">Filter by Owner:<g:ListBox ui:field="friendsListBox"></g:ListBox><g:Button ui:field="goButton">Go</g:Button></td></tr>
 			</table>
 		</div>
-		
+		<div><g:Label ui:field="resultSizeLabel"/></div>
 		<g:VerticalPanel ui:field="uploadPanel"></g:VerticalPanel>
 		
 		<g:VerticalPanel ui:field="stagingPanel"></g:VerticalPanel>
+		
+		<g:HorizontalPanel><g:Button ui:field="prevButton" /><g:Button ui:field="nextButton" /></g:HorizontalPanel>
 		
 	</g:HTMLPanel>
 </ui:UiBinder> 

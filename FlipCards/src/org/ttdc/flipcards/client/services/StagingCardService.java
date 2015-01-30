@@ -3,6 +3,7 @@ package org.ttdc.flipcards.client.services;
 import java.util.List;
 
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.User;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -25,6 +26,9 @@ public interface StagingCardService  extends RemoteService {
 	List<String> getStagingFriends() throws IllegalArgumentException, NotLoggedInException;
 
 	List<WordPair> getStagedCards(String owner)
+			throws IllegalArgumentException, NotLoggedInException;
+	
+	PagedWordPair getStagedCards(String owner, String cursor)
 			throws IllegalArgumentException, NotLoggedInException;
 }
 

@@ -1,12 +1,16 @@
 package org.ttdc.flipcards.client.ui.staging;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Stack;
 
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.CardView;
 import org.ttdc.flipcards.client.ui.QuizSelection;
 import org.ttdc.flipcards.client.ui.Upload;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.User;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -34,6 +38,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import org.ttdc.flipcards.shared.Constants;
 
 public class StagingManager extends Composite{
 
@@ -65,16 +70,32 @@ public class StagingManager extends Composite{
 	ListBox friendsListBox;
 	@UiField
 	Button goButton;
+	@UiField
+	Anchor lingueeButton;
+	@UiField
+	Anchor spanishDictButton;
+	@UiField
+	Button prevButton;
+	@UiField
+	Button nextButton;
+	@UiField
+	Label resultSizeLabel;
 	
-	
-	private int lastIndex = 1;
-	
+	private long totalCardCount = -1;
+	private Stack<String> cursorStack = new Stack<>();
+	private String owner = ""; //Self
+	private int pageNum = 1;
 	public StagingManager() {
+		cursorStack.push("");
 		initWidget(uiBinder.createAndBindUi(this));
+		prevButton.setText("Prev");
+		nextButton.setText("Next");
 		uploadButton.setText("Upload");
 		addButton.setText("Add");
 		refreshButton.setText("refresh");
 		friendsListBox.addItem("");
+		lingueeButton.setText("Linguee");
+		spanishDictButton.setText("Spanish Dict");
 		FlipCards.stagingCardService.getStagingFriends(new AsyncCallback<List<String>>() {
 			
 			@Override
@@ -91,21 +112,55 @@ public class StagingManager extends Composite{
 		});
 		
 		
-		refresh("");
+		refresh("","");
 	}
 
 	
-	private void refresh(String owner) {
+	private void refresh(String owner, String cursorString) {
 		stagingPanel.clear();
 		stagingPanel.add(new Label("Loading..."));
-		FlipCards.stagingCardService.getStagedCards(owner, new AsyncCallback<List<WordPair>>() {
+		fetchCards(owner, cursorString);
+		
+	}
+
+
+	private void fetchCards(String owner, String cursorString) {
+		FlipCards.stagingCardService.getStagedCards(owner, cursorString, new AsyncCallback<PagedWordPair>() {
 			
 			@Override
-			public void onSuccess(List<WordPair> result) {
+			public void onSuccess(PagedWordPair result) {
+				if(result.getTotalCardCount() != -1){
+					totalCardCount = result.getTotalCardCount();
+				}
+				resultSizeLabel.setText(totalCardCount + " cards found.");
 				stagingPanel.clear();
-				java.util.Collections.reverse(result);
-				for(WordPair pair : result){
-					lastIndex++;
+				
+				if(cursorStack.size() == 1){
+					prevButton.setEnabled(false);
+				}
+				else{
+					prevButton.setEnabled(true);
+				}
+				
+				
+				int offset = (pageNum - 1) * Constants.PAGE_SIZE;// assumes page size of 50
+				
+//				if(((pageNum + 1) * PAGE_SIZE) > totalCardCount){
+				if(offset + Constants.PAGE_SIZE < totalCardCount){
+					nextButton.setEnabled(true);
+				}
+				else{
+					nextButton.setEnabled(false);
+				}
+				
+				
+//				List<WordPair> reverseList = new ArrayList<>(result.getWordPair());
+				cursorStack.push(result.getCursorString());
+//				java.util.Collections.reverse(reverseList);
+				
+				
+				for(WordPair pair : result.getWordPair()){
+					pair.setDisplayOrder(offset + pair.getDisplayOrder());
 					stagingPanel.add(new StagingCardView(pair));
 				}
 			}
@@ -116,18 +171,49 @@ public class StagingManager extends Composite{
 				
 			}
 		});
+	}
+	
+	@UiHandler("nextButton")
+	void onNextClick(ClickEvent e){
+		pageNum++;
+		refresh(owner, cursorStack.peek());
+	}
+	
+	@UiHandler("prevButton")
+	void onPrevClick(ClickEvent e){
+		pageNum--;
+		cursorStack.pop();//Next
+		cursorStack.pop();//Current
+		refresh(owner, cursorStack.peek());
 		
 	}
+	
 
+	@UiHandler("lingueeButton")
+	void onLingueeClick(ClickEvent e) {
+		Window.open("http://www.linguee.com/english-spanish/search?source=spanish&query="+termTextBox.getText(), "_blank", "");
+	}
+	
+	@UiHandler("spanishDictButton")
+	void onSpanishDictClick(ClickEvent e) {
+		Window.open("http://www.spanishdict.com/translate/"+termTextBox.getText(), "_blank", "");
+	}
 	
 	@UiHandler("friendsListBox")
 	void onFriendFilterChanged(ChangeEvent e) {
-		refresh(friendsListBox.getValue(friendsListBox.getSelectedIndex()));
+		owner = friendsListBox.getValue(friendsListBox.getSelectedIndex());
+		pageNum = 1;
+		totalCardCount = 0;
+		cursorStack.clear();
+		cursorStack.push("");
+		refresh(owner, "");
 	}
 	
 	@UiHandler("goButton")
 	void onGoClick(ClickEvent e) {
-		refresh(friendsListBox.getValue(friendsListBox.getSelectedIndex()));
+		owner = friendsListBox.getValue(friendsListBox.getSelectedIndex());
+		cursorStack.clear();
+		refresh(owner, "");
 	}
 	@UiHandler("uploadButton")
 	void onClick(ClickEvent e) {
@@ -161,7 +247,7 @@ public class StagingManager extends Composite{
 
 	@UiHandler("refreshButton")
 	void onRefreshButtonClicked(ClickEvent e){
-		refresh(friendsListBox.getValue(friendsListBox.getSelectedIndex()));
+		refresh(owner, cursorStack.elementAt(cursorStack.size()-2));
 	}
 	
 	private void submitOnEnterHelper(KeyDownEvent e) {
@@ -185,14 +271,13 @@ public class StagingManager extends Composite{
 			return;
 		}
 		
-		FlipCards.stagingCardService.add(word, definition,
+		FlipCards.stagingCardService.add(word.toLowerCase(), definition.toLowerCase(),
 				new AsyncCallback<WordPair>() {
 					@Override
 					public void onSuccess(WordPair card) {
 						termTextBox.setText("");
 						definitionTextBox.setText("");
 						termTextBox.setFocus(true);
-						card.setDisplayOrder(lastIndex++); //So lame.
 						stagingPanel.insert(new StagingCardView(card), 0);
 //						stagingPanel.add();
 						FlipCards.showMessage("New card created in staging");

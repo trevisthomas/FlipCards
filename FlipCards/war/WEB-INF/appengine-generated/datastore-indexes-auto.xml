@@ -1,4 +1,17 @@
-<!-- Indices written at Thu, 22 Jan 2015 18:22:45 CST -->
+<!-- Indices written at Thu, 29 Jan 2015 00:31:39 CST -->
 
-<datastore-indexes/>
+<datastore-indexes>
 
+    <!-- Used 13 times in query history -->
+    <datastore-index kind="CardStaging" ancestor="false" source="auto">
+        <property name="owner" direction="asc"/>
+        <property name="createDate" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="CardStaging" ancestor="false" source="auto">
+        <property name="owner" direction="asc"/>
+        <property name="createDate" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>

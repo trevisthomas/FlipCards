@@ -46,11 +46,6 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	@UiField
 	Label definitionLabel;
 	@UiField
-	Button yesButton;
-	@UiField
-	Button noButton;
-	
-	@UiField
 	Anchor surrenderAnchor;
 	@UiField
 	FlexTable debugDumpFlexTable;
@@ -66,6 +61,10 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	Anchor editAnchor;
 	@UiField
 	VerticalPanel editCardPanel;
+	@UiField
+	Label yesDiv;
+	@UiField
+	Label noDiv;
 	
 	
 //	http://www.linguee.com/english-spanish/search?source=spanish&query=facile
@@ -83,9 +82,8 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		this.options = options;
 		initWidget(uiBinder.createAndBindUi(this));
 		
-		yesButton.setEnabled(false);
-		noButton.setEnabled(false);
-//		flipButton.setEnabled(false);
+		yesDiv.setVisible(false);
+		noDiv.setVisible(false);
 		wordLabel.setVisible(true);
 		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
@@ -98,9 +96,6 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		lingueeAnchor.setTarget("_blank");
 		spanishDictAnchor.setTarget("_blank");
 		definePanel.setVisible(false);
-		
-
-//		yesButton.setStylePrimaryName("fixme");
 		
 		switch(options.getCardSide()){
 			case TERM:{
@@ -165,11 +160,9 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 
 	
 	private void nextWord() {
-		yesButton.setEnabled(false);
-		noButton.setEnabled(false);
-//		flipButton.setEnabled(true);
+		yesDiv.setVisible(false);
+		noDiv.setVisible(false);
 		if (currentIndex >= wordPairs.size()) {
-//			Window.alert("You're done.");
 			showScore();
 		} else {
 			
@@ -217,8 +210,8 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		// Window.alert("Hello, AJAX");
 		wordLabel.setVisible(!wordLabel.isVisible());
 		definitionLabel.setVisible(!definitionLabel.isVisible());
-		yesButton.setEnabled(true);
-		noButton.setEnabled(true);
+		yesDiv.setVisible(true);
+		noDiv.setVisible(true);
 		definePanel.setVisible(true);
 		editCardPanel.clear();
 	}
@@ -230,15 +223,16 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		editCardPanel.clear();
 		editCardPanel.add(new CardEdit(this, currentPair));
 	}
-	@UiHandler("noButton")
-	void handleNoButton(ClickEvent e) {
+	
+	@UiHandler("noDiv")
+	void handleNoDiv(ClickEvent e) {
 		incorrectWordPairs.add(currentPair);
 		updateWordScore(false);
 		nextWord();
 	}
-
-	@UiHandler("yesButton")
-	void handleYesButton(ClickEvent e) {
+	
+	@UiHandler("yesDiv")
+	void handleYesDiv(ClickEvent e) {
 		updateWordScore(true);
 		nextWord();
 	}

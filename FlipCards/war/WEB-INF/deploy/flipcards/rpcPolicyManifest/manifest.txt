@@ -1,5 +1,5 @@
 # Module flipcards
 # RPC service class, partial path of RPC policy file
+org.ttdc.flipcards.client.services.StagingCardService, 5872C0A241B606538A568EBDFC657D0A.gwt.rpc
 org.ttdc.flipcards.client.StudyWordsService, 929CF4113ED176E8280D432D44773A8B.gwt.rpc
-org.ttdc.flipcards.client.services.StagingCardService, 32C7FB691022410854B34198B00D71E1.gwt.rpc
 org.ttdc.flipcards.client.services.LoginService, 380A3DD6254734877ADCEBAC21A6333E.gwt.rpc
