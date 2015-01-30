@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client.services;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.appengine.api.users.User;
@@ -22,6 +23,9 @@ public interface StagingCardServiceAsync {
 	void getFileUploadUrl(AsyncCallback<String> callback);
 
 	void getStagingFriends(AsyncCallback<List<String>> callback);
+
+	void getStagedCards(String owner, String cursor,
+			AsyncCallback<PagedWordPair> callback);
 	
 
 }

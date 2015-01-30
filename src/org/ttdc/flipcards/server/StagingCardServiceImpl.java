@@ -2,7 +2,9 @@ package org.ttdc.flipcards.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,15 +16,19 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import org.ttdc.flipcards.client.services.StagingCardService;
+import org.ttdc.flipcards.shared.Constants;
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.datanucleus.query.JDOCursorHelper;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
@@ -95,7 +101,84 @@ public class StagingCardServiceImpl  extends RemoteServiceServlet implements Sta
 		} finally {
 			pm.close();
 		}
+		
+		//DEBUG TEST
+		getStagedCards(owner, null);
 		return wordPairs;
+	}
+	
+	@Override
+	public PagedWordPair getStagedCards(String owner, String cursorString)
+			throws IllegalArgumentException, NotLoggedInException {
+		StudyWordsServiceImpl.checkLoggedIn();
+		
+		
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		List<WordPair> wordPairs = new ArrayList<>();
+		try {
+			
+//			getConvertStagedUsers();
+			
+			Query q = pm.newQuery(CardStaging.class, "owner == o");
+			q.declareParameters("java.lang.String o");
+			q.setOrdering("createDate desc");
+			
+			String newCursorString = "";
+			
+			if(cursorString != null && !cursorString.isEmpty()){
+				Cursor cursor = Cursor.fromWebSafeString(cursorString);
+				Map<String, Object> extensionMap = new HashMap<String, Object>();
+				extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
+				q.setExtensions(extensionMap);
+			}
+			else {
+				long count = countStagedCards(owner);
+				pagedWordPair.setTotalCardCount(count);
+				
+			}
+			
+			q.setRange(0, Constants.PAGE_SIZE);
+			
+			List<CardStaging> cards = (List<CardStaging>) q.execute(owner.trim().isEmpty() ? getUser().getEmail() : owner);
+			
+			Cursor cursor = JDOCursorHelper.getCursor(cards);
+			newCursorString = cursor.toWebSafeString();
+			
+			int i = 1;
+			for (CardStaging card : cards) {
+				WordPair pair = convert(card);
+				pair.setDisplayOrder(i++);
+				wordPairs.add(pair);
+			}
+			
+			pagedWordPair.setCursorString(newCursorString);
+			pagedWordPair.setWordPair(wordPairs);
+			
+			return pagedWordPair;
+
+		} finally {
+			pm.close();
+		}
+		
+	}
+	
+//	@Override
+	public long countStagedCards(String owner)
+			throws IllegalArgumentException, NotLoggedInException {
+		StudyWordsServiceImpl.checkLoggedIn();
+		
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		try {
+			Query q = pm.newQuery(CardStaging.class, "owner == o");
+			q.declareParameters("java.lang.String o");
+			q.setResult("count(this)");
+			Long result = (Long) q.execute (owner.trim().isEmpty() ? getUser().getEmail() : owner); 
+			return result;
+		}finally {
+			pm.close();
+		}
+		
 	}
 	
 	/*

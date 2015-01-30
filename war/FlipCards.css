@@ -106,3 +106,24 @@ html, body {
   display: inline;
 }
 
+.flipCardText{cursor: pointer;}	
+.flipButton{
+	width: 100px;
+	height: 100px;
+	background-size: 100px 100px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    background-color: transparent;
+    margin: 5px;
+}
+.flipButtonYes{
+	background-image: url('/img/yes.png');	
+}
+.flipButtonYesDisabled{
+	background-color: grey;
+	
+}
+.flipButtonNo{
+	background-image: url('/img/no.png');
+}
+

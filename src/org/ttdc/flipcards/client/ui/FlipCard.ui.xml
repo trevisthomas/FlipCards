@@ -14,7 +14,20 @@
 		@sprite .underMenuGlow {gwt-image: 'underTopGlow'}
 	</ui:style>
 	
+	 <ui:style>
+	 	.flipButton{
+			width: 100px;
+			height: 100px;
+		}
+	 	.flipButtonYes{
+			background-color: green;	
+		}
+		.flipButtonNo{
+			background-color: red;
+		}
+	 </ui:style>
 	 -->
+	
 
 	<g:HTMLPanel>
 		<div>
@@ -30,10 +43,12 @@
 					<g:Label styleName="flipCardText" ui:field='definitionLabel' />
 				</td>
 			</tr>
-			<td><g:Button ui:field='yesButton'>Yup</g:Button><g:Button ui:field='noButton'>Nope</g:Button></td>
+			<td></td>
 			<tr>
 				<td>
 		<g:HorizontalPanel>
+			<g:Label ui:field="yesDiv" styleName="flipButtonYes flipButton"></g:Label>
+			<g:Label ui:field="noDiv" styleName="flipButtonNo flipButton"></g:Label>
 		<!-- 
 			<g:VerticalPanel styleName='{style.underMenuGlow}' ui:field='testPanel'/>
 			 -->
