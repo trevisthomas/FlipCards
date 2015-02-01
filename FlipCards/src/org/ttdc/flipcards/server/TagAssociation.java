@@ -27,10 +27,11 @@ public class TagAssociation implements Serializable{
 	@Persistent
 	private User user;
 	
-	public TagAssociation(User user, String tagId, String cardId){
+	//TREVIS: Once this thing is working, see if you can remove User!
+	
+	public TagAssociation(String tagId, String cardId){
 		this.tagId = tagId;
 		this.cardId = cardId;
-		this.user = user;
 	}
 	
 	public String getTagId() {

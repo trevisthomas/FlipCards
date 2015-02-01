@@ -25,5 +25,5 @@ org.ttdc.flipcards.shared.NotLoggedInException, true, true, false, false, org.tt
 org.ttdc.flipcards.shared.PagedWordPair, true, true, false, false, org.ttdc.flipcards.shared.PagedWordPair/1623368088, 1623368088
 org.ttdc.flipcards.shared.Tag, true, true, false, false, org.ttdc.flipcards.shared.Tag/752308361, 752308361
 [Lorg.ttdc.flipcards.shared.Tag;, true, true, false, false, [Lorg.ttdc.flipcards.shared.Tag;/1400952423, 1400952423
-org.ttdc.flipcards.shared.WordPair, true, true, false, false, org.ttdc.flipcards.shared.WordPair/3287524791, 3287524791
-[Lorg.ttdc.flipcards.shared.WordPair;, true, true, false, false, [Lorg.ttdc.flipcards.shared.WordPair;/449583950, 449583950
+org.ttdc.flipcards.shared.WordPair, true, true, false, false, org.ttdc.flipcards.shared.WordPair/3342715575, 3342715575
+[Lorg.ttdc.flipcards.shared.WordPair;, true, true, false, false, [Lorg.ttdc.flipcards.shared.WordPair;/1531403928, 1531403928

@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
@@ -20,7 +21,7 @@ public interface StudyWordsService extends RemoteService{
 	Boolean deleteWordPair(String id) throws IllegalArgumentException, NotLoggedInException;
 	List<WordPair> generateQuiz(QuizOptions quizOptions) throws NotLoggedInException;
 	void answerQuestion(String id, Boolean correct) throws IllegalArgumentException, NotLoggedInException;
-	List<WordPair> getAllWordPairs() throws NotLoggedInException;
+//	List<WordPair> getAllWordPairs() throws NotLoggedInException;
 	String getFileUploadUrl() throws NotLoggedInException;
 	void assignSelfToUserlessWords() throws NotLoggedInException;
 	
@@ -30,7 +31,13 @@ public interface StudyWordsService extends RemoteService{
 	Tag updateTagName(String tagId, String name) throws IllegalArgumentException, NotLoggedInException;
 	void deTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
 	void applyTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
-	List<WordPair> getWordPairs(List<String> tagIds) throws IllegalArgumentException, NotLoggedInException;
+	List<String> getStudyFriends() throws IllegalArgumentException,
+			NotLoggedInException;
+	List<WordPair> getWordPairs(List<String> tagIds, List<String> users,
+			ItemFilter filter) throws IllegalArgumentException,
+			NotLoggedInException;
+	WordPair setActiveStatus(String id, boolean active)
+			throws IllegalArgumentException, NotLoggedInException;
 }
 
 

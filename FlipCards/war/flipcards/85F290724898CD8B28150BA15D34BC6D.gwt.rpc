@@ -8,7 +8,7 @@ java.lang.IllegalArgumentException, true, true, false, false, java.lang.IllegalA
 java.lang.NumberFormatException, true, true, false, false, java.lang.NumberFormatException/3305228476, 3305228476
 java.lang.RuntimeException, true, false, true, false, java.lang.RuntimeException/515124647, 515124647
 java.lang.String, true, true, true, true, java.lang.String/2004016611, 2004016611
-[Ljava.lang.String;, false, false, true, true, [Ljava.lang.String;/2600011424, 2600011424
+[Ljava.lang.String;, true, true, true, true, [Ljava.lang.String;/2600011424, 2600011424
 java.lang.Throwable, true, false, true, false, java.lang.Throwable/2953622131, 2953622131
 java.sql.Date, true, true, false, false, java.sql.Date/730999118, 730999118
 java.sql.Time, true, true, false, false, java.sql.Time/1816797103, 1816797103
@@ -24,9 +24,10 @@ java.util.Vector, true, true, true, true, java.util.Vector/3057315478, 305731547
 org.ttdc.flipcards.client.StudyWordsService, false, false, false, false, _, 1091026405
 org.ttdc.flipcards.shared.CardOrder, false, false, true, true, org.ttdc.flipcards.shared.CardOrder/2570707650, 2570707650
 org.ttdc.flipcards.shared.CardSide, false, false, true, true, org.ttdc.flipcards.shared.CardSide/1092660598, 1092660598
+org.ttdc.flipcards.shared.ItemFilter, false, false, true, true, org.ttdc.flipcards.shared.ItemFilter/3747362647, 3747362647
 org.ttdc.flipcards.shared.NotLoggedInException, true, true, false, false, org.ttdc.flipcards.shared.NotLoggedInException/2169295628, 2169295628
 org.ttdc.flipcards.shared.QuizOptions, false, false, true, true, org.ttdc.flipcards.shared.QuizOptions/1149534399, 1149534399
 org.ttdc.flipcards.shared.Tag, true, true, false, false, org.ttdc.flipcards.shared.Tag/752308361, 752308361
 [Lorg.ttdc.flipcards.shared.Tag;, true, true, false, false, [Lorg.ttdc.flipcards.shared.Tag;/1400952423, 1400952423
-org.ttdc.flipcards.shared.WordPair, true, true, false, false, org.ttdc.flipcards.shared.WordPair/3287524791, 3287524791
-[Lorg.ttdc.flipcards.shared.WordPair;, true, true, false, false, [Lorg.ttdc.flipcards.shared.WordPair;/449583950, 449583950
+org.ttdc.flipcards.shared.WordPair, true, true, false, false, org.ttdc.flipcards.shared.WordPair/3342715575, 3342715575
+[Lorg.ttdc.flipcards.shared.WordPair;, true, true, false, false, [Lorg.ttdc.flipcards.shared.WordPair;/1531403928, 1531403928

@@ -7,8 +7,8 @@
 				<tr><td colspan="2"><g:Anchor ui:field="closeAnchor"/></td></tr>
 				<tr><td colspan="2">Edit Card</td></tr>
 				<tr><td>Term:</td><td>Definition:</td></tr>
-				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/></td></tr>
-				<tr><td colspan="2"><g:Button ui:field="updateButton"/><g:Button ui:field="deleteButton"/></td></tr>
+				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/><g:Button ui:field="updateButton"/></td></tr>
+				<tr><td colspan="2"><g:Button ui:field="deleteButton"/><g:Button ui:field="activateButton"/><g:Button ui:field="deactivateButton"/></td></tr>
 				<tr><td colspan="2"><g:FlowPanel ui:field="tagMeFlowPanel"/></td></tr>
 			</table>
 		</div>

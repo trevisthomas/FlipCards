@@ -26,6 +26,8 @@ public interface StagingCardServiceAsync {
 
 	void getStagedCards(String owner, String cursor,
 			AsyncCallback<PagedWordPair> callback);
+
+	void migrateToStudyItemSchema(AsyncCallback<Integer> asyncCallback);
 	
 
 }
