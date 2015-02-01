@@ -7,6 +7,8 @@ import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ui.staging.StagingManager;
+import org.ttdc.flipcards.shared.CardOrder;
+import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -64,6 +66,10 @@ public class CardManager extends Composite {
 	@UiField
 	ListBox tagListBox;
 	@UiField
+	ListBox ownerListBox;
+	@UiField
+	ListBox filterListBox;
+	@UiField
 	HorizontalPanel tagFilterPanel;
 	@UiField
 	Label dataHeaderLabel;
@@ -72,7 +78,9 @@ public class CardManager extends Composite {
 	
 	
 	private long lastIndex;
-	private String lastSelectedFilter = NONE;
+	private String lastSelectedTag = NONE;
+	private String lastSelectedOwner = NONE;
+	private ItemFilter lastSelectedFilter = ItemFilter.INACTIVE;
 
 	public CardManager() {
 		initWidget(uiBinder.createAndBindUi(this));
@@ -89,36 +97,39 @@ public class CardManager extends Composite {
 		loadWords();
 	}
 
-	private void loadWords() {
-		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
-			@Override
-			public void onSuccess(List<WordPair> result) {
-				for (WordPair card : result) {
-					lastIndex = card.getDisplayOrder();
-					cardBrowserPanel.add(new CardView(card));
-				}
-				dataHeaderLabel.setText("Loaded " + result.size() + " cards.");
-			}
-
-			@Override
-			public void onFailure(Throwable caught) {
-				dataHeaderLabel.setText("Failed to load.");
-				FlipCards.showErrorMessage(caught.getMessage());
-			}
-		});
-	}
+//	private void loadWords() {
+//		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
+//			@Override
+//			public void onSuccess(List<WordPair> result) {
+//				for (WordPair card : result) {
+//					lastIndex = card.getDisplayOrder();
+//					cardBrowserPanel.add(new CardView(card));
+//				}
+//				dataHeaderLabel.setText("Loaded " + result.size() + " cards.");
+//			}
+//
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				dataHeaderLabel.setText("Failed to load.");
+//				FlipCards.showErrorMessage(caught.getMessage());
+//			}
+//		});
+//	}
 	
-	private void loadWords(String tagId) {
+	private void loadWords() {
 		dataHeaderLabel.setText("Loading...");
 		cardBrowserPanel.clear();
-		lastSelectedFilter = tagId;
-		if(NONE.equals(tagId)){
-			loadWords();
-			return;
-		}
 		List<String> tagIds = new ArrayList<>();
-		tagIds.add(tagId);
-		studyWordsService.getWordPairs(tagIds, new AsyncCallback<List<WordPair>>() {
+		if(!NONE.equals(lastSelectedTag)){
+			tagIds.add(lastSelectedTag);
+		}
+		List<String> owners = new ArrayList<>();
+		if(!NONE.equals(lastSelectedOwner)){
+			owners.add(lastSelectedOwner);
+		}
+		
+		
+		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, new AsyncCallback<List<WordPair>>() {
 			@Override
 			public void onSuccess(List<WordPair> result) {
 				for (WordPair card : result) {
@@ -158,7 +169,7 @@ public class CardManager extends Composite {
 						definitionTextBox.setText("");
 						termTextBox.setFocus(true);
 						card.setDisplayOrder(lastIndex); //So lame.
-						cardBrowserPanel.add(new CardView(card));
+						cardBrowserPanel.insert(new CardView(card), 0);
 						FlipCards.showMessage("New card created");
 					}
 
@@ -179,11 +190,25 @@ public class CardManager extends Composite {
 		}
 	}
 	
-	
+	@UiHandler("migrateButton")
+	void onMigrate(ClickEvent e){
+		FlipCards.stagingCardService.migrateToStudyItemSchema(new AsyncCallback<Integer>() {
+			@Override
+			public void onSuccess(Integer result) {
+				Window.alert("Done: " + result);
+				
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed");
+			}
+		});
+	}
 	
 	@UiHandler("refreshButton")
 	void onRefreshClick(ClickEvent e) {
-		loadWords(lastSelectedFilter);
+		loadWords();
 	}
 	
 	@UiHandler("quizAnchor")
@@ -216,9 +241,13 @@ public class CardManager extends Composite {
 				
 				@Override
 				public void onSuccess(List<Tag> result) {
-					tagListBox.addItem(NONE, NONE);
+					tagListBox.clear();
+					tagListBox.addItem("All", NONE);
 					for(Tag tag : result){
 						tagListBox.addItem(tag.getTagName(), tag.getTagId());
+						if(tag.getTagId().equals(lastSelectedTag)){
+							tagListBox.setSelectedIndex(tagListBox.getItemCount() - 1);
+						}
 					}
 				}
 				
@@ -227,17 +256,64 @@ public class CardManager extends Composite {
 					FlipCards.showErrorMessage(caught.getMessage());
 				}
 			});
+			
+			studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
+				
+				@Override
+				public void onSuccess(List<String> result) {
+					ownerListBox.clear();
+					ownerListBox.addItem("All", NONE);
+					for(String owner : result){
+						ownerListBox.addItem(owner, owner);
+					}
+					ownerListBox.setSelectedIndex(1);
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					FlipCards.showErrorMessage(caught.getMessage());
+				}
+			});
+			filterListBox.clear();
+			addItemFilterItem(ItemFilter.ACTIVE);
+			addItemFilterItem(ItemFilter.INACTIVE);
+			addItemFilterItem(ItemFilter.BOTH);
+		}
+	}
+
+	private void addItemFilterItem(ItemFilter item) {
+		filterListBox.addItem(item.toString(), item.name());
+		if(item.equals(lastSelectedFilter)){
+			filterListBox.setSelectedIndex(filterListBox.getItemCount() - 1);
 		}
 	}
 	
 	@UiHandler("tagListBox")
 	void onTagFilterChange(ChangeEvent e){
-		String selected = tagListBox.getValue(tagListBox.getSelectedIndex());
+		lastSelectedTag = tagListBox.getValue(tagListBox.getSelectedIndex());
 		//Window.alert("Sel:" +selected);
 		dataHeaderLabel.setText("Loading...");
 		cardBrowserPanel.clear(); //Show wait icon.
-		loadWords(selected);
+		loadWords();
 	}
+	
+	@UiHandler("ownerListBox")
+	void onOwnerFilterChange(ChangeEvent e){
+		lastSelectedOwner = ownerListBox.getValue(ownerListBox.getSelectedIndex());
+		//Window.alert("Sel:" +selected);
+		dataHeaderLabel.setText("Loading...");
+		cardBrowserPanel.clear(); //Show wait icon.
+		loadWords();
+	}
+	
+	@UiHandler("filterListBox")
+	void onFilterChange(ChangeEvent e){
+		lastSelectedFilter = ItemFilter.valueOf(filterListBox.getValue(filterListBox.getSelectedIndex()));
+		dataHeaderLabel.setText("Loading...");
+		cardBrowserPanel.clear(); //Show wait icon.
+		loadWords();
+	}
+	
 	
 	
 	@UiHandler("goButton")

@@ -22,6 +22,9 @@
 		
 		<g:HorizontalPanel ui:field="tagFilterPanel">
 			<g:ListBox ui:field="tagListBox"/>
+			<g:ListBox ui:field="ownerListBox"/>
+			<g:ListBox ui:field="filterListBox"/>
+			
 			<g:Button ui:field="goButton" />
 		</g:HorizontalPanel>
 		
@@ -30,7 +33,7 @@
 			<g:VerticalPanel ui:field="cardBrowserPanel"/>
 		</div>
 		
-		
+		<g:Button ui:field="migrateButton">MIGRATE</g:Button>
 	</g:HTMLPanel>
 	
 	

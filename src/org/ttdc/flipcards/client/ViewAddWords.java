@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+@Deprecated
 public class ViewAddWords extends VerticalPanel{
 	private FlexTable wordsFlexTable;
 	private final Label errorMessageLabel = new Label();
@@ -85,21 +86,21 @@ public class ViewAddWords extends VerticalPanel{
 	}
 	
 	private void loadWords() {
-		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
-			
-			@Override
-			public void onSuccess(List<WordPair> result) {
-				for(WordPair pair : result){
-					addWordPair(pair);
-				}
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				errorMessageLabel.setText(caught.getMessage());
-				errorMessageLabel.setVisible(true);
-			}
-		});
+//		studyWordsService.getAllWordPairs(new AsyncCallback<List<WordPair>>() {
+//			
+//			@Override
+//			public void onSuccess(List<WordPair> result) {
+//				for(WordPair pair : result){
+//					addWordPair(pair);
+//				}
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				errorMessageLabel.setText(caught.getMessage());
+//				errorMessageLabel.setVisible(true);
+//			}
+//		});
 	}
 	
 	private void addWordPair(WordPair result) {

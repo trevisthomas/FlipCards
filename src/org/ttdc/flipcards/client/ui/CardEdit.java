@@ -37,6 +37,11 @@ public class CardEdit extends Composite {
 	Button updateButton;
 	@UiField
 	Button deleteButton;
+	@UiField
+	Button activateButton;
+	@UiField
+	Button deactivateButton;
+	
 	@UiField 
 	TextBox termTextBox;
 	@UiField
@@ -58,12 +63,20 @@ public class CardEdit extends Composite {
 		this.cardView = cardView;
 		updateButton.setText("Update");
 		deleteButton.setText("Delete");
+		activateButton.setText("Activate!");
+		deactivateButton.setText("Deactivate");
 		closeAnchor.setText("close");
 		termTextBox.setText(card.getWord());
 		definitionTextBox.setText(card.getDefinition());
 		TextBoxKeyDownHandler handler = new TextBoxKeyDownHandler();
 		definitionTextBox.addKeyDownHandler(handler);
 		termTextBox.addKeyDownHandler(handler);
+		
+		deleteButton.setEnabled(c.isDeleteAllowed());
+		deleteButton.setVisible(!c.isActive());
+		
+		activateButton.setVisible(!c.isActive());
+		deactivateButton.setVisible(c.isActive());
 		
 		//Load tags
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
@@ -126,6 +139,37 @@ public class CardEdit extends Composite {
 	@UiHandler("closeAnchor")
 	void onCloseClick(ClickEvent e) {
 		cardView.onCardEditClose(card); 
+	}
+	
+	
+	@UiHandler("activateButton")
+	void onActivateClick(ClickEvent e) {
+		FlipCards.studyWordsService.setActiveStatus(card.getId(), true, new AsyncCallback<WordPair>() {
+			@Override
+			public void onSuccess(WordPair result) {
+				cardView.onCardUpdated(result); 
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage("Server failed to activate");
+			}
+		});
+	}
+	
+	@UiHandler("deactivateButton")
+	void onDeactivateClick(ClickEvent e) {
+		FlipCards.studyWordsService.setActiveStatus(card.getId(), false, new AsyncCallback<WordPair>() {
+			@Override
+			public void onSuccess(WordPair result) {
+				cardView.onCardUpdated(result); 
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage("Server failed to deactivate");
+			}
+		});
 	}
 	
 	@UiHandler("deleteButton")

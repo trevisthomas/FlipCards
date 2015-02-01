@@ -80,6 +80,15 @@ html, body {
 	height: 100%;
 	outline: 0;
 }
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+#main{
+	position:relative;
+	width:600px;
+}
 .wrapper {
 	min-height: 100%;
 	height: auto !important; /* This line and the next line are not necessary unless you need IE6 support */
@@ -125,5 +134,11 @@ html, body {
 }
 .flipButtonNo{
 	background-image: url('/img/no.png');
+}
+
+/*active card view*/
+.active{
+	border:1px black;
+	background-color: #eeeeee;
 }
 

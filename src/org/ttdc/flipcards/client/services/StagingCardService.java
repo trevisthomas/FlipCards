@@ -30,5 +30,7 @@ public interface StagingCardService  extends RemoteService {
 	
 	PagedWordPair getStagedCards(String owner, String cursor)
 			throws IllegalArgumentException, NotLoggedInException;
+	
+	int migrateToStudyItemSchema();
 }
 

@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
@@ -13,9 +14,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface StudyWordsServiceAsync {
 	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
-	void getAllWordPairs(AsyncCallback<List<WordPair>> callback);
-	
-	void getWordPairs(List<String> tagIds, AsyncCallback<List<WordPair>> callback);
+	void getWordPairs(List<String> tagIds, List<String> users,
+			ItemFilter filter, AsyncCallback<List<WordPair>> callback);
 
 	void updateWordPair(String id, String word, String definition,
 			AsyncCallback<WordPair> callback);
@@ -42,5 +42,10 @@ public interface StudyWordsServiceAsync {
 	void deTag(String tagId, String cardId, AsyncCallback<Void> callback);
 
 	void updateTagName(String tagId, String name, AsyncCallback<Tag> callback);
+
+	void getStudyFriends(AsyncCallback<List<String>> callback);
+
+	void setActiveStatus(String id, boolean active,
+			AsyncCallback<WordPair> callback);
 	
 }

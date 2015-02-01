@@ -35,16 +35,21 @@ public class CardView extends Composite implements CardEdit.CardEditObserver{
 	@UiField
 	HTMLPanel mainHtmlPanel;
 	
-	private final WordPair card;
+	private WordPair card;
 	
 	//Current thought is to pass the tag map in as an arg
 	public CardView(WordPair card) {
-		this.card = card;
 		initWidget(uiBinder.createAndBindUi(this));
 		loadCardToUi(card);
 	}
 
 	private void loadCardToUi(WordPair card) {
+		this.card = card;
+		if(card.isActive()){
+			wraperGrid.addStyleName("active");
+		} else {
+			wraperGrid.removeStyleName("active");
+		}
 		termLabel.setText(card.getWord());
 		definitionLabel.setText(card.getDefinition());
 		numberLabel.setText(""+card.getDisplayOrder());
@@ -83,6 +88,7 @@ public class CardView extends Composite implements CardEdit.CardEditObserver{
 	public void onCardEditClose(WordPair card) {
 		mainHtmlPanel.clear();
 		mainHtmlPanel.add(wraperGrid);
+		loadCardToUi(card);
 	}
 	
 	public void onCardDeleted(){
