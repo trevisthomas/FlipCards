@@ -2,12 +2,14 @@ package org.ttdc.flipcards.client.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ui.staging.StagingManager;
 import org.ttdc.flipcards.shared.CardOrder;
+import org.ttdc.flipcards.shared.Constants;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.Tag;
@@ -78,22 +80,35 @@ public class CardManager extends Composite {
 	Label dataHeaderLabel;
 	@UiField
 	Button refreshButton;
-	@UiField
-	HTMLPanel paginationPanel;
-	@UiField
-	Anchor pagePrevAnchor;
-	@UiField
-	Anchor pageNextAnchor;
+//	@UiField
+//	HTMLPanel paginationPanel;
+//	@UiField
+//	Anchor pagePrevAnchor;
+//	@UiField
+//	Anchor pageNextAnchor;
 	@UiField
 	Button migrateButton;
+	
+	@UiField
+	Button prevButton;
+	@UiField
+	Button nextButton;
+	@UiField
+	Anchor lingueeButton;
+	@UiField
+	Anchor spanishDictButton;
 	
 	private long lastIndex;
 	private String lastSelectedTag = NONE;
 	private String lastSelectedOwner = NONE;
 	private ItemFilter lastSelectedFilter = ItemFilter.INACTIVE;
 	private int currentPage = 1;
-	private int availablePages = -1;
+//	private int availablePages = -1;
 	private int cardsPerPage = 50;
+	
+	private long totalCardCount = -1;
+	private Stack<String> cursorStack = new Stack<>();
+	
 
 	public CardManager() {
 		initWidget(uiBinder.createAndBindUi(this));
@@ -131,9 +146,19 @@ public class CardManager extends Composite {
 //		});
 //	}
 	
-	private void loadWords() {
+	private void loadWords(){
+		loadWords("");
+	}
+	private void loadWords(String cursorString) {
+		cursorStack.clear();
+		cursorStack.push("");
 		dataHeaderLabel.setText("Loading...");
 		cardBrowserPanel.clear();
+		currentPage = 1;
+		refresh(cursorString);
+	}
+
+	private void refresh(String cursorString) {
 		List<String> tagIds = new ArrayList<>();
 		if(!NONE.equals(lastSelectedTag)){
 			tagIds.add(lastSelectedTag);
@@ -143,19 +168,36 @@ public class CardManager extends Composite {
 			owners.add(lastSelectedOwner);
 		}
 		
-		
-		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, cardsPerPage,  new AsyncCallback<PagedWordPair>() {
+		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, currentPage, cardsPerPage,  new AsyncCallback<PagedWordPair>() {
 			@Override
 			public void onSuccess(PagedWordPair result) {
-				currentPage = 1;
+				cardBrowserPanel.clear();
+				Window.scrollTo (0 ,0);
+				if(result.getTotalCardCount() != -1){
+					totalCardCount = result.getTotalCardCount();
+					dataHeaderLabel.setText("Loaded " + result.getTotalCardCount() + " cards.");
+				}
+				if(cursorStack.size() == 1){
+					prevButton.setEnabled(false);
+				}
+				else{
+					prevButton.setEnabled(true);
+				}
+				int offset = (currentPage - 1) * cardsPerPage;
+				if(offset + cardsPerPage < totalCardCount){
+					nextButton.setEnabled(true);
+				}
+				else{
+					nextButton.setEnabled(false);
+				}
+				cursorStack.push("fat fakeness");
+				
 				List<WordPair> wordPairs = result.getWordPair();
+				int count = 1;
 				for (WordPair card : wordPairs) {
-//					lastIndex = card.getDisplayOrder();  This is dumb
+					card.setDisplayOrder((cardsPerPage * (currentPage - 1)) + count++);
 					cardBrowserPanel.add(new CardView(card));
 				}
-				dataHeaderLabel.setText("Loaded " + result.getTotalCardCount() + " cards.");
-				availablePages = result.getPageCount();
-				setupPaginatedPanel();
 				
 			}
 
@@ -167,42 +209,42 @@ public class CardManager extends Composite {
 		});
 	}
 	
-	protected void setupPaginatedPanel() {
-		paginationPanel.setVisible(availablePages > 1);
-		pagePrevAnchor.setEnabled(currentPage > 1);
-		if(pagePrevAnchor.isEnabled()){
-			pagePrevAnchor.removeStyleName("disabled");
-		}
-		else{
-			pagePrevAnchor.addStyleName("disabled");
-		}
-		pageNextAnchor.setEnabled(currentPage < availablePages);
-		if(pageNextAnchor.isEnabled()){
-			pageNextAnchor.removeStyleName("disabled");
-		}
-		else{
-			pageNextAnchor.addStyleName("disabled");
-		}
-	}
+//	protected void setupPaginatedPanel() {
+//		paginationPanel.setVisible(availablePages > 1);
+//		pagePrevAnchor.setEnabled(currentPage > 1);
+//		if(pagePrevAnchor.isEnabled()){
+//			pagePrevAnchor.removeStyleName("disabled");
+//		}
+//		else{
+//			pagePrevAnchor.addStyleName("disabled");
+//		}
+//		pageNextAnchor.setEnabled(currentPage < availablePages);
+//		if(pageNextAnchor.isEnabled()){
+//			pageNextAnchor.removeStyleName("disabled");
+//		}
+//		else{
+//			pageNextAnchor.addStyleName("disabled");
+//		}
+//	}
 
-	private void loadPage(){
-		studyWordsService.getWordPairsForPage(currentPage, new AsyncCallback<List<WordPair>>() {
-			@Override
-			public void onSuccess(List<WordPair> wordPairs) {
-				cardBrowserPanel.clear();
-				setupPaginatedPanel();
-				for (WordPair card : wordPairs) {
-					cardBrowserPanel.add(new CardView(card));
-				}			
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				dataHeaderLabel.setText("Error loading page");
-				FlipCards.showErrorMessage(caught.getMessage());
-			}
-		});
-	}
+//	private void loadPage(){
+//		studyWordsService.getWordPairsForPage(currentPage, new AsyncCallback<List<WordPair>>() {
+//			@Override
+//			public void onSuccess(List<WordPair> wordPairs) {
+//				cardBrowserPanel.clear();
+//				setupPaginatedPanel();
+//				for (WordPair card : wordPairs) {
+//					cardBrowserPanel.add(new CardView(card));
+//				}			
+//			}
+//			
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				dataHeaderLabel.setText("Error loading page");
+//				FlipCards.showErrorMessage(caught.getMessage());
+//			}
+//		});
+//	}
 
 	private void saveNewCard() {
 		String word = termTextBox.getText().trim();
@@ -263,9 +305,24 @@ public class CardManager extends Composite {
 		});
 	}
 	
+	@UiHandler("nextButton")
+	void onNextClick(ClickEvent e){
+		currentPage++;
+		refresh(cursorStack.peek());
+	}
+	
+	@UiHandler("prevButton")
+	void onPrevClick(ClickEvent e){
+		currentPage--;
+		cursorStack.pop();//Next
+		cursorStack.pop();//Current
+		refresh(cursorStack.peek());
+		
+	}
+	
 	@UiHandler("refreshButton")
 	void onRefreshClick(ClickEvent e) {
-		loadWords();
+		loadWords("");
 	}
 	
 	@UiHandler("quizAnchor")
@@ -288,16 +345,26 @@ public class CardManager extends Composite {
 		TagManager.show();
 	}
 	
-	@UiHandler("pagePrevAnchor")
-	void onPagePrevClick(ClickEvent e) {
-		currentPage--;
-		loadPage();
+//	@UiHandler("pagePrevAnchor")
+//	void onPagePrevClick(ClickEvent e) {
+//		currentPage--;
+////		loadPage();
+//	}
+//	
+//	@UiHandler("pageNextAnchor")
+//	void onPageNextClick(ClickEvent e) {
+//		currentPage++;
+////		loadPage();
+//	}
+	
+	@UiHandler("lingueeButton")
+	void onLingueeClick(ClickEvent e) {
+		Window.open("http://www.linguee.com/english-spanish/search?source=spanish&query="+termTextBox.getText(), "_blank", "");
 	}
 	
-	@UiHandler("pageNextAnchor")
-	void onPageNextClick(ClickEvent e) {
-		currentPage++;
-		loadPage();
+	@UiHandler("spanishDictButton")
+	void onSpanishDictClick(ClickEvent e) {
+		Window.open("http://www.spanishdict.com/translate/"+termTextBox.getText(), "_blank", "");
 	}
 	
 	@UiHandler("tagFilterAnchor")

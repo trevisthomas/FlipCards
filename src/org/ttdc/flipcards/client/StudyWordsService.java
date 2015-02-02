@@ -34,12 +34,13 @@ public interface StudyWordsService extends RemoteService{
 	void applyTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
 	List<String> getStudyFriends() throws IllegalArgumentException,
 			NotLoggedInException;
-	PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, int perPage) throws IllegalArgumentException,
-			NotLoggedInException;
 	WordPair setActiveStatus(String id, boolean active)
 			throws IllegalArgumentException, NotLoggedInException;
 	List<WordPair> getWordPairsForPage(int pageNumber)
+			throws IllegalArgumentException, NotLoggedInException;
+	
+	PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
+			ItemFilter filter, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException;
 
 }
