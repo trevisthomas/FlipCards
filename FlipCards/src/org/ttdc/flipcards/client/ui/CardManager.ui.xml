@@ -16,7 +16,7 @@
 				<tr><td colspan="3">Add New Cards</td></tr>
 				<tr><td>Term:</td><td colspan="2">Definition:</td></tr>
 				<tr><td><g:TextBox ui:field="termTextBox"/></td><td><g:TextBox ui:field="definitionTextBox"/> <g:Button ui:field="addCardButton"/><g:Button ui:field="refreshButton"/></td></tr>
-				<tr><td colspan="2"><g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">serch filter</g:Anchor></td></tr>
+				<tr><td colspan="2"><g:Anchor ui:field="spanishDictButton">spanish dict</g:Anchor> | <g:Anchor ui:field="lingueeButton">linguee</g:Anchor> | <g:Anchor ui:field="tagEditorAnchor">show tag editor</g:Anchor> | <g:Anchor ui:field="tagFilterAnchor">search filter</g:Anchor></td></tr>
 			</table>
 		</div>
 		
@@ -33,9 +33,13 @@
 			<g:VerticalPanel ui:field="cardBrowserPanel"/>
 		</div>
 		
+		<!-- 
 		<g:HTMLPanel styleName="prevNextPanel" ui:field="paginationPanel">
 			<g:Anchor ui:field="pagePrevAnchor">prev</g:Anchor> | <g:Anchor ui:field="pageNextAnchor">next</g:Anchor>
 		</g:HTMLPanel>
+		 -->
+		 
+		<g:HorizontalPanel><g:Button ui:field="prevButton">Prev</g:Button><g:Button ui:field="nextButton">Next</g:Button></g:HorizontalPanel>
 		
 		<g:Button ui:field="migrateButton">MIGRATE</g:Button>
 	</g:HTMLPanel>

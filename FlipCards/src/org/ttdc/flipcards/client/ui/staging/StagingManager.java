@@ -134,29 +134,20 @@ public class StagingManager extends Composite{
 				}
 				resultSizeLabel.setText(totalCardCount + " cards found.");
 				stagingPanel.clear();
-				
 				if(cursorStack.size() == 1){
 					prevButton.setEnabled(false);
 				}
 				else{
 					prevButton.setEnabled(true);
 				}
-				
-				
 				int offset = (pageNum - 1) * Constants.PAGE_SIZE;// assumes page size of 50
-				
-//				if(((pageNum + 1) * PAGE_SIZE) > totalCardCount){
 				if(offset + Constants.PAGE_SIZE < totalCardCount){
 					nextButton.setEnabled(true);
 				}
 				else{
 					nextButton.setEnabled(false);
 				}
-				
-				
-//				List<WordPair> reverseList = new ArrayList<>(result.getWordPair());
 				cursorStack.push(result.getCursorString());
-//				java.util.Collections.reverse(reverseList);
 				
 				
 				for(WordPair pair : result.getWordPair()){

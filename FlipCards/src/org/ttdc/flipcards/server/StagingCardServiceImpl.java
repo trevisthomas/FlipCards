@@ -419,102 +419,104 @@ public class StagingCardServiceImpl extends RemoteServiceServlet implements
 	 * Call only once. This is intended to migrate all of the data from Cards
 	 * and CardStaging into the StudyItem/StudyItemMeta paradigm
 	 */
-	@Override
+	
+	
 	public int migrateToStudyItemSchema() {
-		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
-		List<String> addedWords = new ArrayList<>();
-		int count = 0;
-		try {
-			{
-				Query q = pm.newQuery(StudyItem.class);
-				pm.deletePersistentAll((List<StudyItem>)q.execute());
-			}
-			
-			{
-				Query q = pm.newQuery(StudyItemMeta.class);
-				pm.deletePersistentAll((List<StudyItemMeta>)q.execute());
-			}
-			
-			Query q = pm.newQuery(Card.class);
-			List<Card> cards = (List<Card>) q.execute();
-			for (Card card : cards) {
-				if (addedWords.contains(card.getWord())) {
-					LOG.log(Level.WARNING, "Word: " + card.getWord()
-							+ " already exists. Skipping.");
-					continue;
-				}
-
-				if (card.getUser() == null) {
-					LOG.log(Level.WARNING, "Word: " + card.getWord()
-							+ " has no user. Skipping.");
-					continue;
-				}
-
-				addedWords.add(card.getWord());
-
-				StudyItem studyItem = new StudyItem();
-				StudyItemMeta studyItemMeta = new StudyItemMeta();
-				studyItem.setCreateDate(card.getCreateDate());
-				studyItem.setOwner(card.getUser().getEmail());
-				studyItem.setDefinition(card.getDefinition());
-				studyItem.setId(card.getId());
-				studyItem.setWord(card.getWord());
-
-				studyItemMeta.setConfidence(card.getConfidence());
-				studyItemMeta.setCreateDate(card.getCreateDate());
-				studyItemMeta.setDifficulty(card.getDifficulty());
-				studyItemMeta.setIncorrectCount(card.getIncorrectCount());
-				studyItemMeta.setLastUpdate(card.getLastUpdate());
-				studyItemMeta.setOwner(card.getUser().getEmail());
-				studyItemMeta.setStudyItemId(card.getId());
-				studyItemMeta.setViewCount(card.getViewCount());
-
-				pm.makePersistent(studyItem);
-				pm.makePersistent(studyItemMeta);
-				count++;
-
-				LOG.log(Level.WARNING, "Word: " + card.getWord()
-						+ " created as StudyItem.");
-			}
-
-			Query q2 = pm.newQuery(CardStaging.class);
-			List<CardStaging> cardsStaging = (List<CardStaging>) q2.execute();
-			for (CardStaging card : cardsStaging) {
-				if (addedWords.contains(card.getWord())) {
-					LOG.log(Level.WARNING, "Staged word: " + card.getWord()
-							+ " already exists. Skipping.");
-					continue;
-				}
-
-				if (card.getOwner() == null) {
-					LOG.log(Level.WARNING, "Staged word: " + card.getWord()
-							+ " has no owner. Skipping.");
-					continue;
-				}
-
-				addedWords.add(card.getWord());
-
-				StudyItem studyItem = new StudyItem();
-				studyItem.setCreateDate(card.getCreateDate());
-				studyItem.setOwner(card.getOwner());
-				studyItem.setDefinition(card.getDefinition());
-				studyItem.setId(card.getId());
-				studyItem.setWord(card.getWord());
-
-				pm.makePersistent(studyItem);
-				count++;
-				LOG.log(Level.WARNING, "Staged Word: " + card.getWord()
-						+ " created as StudyItem.");
-			}
-
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage());
-			throw new RuntimeException(e.getMessage());
-		} finally {
-			pm.close();
-		}
-
-		return count;
+		return 0;
+//		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+//		List<String> addedWords = new ArrayList<>();
+//		int count = 0;
+//		try {
+//			{
+//				Query q = pm.newQuery(StudyItem.class);
+//				pm.deletePersistentAll((List<StudyItem>)q.execute());
+//			}
+//			
+//			{
+//				Query q = pm.newQuery(StudyItemMeta.class);
+//				pm.deletePersistentAll((List<StudyItemMeta>)q.execute());
+//			}
+//			
+//			Query q = pm.newQuery(Card.class);
+//			List<Card> cards = (List<Card>) q.execute();
+//			for (Card card : cards) {
+//				if (addedWords.contains(card.getWord())) {
+//					LOG.log(Level.WARNING, "Word: " + card.getWord()
+//							+ " already exists. Skipping.");
+//					continue;
+//				}
+//
+//				if (card.getUser() == null) {
+//					LOG.log(Level.WARNING, "Word: " + card.getWord()
+//							+ " has no user. Skipping.");
+//					continue;
+//				}
+//
+//				addedWords.add(card.getWord());
+//
+//				StudyItem studyItem = new StudyItem();
+//				StudyItemMeta studyItemMeta = new StudyItemMeta();
+//				studyItem.setCreateDate(card.getCreateDate());
+//				studyItem.setOwner(card.getUser().getEmail());
+//				studyItem.setDefinition(card.getDefinition());
+//				studyItem.setId(card.getId());
+//				studyItem.setWord(card.getWord());
+//
+//				studyItemMeta.setConfidence(card.getConfidence());
+//				studyItemMeta.setCreateDate(card.getCreateDate());
+//				studyItemMeta.setDifficulty(card.getDifficulty());
+//				studyItemMeta.setIncorrectCount(card.getIncorrectCount());
+//				studyItemMeta.setLastUpdate(card.getLastUpdate());
+//				studyItemMeta.setOwner(card.getUser().getEmail());
+//				studyItemMeta.setStudyItemId(card.getId());
+//				studyItemMeta.setViewCount(card.getViewCount());
+//
+//				pm.makePersistent(studyItem);
+//				pm.makePersistent(studyItemMeta);
+//				count++;
+//
+//				LOG.log(Level.WARNING, "Word: " + card.getWord()
+//						+ " created as StudyItem.");
+//			}
+//
+//			Query q2 = pm.newQuery(CardStaging.class);
+//			List<CardStaging> cardsStaging = (List<CardStaging>) q2.execute();
+//			for (CardStaging card : cardsStaging) {
+//				if (addedWords.contains(card.getWord())) {
+//					LOG.log(Level.WARNING, "Staged word: " + card.getWord()
+//							+ " already exists. Skipping.");
+//					continue;
+//				}
+//
+//				if (card.getOwner() == null) {
+//					LOG.log(Level.WARNING, "Staged word: " + card.getWord()
+//							+ " has no owner. Skipping.");
+//					continue;
+//				}
+//
+//				addedWords.add(card.getWord());
+//
+//				StudyItem studyItem = new StudyItem();
+//				studyItem.setCreateDate(card.getCreateDate());
+//				studyItem.setOwner(card.getOwner());
+//				studyItem.setDefinition(card.getDefinition());
+//				studyItem.setId(card.getId());
+//				studyItem.setWord(card.getWord());
+//
+//				pm.makePersistent(studyItem);
+//				count++;
+//				LOG.log(Level.WARNING, "Staged Word: " + card.getWord()
+//						+ " created as StudyItem.");
+//			}
+//
+//		} catch (Exception e) {
+//			LOG.log(Level.SEVERE, e.getMessage());
+//			throw new RuntimeException(e.getMessage());
+//		} finally {
+//			pm.close();
+//		}
+//
+//		return count;
 
 	}
 

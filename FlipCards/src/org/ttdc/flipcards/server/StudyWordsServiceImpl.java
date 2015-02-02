@@ -30,10 +30,12 @@ import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.datanucleus.query.JDOCursorHelper;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import net.sf.jsr107cache.Cache;
@@ -251,168 +253,295 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	@Override
-	public PagedWordPair getWordPairs(List<String> tagIds, List<String> users, ItemFilter filter, int perPage) throws IllegalArgumentException, NotLoggedInException {
+	public PagedWordPair getWordPairs(List<String> tagIds, List<String> users, ItemFilter filter, int pageNumber, int perPage) throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 //		loadMetaDataToCache(); //Brute force.  Just build the cache every time.
 		
 		if(users.isEmpty()){
-//			users = getStudyFriends();
+			users = getStudyFriends();
 			
 			//Defaulting to self until i get the settings to save.
-			users = new ArrayList<>();
-			users.add(getUser().getEmail());
+//			users = new ArrayList<>();
+//			users.add(getUser().getEmail());
 		}
 
 		List<WordPair> wordPairs = new ArrayList<>();
 		
-		for(String owner : users){
+//		for(String owner : users){
+//			if(tagIds.isEmpty()){
+//				switch (filter) {
+//					case ACTIVE:
+//						wordPairs.addAll(getWordPairsActive(owner));
+//						break;
+//					case INACTIVE:
+//						wordPairs.addAll(getWordPairInactive(owner));
+//						break;	
+//					case BOTH:
+//					default:
+//						wordPairs.addAll(getWordPairAll(owner));
+//						break;
+//				}
+//				
+//			}
+//			else{
+//				wordPairs.addAll(getCards(tagIds, owner, filter));
+//			}
+//		}
+		PagedWordPair pwp = null;
+		
+		
 			if(tagIds.isEmpty()){
 				switch (filter) {
 					case ACTIVE:
-						wordPairs.addAll(getWordPairsActive(owner));
+						pwp = getWordPairsActive(users, pageNumber, perPage);
 						break;
 					case INACTIVE:
-						wordPairs.addAll(getWordPairInactive(owner));
+//						throw new IllegalArgumentException("INACTIVE filter not yet implemented");
+						pwp = getWordPairInactive(users, pageNumber, perPage);
 						break;	
 					case BOTH:
 					default:
-						wordPairs.addAll(getWordPairAll(owner));
+						pwp = getWordPairAll(users, pageNumber, perPage);
 						break;
 				}
 				
 			}
 			else{
-				wordPairs.addAll(getCards(tagIds, owner, filter));
+//				wordPairs.addAll(getCards(tagIds, owner, filter));
+				throw new IllegalArgumentException("Tag filter not yet implemented");
 			}
-		}
-		
-		
-		
-		int i = 1;
-		for (WordPair wp : wordPairs) {
-			wp.setDisplayOrder(i++);
-		}
+
+			
+//		int i = 1;
+//		for (WordPair wp : wordPairs) {
+//			wp.setDisplayOrder(i++);
+//		}
 		
 		
 //		Object firstPageTest = cache.get(new CacheKeyPageination(getUser().getEmail(), 1));
 		
-		PagedWordPair pwp = cachePaginatedWordPairs(wordPairs, perPage);
+//		PagedWordPair pwp = cachePaginatedWordPairs(wordPairs, perPage);
 		return pwp;
 		
 		
 //		return wordPairs;
 	}
 	
-	private PagedWordPair cachePaginatedWordPairs(List<WordPair> wordPairs, int perPage) {
-		PagedWordPair pwp = new PagedWordPair();
-		int pageCount = 0;
-		int toIndex;
-		pwp.setTotalCardCount(wordPairs.size());
-//		for(WordPair wp : wordPairs){
-		while(true){
-			pageCount++;
-			toIndex = pageCount * perPage;
-			if(toIndex > wordPairs.size()){
-				toIndex = wordPairs.size();
-			}
-			List<WordPair> page = new ArrayList<>(wordPairs.subList((pageCount - 1) * perPage, toIndex)); 
-			cache.put(new CacheKeyPageination(getUser().getEmail(), pageCount), page);
-			if(pwp.getWordPair() == null){
-				pwp.setWordPair(page); //First page
-			}
-			
-			if(toIndex == wordPairs.size()){
-				pwp.setPageCount(pageCount);
-				break;
-			}
-		}
-		return pwp;
-	}
+//	private PagedWordPair cachePaginatedWordPairs(List<WordPair> wordPairs, int perPage) {
+//		PagedWordPair pwp = new PagedWordPair();
+//		int pageCount = 0;
+//		int toIndex;
+//		pwp.setTotalCardCount(wordPairs.size());
+////		for(WordPair wp : wordPairs){
+//		while(true){
+//			pageCount++;
+//			toIndex = pageCount * perPage;
+//			if(toIndex > wordPairs.size()){
+//				toIndex = wordPairs.size();
+//			}
+//			List<WordPair> page = new ArrayList<>(wordPairs.subList((pageCount - 1) * perPage, toIndex)); 
+//			cache.put(new CacheKeyPageination(getUser().getEmail(), pageCount), page);
+//			if(pwp.getWordPair() == null){
+//				pwp.setWordPair(page); //First page
+//			}
+//			
+//			if(toIndex == wordPairs.size()){
+//				pwp.setPageCount(pageCount);
+//				break;
+//			}
+//		}
+//		return pwp;
+//	}
 
-	private List<WordPair> getWordPairAll(String owner)
-			throws NotLoggedInException {
-		PersistenceManager pm = getPersistenceManager();
-		List<WordPair> wordPairs = new ArrayList<>();
-		try {
-			Query q = pm.newQuery(StudyItem.class, "owner == o");
-			q.declareParameters("java.lang.String o");
-			q.setOrdering("createDate desc");
-			List<StudyItem> cards = (List<StudyItem>) q.execute(owner);  
-			int i = 1;
-			for (StudyItem card : cards) {
-				WordPair pair = convert(card, findMetaData(card.getId(), owner));
-				pair.setDisplayOrder(i++);
-				wordPairs.add(pair);
-			}
-	
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			pm.close();
-		}
-		return wordPairs;
-	}
-	
-	private List<WordPair> getWordPairInactive(String owner)
-			throws NotLoggedInException {
-		PersistenceManager pm = getPersistenceManager();
-		List<WordPair> wordPairs = new ArrayList<>();
-		try {
-			Query q = pm.newQuery(StudyItem.class, "owner == o");
-			q.declareParameters("java.lang.String o");
-			q.setOrdering("createDate desc");
-			List<StudyItem> cards = (List<StudyItem>) q.execute(owner);  
-			int i = 1;
-			for (StudyItem card : cards) {
-				StudyItemMeta meta = findMetaData(card.getId(), owner);
-				if(meta != null){
-					continue;
-				}
-				WordPair pair = convert(card, null);
-				pair.setDisplayOrder(i++);
-				wordPairs.add(pair);
-			}
-	
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			pm.close();
-		}
-		return wordPairs;
-	}
-	
+//	private List<WordPair> getWordPairAll(String owner)
+//			throws NotLoggedInException {
+//		PersistenceManager pm = getPersistenceManager();
+//		List<WordPair> wordPairs = new ArrayList<>();
+//		try {
+//			Query q = pm.newQuery(StudyItem.class, "owner == o");
+//			q.declareParameters("java.lang.String o");
+//			q.setOrdering("createDate desc");
+//			List<StudyItem> cards = (List<StudyItem>) q.execute(owner);  
+//			int i = 1;
+//			for (StudyItem card : cards) {
+//				WordPair pair = convert(card, findMetaData(card.getId(), owner));
+//				pair.setDisplayOrder(i++);
+//				wordPairs.add(pair);
+//			}
+//	
+//		} catch (Exception e) {
+//			logException(e);
+//		} finally {
+//			pm.close();
+//		}
+//		return wordPairs;
+//	}
+//	
 	/**
-	 * This was a test to see if searching for a list of owners worked, it does.
+	 * Ok lets do it for real.
 	 * @param owners
 	 * @return
 	 * @throws NotLoggedInException
 	 */
-	private List<WordPair> getWordPairInactive(List<String> owners)
+	private PagedWordPair getWordPairAll(List<String> owners, int pageNumber, int pageSize)
 			throws NotLoggedInException {
 		PersistenceManager pm = getPersistenceManager();
+		PagedWordPair pagedWordPair = new PagedWordPair();
 		List<WordPair> wordPairs = new ArrayList<>();
+		
+		//Fancy fucking cursor bullshit doesn't work when you use contains.
 		try {
 			Query q = pm.newQuery(StudyItem.class, ":p.contains(owner)");
+			if(pageNumber == 1){
+				q.setResult("count(this)");
+				Long count = (Long) q.execute(owners);
+				pagedWordPair.setTotalCardCount(count);
+				q.setResult(null);
+			}
 			q.setOrdering("createDate desc");
-			List<StudyItem> cards = (List<StudyItem>) q.execute(owners);  
-			int i = 1;
+			int start = (pageNumber - 1) * pageSize;
+			int end = start + pageSize;
+			q.setRange(start, end);
+			List<StudyItem> cards = (List<StudyItem>) q.execute(owners);
+
 			for (StudyItem card : cards) {
-				StudyItemMeta meta = findMetaData(card.getId(), card.getOwner());
-				if(meta != null){
-					continue;
-				}
-				WordPair pair = convert(card, null);
-				pair.setDisplayOrder(i++);
+				WordPair pair = convert(card, findMetaData(card.getId(), card.getOwner()));
 				wordPairs.add(pair);
 			}
+
+			pagedWordPair.setWordPair(wordPairs);
 	
 		} catch (Exception e) {
 			logException(e);
 		} finally {
 			pm.close();
 		}
-		return wordPairs;
+		return pagedWordPair;
 	}
+	
+	private PagedWordPair getWordPairInactive(List<String> owners, int pageNumber, int pageSize)
+			throws NotLoggedInException {
+		PersistenceManager pm = getPersistenceManager();
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		
+		//Fancy fucking cursor bullshit doesn't work when you use contains.
+		try {
+			Query q = pm.newQuery(StudyItem.class, ":p.contains(id)");
+			
+			//Get inactive id's
+			List<String> inactiveIds = getInactiveIds(owners);
+			pagedWordPair.setTotalCardCount(inactiveIds.size());
+			
+			q.setOrdering("createDate desc");
+			int start = (pageNumber - 1) * pageSize;
+			int end = start + pageSize;
+			
+//			if(end > inactiveIds.size()){
+//				end = inactiveIds.size();
+//			}
+//			q.setRange(start, end);
+//			List<StudyItem> cards = (List<StudyItem>) q.execute(inactiveIds.subList(start, start+4));
+			
+			for (String id : inactiveIds.subList(start, end > inactiveIds.size() ? inactiveIds.size() : end)) {
+				StudyItem studyItem = getStudyItem(id);
+				WordPair pair = convert(studyItem, null);
+				wordPairs.add(pair);
+			}
+
+			pagedWordPair.setWordPair(wordPairs);
+	
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			pm.close();
+		}
+		return pagedWordPair;
+	}
+	
+	private List<String> getInactiveIds(List<String> owners) {
+		PersistenceManager pm = getPersistenceManager();
+		Query q = pm.newQuery(StudyItemMeta.class, "owner == o");
+		q.declareParameters("java.lang.String o");
+		q.setResult("studyItemId");
+		List<String> myActiveCardIs = (List<String>) q.execute(getUser().getEmail());
+		
+		Query q2 = pm.newQuery(StudyItem.class, "owner == o");
+		q2.declareParameters("java.lang.String o");
+		q2.setResult("id");
+		List<String> allOfMyFriendsCardIds = (List<String>)  q2.execute(owners);
+		
+		List<String> inactive = new ArrayList<>();
+		for(String id : allOfMyFriendsCardIds){
+			if(!myActiveCardIs.contains(id)){
+				inactive.add(id);
+			}
+		}
+		
+		return inactive;
+		
+	}
+
+//	private List<WordPair> getWordPairInactive(String owner)
+//			throws NotLoggedInException {
+//		PersistenceManager pm = getPersistenceManager();
+//		List<WordPair> wordPairs = new ArrayList<>();
+//		try {
+//			Query q = pm.newQuery(StudyItem.class, "owner == o");
+//			q.declareParameters("java.lang.String o");
+//			q.setOrdering("createDate desc");
+//			List<StudyItem> cards = (List<StudyItem>) q.execute(owner);  
+//			int i = 1;
+//			for (StudyItem card : cards) {
+//				StudyItemMeta meta = findMetaData(card.getId(), owner);
+//				if(meta != null){
+//					continue;
+//				}
+//				WordPair pair = convert(card, null);
+//				pair.setDisplayOrder(i++);
+//				wordPairs.add(pair);
+//			}
+//	
+//		} catch (Exception e) {
+//			logException(e);
+//		} finally {
+//			pm.close();
+//		}
+//		return wordPairs;
+//	}
+//	
+//	/**
+//	 * This was a test to see if searching for a list of owners worked, it does.
+//	 * @param owners
+//	 * @return
+//	 * @throws NotLoggedInException
+//	 */
+//	private List<WordPair> getWordPairInactive(List<String> owners)
+//			throws NotLoggedInException {
+//		PersistenceManager pm = getPersistenceManager();
+//		List<WordPair> wordPairs = new ArrayList<>();
+//		try {
+//			Query q = pm.newQuery(StudyItem.class, ":p.contains(owner)");
+//			q.setOrdering("createDate desc");
+//			List<StudyItem> cards = (List<StudyItem>) q.execute(owners);  
+//			int i = 1;
+//			for (StudyItem card : cards) {
+//				StudyItemMeta meta = findMetaData(card.getId(), card.getOwner());
+//				if(meta != null){
+//					continue;
+//				}
+//				WordPair pair = convert(card, null);
+//				pair.setDisplayOrder(i++);
+//				wordPairs.add(pair);
+//			}
+//	
+//		} catch (Exception e) {
+//			logException(e);
+//		} finally {
+//			pm.close();
+//		}
+//		return wordPairs;
+//	}
 	
 	StudyItemMeta findMetaData(String studyItemId, String owner){
 		PersistenceManager pm = getPersistenceManager();
@@ -479,6 +608,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 	
+	//Hm quiz uses this one.  Should probably rewrite to make it faster.
 	private List<WordPair> getWordPairsActive(String owner) throws NotLoggedInException{
 		PersistenceManager pm = getPersistenceManager();
 		List<WordPair> list = new ArrayList<>();
@@ -496,6 +626,52 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			list.add(convert(studyItem, studyItemMeta));
 		}
 		return list;
+	}
+	
+	
+	
+	private PagedWordPair getWordPairsActive(List<String> owners, int pageNumber, int pageSize)
+			throws NotLoggedInException {
+		PersistenceManager pm = getPersistenceManager();
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		
+		//Fancy fucking cursor bullshit doesn't work when you use contains.
+		try {
+			Query q = pm.newQuery(StudyItemMeta.class, ":p.contains(owner)");
+			if(pageNumber == 1){
+				q.setResult("count(this)");
+				Long count = (Long) q.execute(owners);
+				pagedWordPair.setTotalCardCount(count);
+				q.setResult(null);
+			}
+			q.setOrdering("createDate desc");
+			/* Since you cant do joins, would it just make sense to put the word into the Meta so that i can sort on it?
+			 * 
+			 */
+
+			int start = (pageNumber - 1) * pageSize;
+			int end = start + pageSize;
+			q.setRange(start, end);
+			List<StudyItemMeta> studyItemMetaList = (List<StudyItemMeta>) q.execute(owners);
+
+			for (StudyItemMeta studyItemMeta : studyItemMetaList) {
+				StudyItem studyItem = getStudyItem(studyItemMeta.getStudyItemId());
+				if(studyItem == null){
+					LOG.severe("Study Item not found for metadata! id:" + studyItemMeta.getStudyItemId());
+					continue;
+				}
+				wordPairs.add(convert(studyItem, studyItemMeta));
+			}
+
+			pagedWordPair.setWordPair(wordPairs);
+	
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			pm.close();
+		}
+		return pagedWordPair;
 	}
 	
 	

@@ -16,7 +16,7 @@ public interface StudyWordsServiceAsync {
 	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
 	void getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, int perPage,
+			ItemFilter filter, int pageNumber, int perPage, 
 			AsyncCallback<PagedWordPair> callback);
 
 	void updateWordPair(String id, String word, String definition,
