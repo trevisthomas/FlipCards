@@ -3,6 +3,7 @@ package org.ttdc.flipcards.client;
 import java.util.List;
 
 import org.ttdc.flipcards.shared.ItemFilter;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
@@ -15,7 +16,8 @@ public interface StudyWordsServiceAsync {
 	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
 	void getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, AsyncCallback<List<WordPair>> callback);
+			ItemFilter filter, int perPage,
+			AsyncCallback<PagedWordPair> callback);
 
 	void updateWordPair(String id, String word, String definition,
 			AsyncCallback<WordPair> callback);
@@ -47,5 +49,8 @@ public interface StudyWordsServiceAsync {
 
 	void setActiveStatus(String id, boolean active,
 			AsyncCallback<WordPair> callback);
+
+	void getWordPairsForPage(int pageNumber,
+			AsyncCallback<List<WordPair>> callback);
 	
 }

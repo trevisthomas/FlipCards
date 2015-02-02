@@ -22,7 +22,7 @@ java.util.Stack, true, true, false, false, java.util.Stack/1346942793, 134694279
 java.util.Vector, true, true, false, false, java.util.Vector/3057315478, 3057315478
 org.ttdc.flipcards.client.services.StagingCardService, false, false, false, false, _, 3318099674
 org.ttdc.flipcards.shared.NotLoggedInException, true, true, false, false, org.ttdc.flipcards.shared.NotLoggedInException/2169295628, 2169295628
-org.ttdc.flipcards.shared.PagedWordPair, true, true, false, false, org.ttdc.flipcards.shared.PagedWordPair/1623368088, 1623368088
+org.ttdc.flipcards.shared.PagedWordPair, true, true, false, false, org.ttdc.flipcards.shared.PagedWordPair/3634560184, 3634560184
 org.ttdc.flipcards.shared.Tag, true, true, false, false, org.ttdc.flipcards.shared.Tag/752308361, 752308361
 [Lorg.ttdc.flipcards.shared.Tag;, true, true, false, false, [Lorg.ttdc.flipcards.shared.Tag;/1400952423, 1400952423
 org.ttdc.flipcards.shared.WordPair, true, true, false, false, org.ttdc.flipcards.shared.WordPair/3342715575, 3342715575

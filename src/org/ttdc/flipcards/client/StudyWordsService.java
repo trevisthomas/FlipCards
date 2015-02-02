@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
@@ -33,11 +34,14 @@ public interface StudyWordsService extends RemoteService{
 	void applyTag(String tagId, String cardId) throws IllegalArgumentException, NotLoggedInException;
 	List<String> getStudyFriends() throws IllegalArgumentException,
 			NotLoggedInException;
-	List<WordPair> getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter) throws IllegalArgumentException,
+	PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
+			ItemFilter filter, int perPage) throws IllegalArgumentException,
 			NotLoggedInException;
 	WordPair setActiveStatus(String id, boolean active)
 			throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> getWordPairsForPage(int pageNumber)
+			throws IllegalArgumentException, NotLoggedInException;
+
 }
 
 
