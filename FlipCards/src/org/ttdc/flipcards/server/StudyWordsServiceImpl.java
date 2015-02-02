@@ -23,16 +23,23 @@ import javax.jdo.Transaction;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
+import net.sf.jsr107cache.Cache;
+import net.sf.jsr107cache.CacheException;
+import net.sf.jsr107cache.CacheFactory;
+import net.sf.jsr107cache.CacheManager;
 
 public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StudyWordsService {
@@ -40,6 +47,19 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			.getLogger(StudyWordsServiceImpl.class.getName());
 	private static final PersistenceManagerFactory PMF = JDOHelper
 			.getPersistenceManagerFactory("transactions-optional");
+	
+	Cache cache;
+
+	public StudyWordsServiceImpl() {
+	    Map props = new HashMap();
+	    props.put(GCacheFactory.EXPIRATION_DELTA, 3600);
+		try {
+	        CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
+	        cache = cacheFactory.createCache(props);
+	    } catch (CacheException e) {
+	    	logException(e);
+	    }
+	}
 
 	// private static List<WordPair> wordPairs = new ArrayList<>();
 	// private static Map<String, WordPair> wordPairs = new HashMap<>();
@@ -221,15 +241,30 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 //	}
 	
 	@Override
-	public List<WordPair> getWordPairs(List<String> tagIds, List<String> users, ItemFilter filter) throws IllegalArgumentException, NotLoggedInException {
+	public List<WordPair> getWordPairsForPage(int pageNumber) throws IllegalArgumentException, NotLoggedInException{
 		checkLoggedIn();
+		List<WordPair> pageOfPairs = (List<WordPair>)cache.get(new CacheKeyPageination(getUser().getEmail(), pageNumber));
+		if(pageOfPairs == null){
+			throw new IllegalArgumentException("Paginated data is stale.  Refresh the page.");
+		}
+		return pageOfPairs;
+	}
+	
+	@Override
+	public PagedWordPair getWordPairs(List<String> tagIds, List<String> users, ItemFilter filter, int perPage) throws IllegalArgumentException, NotLoggedInException {
+		checkLoggedIn();
+//		loadMetaDataToCache(); //Brute force.  Just build the cache every time.
+		
 		if(users.isEmpty()){
 //			users = getStudyFriends();
+			
+			//Defaulting to self until i get the settings to save.
 			users = new ArrayList<>();
 			users.add(getUser().getEmail());
 		}
 
 		List<WordPair> wordPairs = new ArrayList<>();
+		
 		for(String owner : users){
 			if(tagIds.isEmpty()){
 				switch (filter) {
@@ -251,15 +286,49 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 		}
 		
+		
+		
 		int i = 1;
 		for (WordPair wp : wordPairs) {
 			wp.setDisplayOrder(i++);
 		}
 		
 		
-		return wordPairs;
+//		Object firstPageTest = cache.get(new CacheKeyPageination(getUser().getEmail(), 1));
+		
+		PagedWordPair pwp = cachePaginatedWordPairs(wordPairs, perPage);
+		return pwp;
+		
+		
+//		return wordPairs;
 	}
 	
+	private PagedWordPair cachePaginatedWordPairs(List<WordPair> wordPairs, int perPage) {
+		PagedWordPair pwp = new PagedWordPair();
+		int pageCount = 0;
+		int toIndex;
+		pwp.setTotalCardCount(wordPairs.size());
+//		for(WordPair wp : wordPairs){
+		while(true){
+			pageCount++;
+			toIndex = pageCount * perPage;
+			if(toIndex > wordPairs.size()){
+				toIndex = wordPairs.size();
+			}
+			List<WordPair> page = new ArrayList<>(wordPairs.subList((pageCount - 1) * perPage, toIndex)); 
+			cache.put(new CacheKeyPageination(getUser().getEmail(), pageCount), page);
+			if(pwp.getWordPair() == null){
+				pwp.setWordPair(page); //First page
+			}
+			
+			if(toIndex == wordPairs.size()){
+				pwp.setPageCount(pageCount);
+				break;
+			}
+		}
+		return pwp;
+	}
+
 	private List<WordPair> getWordPairAll(String owner)
 			throws NotLoggedInException {
 		PersistenceManager pm = getPersistenceManager();
@@ -312,6 +381,39 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return wordPairs;
 	}
 	
+	/**
+	 * This was a test to see if searching for a list of owners worked, it does.
+	 * @param owners
+	 * @return
+	 * @throws NotLoggedInException
+	 */
+	private List<WordPair> getWordPairInactive(List<String> owners)
+			throws NotLoggedInException {
+		PersistenceManager pm = getPersistenceManager();
+		List<WordPair> wordPairs = new ArrayList<>();
+		try {
+			Query q = pm.newQuery(StudyItem.class, ":p.contains(owner)");
+			q.setOrdering("createDate desc");
+			List<StudyItem> cards = (List<StudyItem>) q.execute(owners);  
+			int i = 1;
+			for (StudyItem card : cards) {
+				StudyItemMeta meta = findMetaData(card.getId(), card.getOwner());
+				if(meta != null){
+					continue;
+				}
+				WordPair pair = convert(card, null);
+				pair.setDisplayOrder(i++);
+				wordPairs.add(pair);
+			}
+	
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			pm.close();
+		}
+		return wordPairs;
+	}
+	
 	StudyItemMeta findMetaData(String studyItemId, String owner){
 		PersistenceManager pm = getPersistenceManager();
 		Query q = pm.newQuery(StudyItemMeta.class, "studyItemId == i && owner == o");
@@ -322,6 +424,58 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 		else { 
 			return null;
+		}
+	}
+	
+	private StudyItemMeta findMetaDataCached(String studyItemId, String owner){
+		StudyItemMeta meta = (StudyItemMeta)cache.get(new CacheKeyStudyItemMeta(studyItemId, owner));
+		return meta;
+		//Makes no effort to really load it on a cache miss.  
+		
+//		Query q = pm.newQuery(StudyItemMeta.class, "studyItemId == i && owner == o");
+//		q.declareParameters("java.lang.String i, java.lang.String o");
+//		List<StudyItemMeta> cards = (List<StudyItemMeta>) q.execute(studyItemId, owner);
+//		if(cards.size() > 0){
+//			return cards.get(0); //If the word isnt active, the expectation is that this will return null.
+//		}
+//		else { 
+//			return null;
+//		}
+	}
+	
+	
+//	/**
+//	 * 
+//	 * The idea is, all of the meta data should be in the cache, and should all be the same age?
+//	 */
+//	boolean refreshCacheIfNeeded(){
+//		PersistenceManager pm = getPersistenceManager();
+//		Query q = pm.newQuery(StudyItemMeta.class);
+//		q.setRange(0, 1);
+//		List<StudyItemMeta> metaList = (List<StudyItemMeta>) q.execute();
+//		if(metaList.size() > 1){
+//			StudyItemMeta meta = metaList.get(0);
+//			if(cache.get(meta) == null){
+//				loadMetaDataToCache();
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
+	
+	void loadMetaDataToCache(){
+		try{
+			PersistenceManager pm = getPersistenceManager();
+			Query q = pm.newQuery(StudyItemMeta.class);
+			List<StudyItemMeta> metaList = (List<StudyItemMeta>) q.execute();
+			
+			for(StudyItemMeta meta : metaList){
+				cache.put(new CacheKeyStudyItemMeta(meta.getStudyItemId(), meta.getOwner()), meta);
+			}
+		}
+		catch (Exception e) {
+			logException(e);
+			throw e;
 		}
 	}
 	

@@ -7,6 +7,7 @@ public class PagedWordPair implements Serializable{
 	private List<WordPair> wordPair;
 	private String cursorString;
 	private long totalCardCount = -1;
+	private int pageCount = -1;
 	
 	public PagedWordPair(){}
 	
@@ -35,4 +36,14 @@ public class PagedWordPair implements Serializable{
 	public void setTotalCardCount(long totalCardCount) {
 		this.totalCardCount = totalCardCount;
 	}
+
+	public int getPageCount() {
+		return pageCount;
+	}
+
+	public void setPageCount(int pageCount) {
+		this.pageCount = pageCount;
+	}
+	
+	
 }

@@ -26,6 +26,7 @@ org.ttdc.flipcards.shared.CardOrder, false, false, true, true, org.ttdc.flipcard
 org.ttdc.flipcards.shared.CardSide, false, false, true, true, org.ttdc.flipcards.shared.CardSide/1092660598, 1092660598
 org.ttdc.flipcards.shared.ItemFilter, false, false, true, true, org.ttdc.flipcards.shared.ItemFilter/3747362647, 3747362647
 org.ttdc.flipcards.shared.NotLoggedInException, true, true, false, false, org.ttdc.flipcards.shared.NotLoggedInException/2169295628, 2169295628
+org.ttdc.flipcards.shared.PagedWordPair, true, true, false, false, org.ttdc.flipcards.shared.PagedWordPair/3634560184, 3634560184
 org.ttdc.flipcards.shared.QuizOptions, false, false, true, true, org.ttdc.flipcards.shared.QuizOptions/1149534399, 1149534399
 org.ttdc.flipcards.shared.Tag, true, true, false, false, org.ttdc.flipcards.shared.Tag/752308361, 752308361
 [Lorg.ttdc.flipcards.shared.Tag;, true, true, false, false, [Lorg.ttdc.flipcards.shared.Tag;/1400952423, 1400952423

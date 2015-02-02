@@ -9,6 +9,7 @@ import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ui.staging.StagingManager;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.ItemFilter;
+import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -27,12 +28,14 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.util.PreventSpuriousRebuilds;
 
 public class CardManager extends Composite {
 
@@ -75,16 +78,28 @@ public class CardManager extends Composite {
 	Label dataHeaderLabel;
 	@UiField
 	Button refreshButton;
-	
+	@UiField
+	HTMLPanel paginationPanel;
+	@UiField
+	Anchor pagePrevAnchor;
+	@UiField
+	Anchor pageNextAnchor;
+	@UiField
+	Button migrateButton;
 	
 	private long lastIndex;
 	private String lastSelectedTag = NONE;
 	private String lastSelectedOwner = NONE;
 	private ItemFilter lastSelectedFilter = ItemFilter.INACTIVE;
+	private int currentPage = 1;
+	private int availablePages = -1;
+	private int cardsPerPage = 50;
 
 	public CardManager() {
 		initWidget(uiBinder.createAndBindUi(this));
 
+		migrateButton.setVisible(false);
+		
 		addCardButton.setText("Add Card");
 		TextBoxKeyDownHandler keyDownHandler = new TextBoxKeyDownHandler();
 		termTextBox.addKeyDownHandler(keyDownHandler);
@@ -129,19 +144,61 @@ public class CardManager extends Composite {
 		}
 		
 		
-		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, new AsyncCallback<List<WordPair>>() {
+		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, cardsPerPage,  new AsyncCallback<PagedWordPair>() {
 			@Override
-			public void onSuccess(List<WordPair> result) {
-				for (WordPair card : result) {
-					lastIndex = card.getDisplayOrder();
+			public void onSuccess(PagedWordPair result) {
+				currentPage = 1;
+				List<WordPair> wordPairs = result.getWordPair();
+				for (WordPair card : wordPairs) {
+//					lastIndex = card.getDisplayOrder();  This is dumb
 					cardBrowserPanel.add(new CardView(card));
 				}
-				dataHeaderLabel.setText("Loaded " + result.size() + " cards.");
+				dataHeaderLabel.setText("Loaded " + result.getTotalCardCount() + " cards.");
+				availablePages = result.getPageCount();
+				setupPaginatedPanel();
+				
 			}
 
 			@Override
 			public void onFailure(Throwable caught) {
 				dataHeaderLabel.setText("Failed to load.");
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+		});
+	}
+	
+	protected void setupPaginatedPanel() {
+		paginationPanel.setVisible(availablePages > 1);
+		pagePrevAnchor.setEnabled(currentPage > 1);
+		if(pagePrevAnchor.isEnabled()){
+			pagePrevAnchor.removeStyleName("disabled");
+		}
+		else{
+			pagePrevAnchor.addStyleName("disabled");
+		}
+		pageNextAnchor.setEnabled(currentPage < availablePages);
+		if(pageNextAnchor.isEnabled()){
+			pageNextAnchor.removeStyleName("disabled");
+		}
+		else{
+			pageNextAnchor.addStyleName("disabled");
+		}
+	}
+
+	private void loadPage(){
+		studyWordsService.getWordPairsForPage(currentPage, new AsyncCallback<List<WordPair>>() {
+			@Override
+			public void onSuccess(List<WordPair> wordPairs) {
+				cardBrowserPanel.clear();
+				setupPaginatedPanel();
+				for (WordPair card : wordPairs) {
+					cardBrowserPanel.add(new CardView(card));
+				}			
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				dataHeaderLabel.setText("Error loading page");
 				FlipCards.showErrorMessage(caught.getMessage());
 			}
 		});
@@ -231,6 +288,18 @@ public class CardManager extends Composite {
 		TagManager.show();
 	}
 	
+	@UiHandler("pagePrevAnchor")
+	void onPagePrevClick(ClickEvent e) {
+		currentPage--;
+		loadPage();
+	}
+	
+	@UiHandler("pageNextAnchor")
+	void onPageNextClick(ClickEvent e) {
+		currentPage++;
+		loadPage();
+	}
+	
 	@UiHandler("tagFilterAnchor")
 	void onToggleTagFilterClick(ClickEvent e) {
 		tagFilterPanel.setVisible(!tagFilterPanel.isVisible());
@@ -266,7 +335,7 @@ public class CardManager extends Composite {
 					for(String owner : result){
 						ownerListBox.addItem(owner, owner);
 					}
-					ownerListBox.setSelectedIndex(1);
+//					ownerListBox.setSelectedIndex(1);
 				}
 				
 				@Override

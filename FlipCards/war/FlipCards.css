@@ -115,6 +115,29 @@ html, body {
   display: inline;
 }
 
+.gwt-Anchor{
+	cursor: pointer;
+}
+
+.disabled{
+	pointer-events: none;
+   	cursor: default;
+   	color: #eee;
+}
+
+.prevNextPanel{
+	padding: 40px;
+}
+
+.disabled a:link, 
+.disabled a:visited, 
+.disabled a:hover,
+.disabled a:active{
+	text-decoration: none; 
+	color: #eee;	
+}
+
+
 .flipCardText{cursor: pointer;}	
 .flipButton{
 	width: 100px;

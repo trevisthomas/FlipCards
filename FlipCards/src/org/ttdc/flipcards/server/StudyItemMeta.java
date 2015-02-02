@@ -1,5 +1,6 @@
 package org.ttdc.flipcards.server;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
@@ -15,7 +16,7 @@ import org.ttdc.flipcards.shared.WordPair;
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class StudyItemMeta {
+public class StudyItemMeta implements Serializable{
 //	@PrimaryKey
 //	@Persistent
 //	@Index(name="STAGING_CARD_ID_IDX")
