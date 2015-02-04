@@ -52,5 +52,10 @@ public interface StudyWordsServiceAsync {
 
 	void getWordPairsForPage(int pageNumber,
 			AsyncCallback<List<WordPair>> callback);
+
+	void getAutoCompleteWordPairs(List<String> owners, String qstr,
+			AsyncCallback<List<WordPair>> callback);
+
+	void getStudyItem(String studyItemId, AsyncCallback<WordPair> callback);
 	
 }

@@ -165,3 +165,20 @@ html, body {
 	background-color: #eeeeee;
 }
 
+.cardEdit{
+	position: relative;
+	margin: 20px 0px;	
+	background-color: white;
+	border:1px black solid;	
+}
+.cardView{
+	margin: 5px 0px;	
+}
+.autoCompletePanel{
+	border:1px black solid;
+	background-color: aliceBlue;	
+	width: 100%;
+	padding: 20px;
+	position: absolute;
+}
+

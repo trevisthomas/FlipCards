@@ -5,6 +5,7 @@ import java.util.List;
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.FlipCard.MyUiBinder;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
@@ -68,12 +69,13 @@ public class Results extends Composite {
 	
 	@UiHandler("studyWrongWordsButton")
 	void handleNoButton(ClickEvent e) {
-		FlipCards.replaceView(new FlipCard(options, incorrectWordPairs));
+		FlipCards.replaceView(ViewName.FLIPCARDS, new FlipCard(options, incorrectWordPairs));
 	}
 	
 	@UiHandler("newQuizButton")
 	void handleNewQuiz(ClickEvent e) {
-		FlipCards.replaceView(new QuizSelection());
+//		FlipCards.replaceView(new QuizSelection());
+		FlipCards.loadView(ViewName.QUIZ_SELECTION);
 	}
 	
 	

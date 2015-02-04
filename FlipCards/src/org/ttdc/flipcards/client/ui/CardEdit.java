@@ -59,18 +59,42 @@ public class CardEdit extends Composite {
 
 	public CardEdit(CardEditObserver cardView, WordPair c) {
 		initWidget(uiBinder.createAndBindUi(this));
-		this.card = c;
+		
 		this.cardView = cardView;
 		updateButton.setText("Update");
 		deleteButton.setText("Delete");
 		activateButton.setText("Activate!");
 		deactivateButton.setText("Deactivate");
 		closeAnchor.setText("close");
-		termTextBox.setText(card.getWord());
-		definitionTextBox.setText(card.getDefinition());
 		TextBoxKeyDownHandler handler = new TextBoxKeyDownHandler();
 		definitionTextBox.addKeyDownHandler(handler);
 		termTextBox.addKeyDownHandler(handler);
+		
+		deleteButton.setVisible(false);
+		activateButton.setVisible(false);
+		deactivateButton.setVisible(false);
+		
+		//Go get the fresh card
+		FlipCards.studyWordsService.getStudyItem(c.getId(), new AsyncCallback<WordPair>() {
+			@Override
+			public void onSuccess(WordPair result) {
+				card = result;
+				loadWordPairToUi(result);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+		});
+		
+		
+
+	}
+
+	private void loadWordPairToUi(final WordPair c) {
+		termTextBox.setText(c.getWord());
+		definitionTextBox.setText(c.getDefinition());
 		
 		deleteButton.setEnabled(c.isDeleteAllowed());
 		deleteButton.setVisible(!c.isActive());
@@ -92,7 +116,6 @@ public class CardEdit extends Composite {
 				FlipCards.showErrorMessage(caught.getMessage());
 			}
 		});
-
 	}
 
 	@UiHandler("updateButton")

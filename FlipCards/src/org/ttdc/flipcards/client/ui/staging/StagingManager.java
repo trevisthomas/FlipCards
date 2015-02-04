@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Stack;
 
 import org.ttdc.flipcards.client.FlipCards;
+import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.CardView;
 import org.ttdc.flipcards.client.ui.QuizSelection;
@@ -218,12 +219,13 @@ public class StagingManager extends Composite{
 	
 	@UiHandler("viewCardEditorAnchor")
 	void onViewCardEditorClick(ClickEvent e) {
-		FlipCards.replaceView(new CardManager());
+//		FlipCards.replaceView(new CardManager());
+		FlipCards.loadView(ViewName.CARD_MANAGER);
 	}
 	
 	@UiHandler("quizAnchor")
 	void onCloseClick(ClickEvent e) {
-		FlipCards.replaceView(new QuizSelection());
+//		FlipCards.replaceView(new QuizSelection());
 	}
 	
 	@UiHandler("definitionTextBox")

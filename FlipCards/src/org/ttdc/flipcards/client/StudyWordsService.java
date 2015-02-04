@@ -42,6 +42,9 @@ public interface StudyWordsService extends RemoteService{
 	PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
 			ItemFilter filter, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException;
+	List<WordPair> getAutoCompleteWordPairs(List<String> owners, String qstr)
+			throws IllegalArgumentException, NotLoggedInException;
+	WordPair getStudyItem(String studyItemId) throws IllegalArgumentException, NotLoggedInException;
 
 }
 

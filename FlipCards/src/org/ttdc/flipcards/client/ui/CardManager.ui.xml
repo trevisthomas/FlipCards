@@ -6,9 +6,11 @@
 			font-weight: bold;
 		}
 	</ui:style>
-	<g:HTMLPanel styleName="cardEditor">
+	
+	<g:FocusPanel styleName="cardEditor" ui:field="cardEditor">
+		<g:HTMLPanel>
 		<div>
-			<g:Anchor ui:field="stagingAnchor">view staging</g:Anchor> | <g:Anchor ui:field="quizAnchor">take quiz</g:Anchor>
+			<g:Anchor ui:field="quizAnchor">take quiz</g:Anchor>
 		</div>	
 		
 		<div>	
@@ -28,6 +30,9 @@
 			<g:Button ui:field="goButton" />
 		</g:HorizontalPanel>
 		
+		<g:FocusPanel ui:field="stopEvents">
+			<g:VerticalPanel styleName="autoCompletePanel" ui:field="autoCompletePanel"/>
+		</g:FocusPanel>
 		<div>
 			<g:Label ui:field="dataHeaderLabel"/>
 			<g:VerticalPanel ui:field="cardBrowserPanel"/>
@@ -42,7 +47,9 @@
 		<g:HorizontalPanel><g:Button ui:field="prevButton">Prev</g:Button><g:Button ui:field="nextButton">Next</g:Button></g:HorizontalPanel>
 		
 		<g:Button ui:field="migrateButton">MIGRATE</g:Button>
-	</g:HTMLPanel>
+		</g:HTMLPanel>
+	</g:FocusPanel>
+	
 	
 	
 </ui:UiBinder> 

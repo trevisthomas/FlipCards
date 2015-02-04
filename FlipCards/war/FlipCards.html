@@ -16,7 +16,7 @@
     <!--                                           -->
     <!-- Any title is fine                         -->
     <!--                                           -->
-    <title>Flip Cards</title>
+    <title>¡Enfoca!</title>
     
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
@@ -24,6 +24,7 @@
     <!-- be added before this line.                -->
     <!--                                           -->
     <script type="text/javascript" language="javascript" src="flipcards/flipcards.nocache.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
   </head>
 
   <!--                                           -->
@@ -31,6 +32,42 @@
   <!-- you can leave the body empty if you want  -->
   <!-- to create a completely dynamic UI.        -->
   <!--                                           -->
+  
+  <script type="text/javascript">
+  /*
+  $( document ).ready(function() {
+	  $( "#main" ).click( "click", function( event ) {
+	    alert( "The mouse cursor is at (" +
+	      event.pageX + ", " + event.pageY +
+	      ")" );
+	  });
+	});
+  */
+  
+  /*
+  $(document).ready(function(){
+	  $('body').click(function(e) {
+			 // $(document).click(function(e) {
+				  var target = $(e.target);
+				  
+				  alert("fuck: " + target.is('autoComplete'));
+				  /*
+				  // check that your clicked
+				  // element has no id=info
+			
+				//  if( e.target.id != 'autoComplete') {
+					  
+					alert("hm: " + e.target.id);
+					if( e.target.id != 'main') {	
+					    //$(".autoCompletePanel").hide();
+					    //var target = $(e.target);
+					    //alert("fuck: " + target.is('autoComplete'));
+				  	}
+		
+	});
+			 */
+  
+  </script>
   <body>
 
     <!-- OPTIONAL: include this if you want history support -->

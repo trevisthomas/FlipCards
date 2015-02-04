@@ -15,23 +15,27 @@ import com.google.appengine.api.users.User;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class TagAssociation implements Serializable{
 	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2739153469922337943L;
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
 	@Persistent
-	@Index(name="TAGASS_TAG_ID_IDX")
 	private String tagId;
 	@Persistent
-	@Index(name="TAGASS_CARD_ID_IDX")
 	private String cardId;
 	@Persistent
-	private User user;
+	private String cardOwner;
 	
 	//TREVIS: Once this thing is working, see if you can remove User!
 	
-	public TagAssociation(String tagId, String cardId){
+	public TagAssociation(String cardOwner, String tagId, String cardId){
 		this.tagId = tagId;
 		this.cardId = cardId;
+		this.cardOwner = cardOwner;
 	}
 	
 	public String getTagId() {
@@ -47,14 +51,6 @@ public class TagAssociation implements Serializable{
 		this.cardId = cardId;
 	}
 
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
 	public Key getKey() {
 		return key;
 	}
@@ -62,6 +58,15 @@ public class TagAssociation implements Serializable{
 	public void setKey(Key key) {
 		this.key = key;
 	}
+
+	public String getCardOwner() {
+		return cardOwner;
+	}
+
+	public void setCardOwner(String cardOwner) {
+		this.cardOwner = cardOwner;
+	}
+	
 	
 	
 }

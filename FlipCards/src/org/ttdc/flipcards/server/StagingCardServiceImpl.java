@@ -415,6 +415,9 @@ public class StagingCardServiceImpl extends RemoteServiceServlet implements
 		return null;
 	}
 
+	
+	
+	
 	/*
 	 * Call only once. This is intended to migrate all of the data from Cards
 	 * and CardStaging into the StudyItem/StudyItemMeta paradigm
@@ -422,7 +425,30 @@ public class StagingCardServiceImpl extends RemoteServiceServlet implements
 	
 	
 	public int migrateToStudyItemSchema() {
-		return 0;
+		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		
+		int count = 0;
+		// Fancy fucking cursor bullshit doesn't work when you use contains.
+		try {
+			Query q = pm.newQuery(StudyItem.class);
+			List<StudyItem> cards = (List<StudyItem>) q.execute();
+
+			for (StudyItem card : cards) {
+				card.setWord(card.getWord().toLowerCase());
+				card.setDefinition(card.getDefinition().toLowerCase());
+				count++;
+			}
+			pm.flush();
+			
+			
+
+		} finally {
+			pm.close();
+		}
+		return count;
+		
+//		return 0;
 //		PersistenceManager pm = StudyWordsServiceImpl.getPersistenceManager();
 //		List<String> addedWords = new ArrayList<>();
 //		int count = 0;
