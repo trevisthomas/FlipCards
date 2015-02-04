@@ -6,6 +6,7 @@ import java.util.List;
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
+import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.CardEdit.CardEditObserver;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.CardSide;
@@ -202,7 +203,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	private void showScore() {
 		//test
 //		showError("Asked: "+wordPairs.size() +"<br> Correct: " + (wordPairs.size() - incorrectWordPairs.size()) + " <BR>Score: "+ ((double)(wordPairs.size() - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100 +"%" );
-		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs, currentIndex));
+		FlipCards.replaceView(ViewName.RESULT, new Results(options, wordPairs, incorrectWordPairs, currentIndex));
 	}
 
 //	@UiHandler("flipButton")
@@ -244,7 +245,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	
 	@UiHandler("surrenderAnchor")
 	void surrenderAnchorClicked(ClickEvent e) {
-		FlipCards.replaceView(new Results(options, wordPairs, incorrectWordPairs, currentIndex-1));
+		FlipCards.replaceView(ViewName.RESULT, new Results(options, wordPairs, incorrectWordPairs, currentIndex-1));
 	}
 
 	private void updateWordScore(boolean correct) {

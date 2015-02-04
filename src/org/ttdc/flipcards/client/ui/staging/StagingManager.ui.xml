@@ -6,6 +6,7 @@
 			font-weight: bold;
 		}
 	</ui:style>
+	
 	<g:HTMLPanel>
 		<div>
 			<g:Anchor ui:field="viewCardEditorAnchor">edit cards</g:Anchor> | <g:Anchor ui:field="quizAnchor">take quiz</g:Anchor>

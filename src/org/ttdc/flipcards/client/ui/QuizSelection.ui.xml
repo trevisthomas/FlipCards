@@ -9,6 +9,9 @@
 	
 	
 	<g:HTMLPanel>
+		<div>
+			<g:Anchor ui:field="editCardsButton" />
+		</div>
 		<table>
 			<tr><td>How many cards?</td></tr>
 			<tr><td><g:ListBox ui:field="cardCountListBox"/></td></tr>
@@ -25,9 +28,7 @@
 		</table>
 				
 		<g:Button ui:field="goButton" />
-		<div>
-			<g:Anchor ui:field="editCardsButton" /> | <g:Anchor ui:field="stagingButton" />
-		</div>
+		
 	</g:HTMLPanel>
 </ui:UiBinder> 
 

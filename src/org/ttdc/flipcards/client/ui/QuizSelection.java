@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ttdc.flipcards.client.FlipCards;
+import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.staging.StagingManager;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.CardSide;
@@ -55,8 +56,6 @@ public class QuizSelection extends Composite {
 	FlowPanel tagFilterPanel;
 	@UiField
 	CheckBox allCheckbox;
-	@UiField
-	Anchor stagingButton;
 	
 	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
 	
@@ -65,7 +64,6 @@ public class QuizSelection extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
-		stagingButton.setText("View Staging");
 		allCheckbox.setValue(true);
 		
 		cardCountListBox.addItem("10");
@@ -112,7 +110,8 @@ public class QuizSelection extends Composite {
 	
 	@UiHandler("editCardsButton")
 	void onEditCardsClick(ClickEvent e) {
-		FlipCards.replaceView(new CardManager());
+//		FlipCards.replaceView(new CardManager());
+		FlipCards.loadView(ViewName.CARD_MANAGER);
 	}
 	
 	@UiHandler("allCheckbox")
@@ -124,11 +123,6 @@ public class QuizSelection extends Composite {
 		for(String tagId : filterCheckBoxesMap.keySet()){
 			filterCheckBoxesMap.get(tagId).setEnabled(!allCheckbox.getValue());
 		}
-	}
-	
-	@UiHandler("stagingButton")
-	void onStagingClicked(ClickEvent e){
-		FlipCards.replaceView(new StagingManager());
 	}
 
 	@UiHandler("goButton")
@@ -159,7 +153,7 @@ public class QuizSelection extends Composite {
 			}	
 		}
 		
-		FlipCards.replaceView(new FlipCard(options));
+		FlipCards.replaceView(ViewName.FLIPCARDS, new FlipCard(options));
 		
 //		Window.alert("Quizit byotch " + side + " ORder:" + options.getCardOrder());
 	}
