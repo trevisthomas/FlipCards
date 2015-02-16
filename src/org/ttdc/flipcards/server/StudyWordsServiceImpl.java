@@ -716,7 +716,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			Query q = pm.newQuery(StudyItemMeta.class, ":p.contains(owner)");
 			if (pageNumber == 1) {
 				q.setResult("count(this)");
-				Long count = (Long) q.execute(owners);
+				Long count = (Long) q.execute(getUser().getEmail());
 				pagedWordPair.setTotalCardCount(count);
 				q.setResult(null);
 			}
@@ -730,7 +730,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			int end = start + pageSize;
 			q.setRange(start, end);
 			List<StudyItemMeta> studyItemMetaList = (List<StudyItemMeta>) q
-					.execute(owners);
+					.execute(getUser().getEmail());
 
 			for (StudyItemMeta studyItemMeta : studyItemMetaList) {
 				StudyItem studyItem = findStudyItem(studyItemMeta
@@ -1019,9 +1019,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		Transaction trans = pm.currentTransaction();
 		try {
 			trans.begin();
-			Query q = pm.newQuery(StudyItemMeta.class, "studyItemId == identity");
-			q.declareParameters("java.lang.String identity");
-			List<StudyItemMeta> quizStats = (List<StudyItemMeta>) q.execute(id);
+			Query q = pm.newQuery(StudyItemMeta.class, "studyItemId == identity && owner == o");
+			q.declareParameters("java.lang.String identity, java.lang.String o");
+			List<StudyItemMeta> quizStats = (List<StudyItemMeta>) q.execute(id, getUser().getEmail());
 
 			if (quizStats.size() != 1) {
 				throw new RuntimeException("Failed to update score.");
@@ -1139,7 +1139,8 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
-		LOG.info(sw.toString());
+		LOG.severe(sw.toString());
+//		LOG.severe(e.toString());
 	}
 
 	@Override
