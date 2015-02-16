@@ -50,7 +50,7 @@ public class StudyItemMeta implements Serializable{
 	
 	public static class SortCreateDateDesc  implements Comparator<WordPair> {
 		public int compare(WordPair c1, WordPair c2) {
-			return c2.getCreateDate().compareTo(c1.getCreateDate());
+			return c1.getCreateDate().compareTo(c2.getCreateDate());
 		}
 	}
 	
