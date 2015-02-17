@@ -9,6 +9,7 @@ import org.ttdc.flipcards.client.services.StagingCardService;
 import org.ttdc.flipcards.client.services.StagingCardServiceAsync;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.QuizSelection;
+import org.ttdc.flipcards.client.ui.skeleton.CardManager2;
 import org.ttdc.flipcards.shared.FieldVerifier;
 import org.ttdc.flipcards.shared.LoginInfo;
 import org.ttdc.flipcards.shared.WordPair;
@@ -95,7 +96,7 @@ public class FlipCards implements EntryPoint {
 			      }
 			      switch(viewName){
 				      case CARD_MANAGER:
-				    	  replaceView(viewName, new CardManager());
+				    	  replaceView(viewName, new CardManager2());
 				    	 break;
 				      case QUIZ_SELECTION:
 				    	  replaceView(viewName, new QuizSelection());
@@ -108,6 +109,9 @@ public class FlipCards implements EntryPoint {
 				    	  break;
 				      case QUIZ:
 				    	  replaceView(ViewName.QUIZ, new QuizSelection());
+				    	  break;
+				      case DEBUG:
+				    	  replaceView(ViewName.DEBUG, new CardManager());
 				    	  break;
 				      default:
 				    	  replaceView(ViewName.QUIZ_SELECTION, new QuizSelection());

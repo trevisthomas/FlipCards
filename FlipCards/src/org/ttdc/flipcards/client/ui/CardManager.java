@@ -9,6 +9,7 @@ import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.staging.StagingManager;
+import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.Constants;
 import org.ttdc.flipcards.shared.ItemFilter;
@@ -355,17 +356,17 @@ public class CardManager extends Composite {
 		if (!NONE.equals(lastSelectedOwner)) {
 			owners.add(lastSelectedOwner);
 		}
-		FlipCards.studyWordsService.getAutoCompleteWordPairs(owners, qstr,
-				new AsyncCallback<List<WordPair>>() {
+		FlipCards.studyWordsService.getAutoCompleteWordPairs(owners, 0, qstr,
+				new AsyncCallback<AutoCompleteWordPairList>() {
 					@Override
-					public void onSuccess(List<WordPair> result) {
+					public void onSuccess(AutoCompleteWordPairList result) {
 						autoCompletePanel.clear();
-						if (result.size() == 0) {
+						if (result.getWordPairs().size() == 0) {
 							autoCompletePanel.setVisible(false);
 						} else {
 							autoCompletePanel.setVisible(true);
 
-							for (WordPair pair : result) {
+							for (WordPair pair : result.getWordPairs()) {
 								autoCompletePanel.add(new CardView(pair));
 							}
 						}

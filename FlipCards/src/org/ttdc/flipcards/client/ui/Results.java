@@ -15,6 +15,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
@@ -40,7 +41,7 @@ public class Results extends Composite {
 	@UiField
 	Button studyWrongWordsButton;
 	@UiField
-	Button newQuizButton;
+	Anchor newQuizButton;
 	
 	
 	private final QuizOptions options;
@@ -74,10 +75,13 @@ public class Results extends Composite {
 	
 	@UiHandler("newQuizButton")
 	void handleNewQuiz(ClickEvent e) {
-//		FlipCards.replaceView(new QuizSelection());
 		FlipCards.loadView(ViewName.QUIZ_SELECTION);
 	}
 	
+	@UiHandler("editCardsButton")
+	void handleEditCards(ClickEvent e) {
+		FlipCards.loadView(ViewName.CARD_MANAGER);
+	}
 	
 
 }

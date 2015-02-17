@@ -62,6 +62,11 @@ public class QuizSelection extends Composite {
 
 	public QuizSelection() {
 		initWidget(uiBinder.createAndBindUi(this));
+		
+		cardCountListBox.getElement().setId("cardCountInput");
+		orderListBox.getElement().setId("orderInput");
+		
+		
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
 		allCheckbox.setValue(true);

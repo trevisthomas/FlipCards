@@ -5,7 +5,8 @@ public enum ViewName {
 	CARD_MANAGER("Edit Cards"), 
 	QUIZ("Quiz"),
 	RESULT("Result"),
-	FLIPCARDS("Result"),;
+	FLIPCARDS("Result"),
+	DEBUG("Debug"),;
 
 	private final String name;
 

@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.QuizOptions;
@@ -53,8 +54,8 @@ public interface StudyWordsServiceAsync {
 	void getWordPairsForPage(int pageNumber,
 			AsyncCallback<List<WordPair>> callback);
 
-	void getAutoCompleteWordPairs(List<String> owners, String qstr,
-			AsyncCallback<List<WordPair>> callback);
+	void getAutoCompleteWordPairs(List<String> owners, int sequence, String qstr,
+			AsyncCallback<AutoCompleteWordPairList> callback);
 
 	void getStudyItem(String studyItemId, AsyncCallback<WordPair> callback);
 	
