@@ -2,6 +2,7 @@ package org.ttdc.flipcards.client;
 
 import java.util.List;
 
+import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.PagedWordPair;
@@ -42,8 +43,8 @@ public interface StudyWordsService extends RemoteService{
 	PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
 			ItemFilter filter, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException;
-	List<WordPair> getAutoCompleteWordPairs(List<String> owners, String qstr)
-			throws IllegalArgumentException, NotLoggedInException;
+	AutoCompleteWordPairList getAutoCompleteWordPairs(List<String> owners, int sequence,
+			String qstr) throws IllegalArgumentException, NotLoggedInException;
 	WordPair getStudyItem(String studyItemId) throws IllegalArgumentException, NotLoggedInException;
 
 }

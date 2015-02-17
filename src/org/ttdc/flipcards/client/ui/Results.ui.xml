@@ -1,25 +1,54 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
     xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
-  <g:HTMLPanel>
-  	<g:Label ui:field="errorLabel"/>
-  	<table>
-  		<tr>
-			<td><g:Label ui:field='asked'/></td>
-		</tr>
-		<tr>
-			<td><g:Label ui:field='correct'/></td>
-		</tr>
-		<tr>	
-			<td><g:Label ui:field='score'/></td>
-		</tr>
-		<tr>	
-			<td><g:Label ui:field='unanswered'/></td>
-		</tr>
-		<tr>	
-			<td><g:Button ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button> <g:Button ui:field='newQuizButton'>New Quiz</g:Button></td>
-		</tr>    
-    </table>
+  <g:HTMLPanel styleName="container">
+	<div class="row">
+		<div class="twelve columns tt-title tt-underline">
+			¡Enfoca!
+		</div>
+	</div>
+	<nav class="navbar">
+		<div class="container">
+			<ul class="navbar-list">
+				<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field='newQuizButton'>take quiz</g:Anchor></li>
+				<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="editCardsButton">edit cards</g:Anchor></li>
+			</ul>
+		</div>
+	</nav>
+	
+	<g:Label ui:field="errorLabel"/>
+	<div class="row">
+		<div class="four columns">&nbsp;</div>
+		<div class="four columns">
+			<g:Label ui:field='asked'/>
+		</div>
+	</div>
+	<div class="row">
+		<div class="four columns">&nbsp;</div>
+		<div class="four columns">
+			<g:Label ui:field='correct'/>
+		</div>
+	</div>
+	<div class="row">
+		<div class="four columns">&nbsp;</div>
+		<div class="four columns">
+			<g:Label ui:field='score'/>
+		</div>
+	</div>
+	<div class="row">
+		<div class="four columns">&nbsp;</div>
+		<div class="four columns">
+			<g:Label ui:field='unanswered'/>
+		</div>
+	</div>
+  	
+  	<div class="row">
+  		<div class="twelve columns">
+  			<g:Button styleName="button-primary" ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button> 
+  		</div>
+	</div>
+  	
   </g:HTMLPanel>
 
 </ui:UiBinder>

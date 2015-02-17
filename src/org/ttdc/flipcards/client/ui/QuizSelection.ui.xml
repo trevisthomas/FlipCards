@@ -1,17 +1,53 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
-	<ui:style>
-		.important {
-			font-weight: bold;
-		}
-	</ui:style>
-	
-	
-	<g:HTMLPanel>
-		<div>
-			<g:Anchor ui:field="editCardsButton" />
+
+	<g:HTMLPanel styleName="container">
+		<div class="row">
+			<div class="twelve columns tt-title tt-underline">
+				¡Enfoca!
+			</div>
 		</div>
+		<nav class="navbar">
+			<div class="container">
+				<ul class="navbar-list">
+					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="editCardsButton" /></li>
+				</ul>
+			</div>
+		</nav>
+		
+		
+		<div class="row">
+			<div class="six columns">
+				<label for="cardCountInput">How many cards?</label>
+      			<g:ListBox styleName="u-full-width" ui:field="cardCountListBox"/>
+				
+			</div>
+			<div class="six columns">
+				<label for="orderInput">What Order?</label>
+      			<g:ListBox styleName="u-full-width" ui:field="orderListBox"/>
+			</div>
+		</div>
+		<div class="row">
+			<div class="six columns">
+				<label for="showWhatFirstInput">Show what first?</label>
+      			<g:RadioButton ui:field="cardSideTerm" name="cardSideGroup" value="false"/>
+                <g:RadioButton ui:field="cardSideDefinition" name="cardSideGroup" value="true"/>
+                <g:RadioButton ui:field="cardSideRandom" name="cardSideGroup" value="false"/>
+			</div>
+			<div class="six columns">
+				<label for="tagFilterInput">Tag filters</label>
+      			<g:CheckBox ui:field="allCheckbox">All</g:CheckBox> <g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel>
+			</div>
+		</div>
+		<div class="row">
+			<div class="two columns">&nbsp;
+			</div>
+			<div class="eight columns">
+				
+			</div>
+		</div>
+		<!-- 
 		<table>
 			<tr><td>How many cards?</td></tr>
 			<tr><td><g:ListBox ui:field="cardCountListBox"/></td></tr>
@@ -26,8 +62,8 @@
 			<tr><td>Tag filters</td></tr>
 			<tr><td><g:CheckBox ui:field="allCheckbox">All</g:CheckBox> <g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel></td></tr>
 		</table>
-				
-		<g:Button ui:field="goButton" />
+				 -->
+		<g:Button styleName="button-primary" ui:field="goButton" />
 		
 	</g:HTMLPanel>
 </ui:UiBinder> 

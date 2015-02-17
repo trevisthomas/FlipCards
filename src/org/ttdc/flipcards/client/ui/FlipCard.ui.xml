@@ -2,89 +2,50 @@
 	xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:with field='res' type='org.ttdc.flipcards.client.ui.Resources' />
 
-
-<ui:image field='underTopGlow' image='{res.yesUp}' />
- <!-- 	
-	<ui:style>
-		.removeDefaults {
-			border: 0;
-			background: none;
-		}
-		
-		@sprite .underMenuGlow {gwt-image: 'underTopGlow'}
-	</ui:style>
-	
-	 <ui:style>
-	 	.flipButton{
-			width: 100px;
-			height: 100px;
-		}
-	 	.flipButtonYes{
-			background-color: green;	
-		}
-		.flipButtonNo{
-			background-color: red;
-		}
-	 </ui:style>
-	 -->
-	
-
-	<g:HTMLPanel>
+	<g:HTMLPanel styleName="container">
+		<div class="row">
+			<div class="twelve columns tt-title tt-underline">
+				¡Enfoca!
+			</div>
+		</div>
+		<nav class="navbar">
+			<div class="container">
+				<ul class="navbar-list">
+					<li class="navbar-item"><g:Anchor styleName="surrender navbar-link" ui:field="surrenderAnchor" /></li>
+					<li class="navbar-item"><g:Anchor styleName="surrender navbar-link" ui:field="debugAnchor" /></li>
+					<li class="navbar-item"><g:Label ui:field="logoutLabel"></g:Label></li>
+				</ul>
+			</div>
+		</nav>
 		<div>
-			<g:Anchor styleName="surrender" ui:field="surrenderAnchor" />
+			
 		</div>
+		
 		<div class="debug">
-			<g:Anchor styleName="surrender" ui:field="debugAnchor" />
+			
 		</div>
-		<table>
-			<tr>
-				<td>
-					<g:Label styleName="flipCardText" ui:field='wordLabel' />
-					<g:Label styleName="flipCardText" ui:field='definitionLabel' />
-				</td>
-			</tr>
-			<td></td>
-			<tr>
-				<td>
-		<g:HorizontalPanel>
+		
+		<div class="row">
+			<div class="twelve columns">
+				<g:Label styleName="flipCardText" ui:field='wordLabel' />
+				<g:Label styleName="flipCardText" ui:field='definitionLabel' />
+			</div>
+		</div>
+		
+		<div class="u-full-width">
 			<g:Label ui:field="yesDiv" styleName="flipButtonYes flipButton"></g:Label>
 			<g:Label ui:field="noDiv" styleName="flipButtonNo flipButton"></g:Label>
-		<!-- 
-			<g:VerticalPanel styleName='{style.underMenuGlow}' ui:field='testPanel'/>
-			 -->
-			
-			
-			<!--
-			<g:PushButton ui:field='yesButton' styleName="fixme">
-				<g:upFace image='{res.yesUp}'/>
-				<g:upHoveringFace  image='{res.yesUpHover}'/>
-				<g:downFace image='{res.noDown}' />
-				<g:downHoveringFace image='{res.yesDown}' />
-				<g:upDisabledFace image='{res.yesDisabled}' />
-				<g:downDisabledFace image='{res.yesDisabled}' />
-			</g:PushButton>
-			<g:PushButton ui:field='flipButton' styleName="fixme">
-				<g:upFace image='{res.flipUp}'/>
-				<g:upHoveringFace  image='{res.flipUpHover}'/>
-				<g:downFace image='{res.noDown}' />
-				<g:downHoveringFace image='{res.flipDown}' />
-				<g:upDisabledFace image='{res.flipDisabled}' />
-				<g:downDisabledFace image='{res.flipDisabled}' />
-			</g:PushButton>
-			<g:PushButton ui:field='noButton' styleName="fixme">
-				<g:upFace image='{res.noUp}'/>
-				<g:upHoveringFace  image='{res.noUpHover}'/>
-				<g:downFace image='{res.noDown}' />
-				<g:downHoveringFace image='{res.noDown}' />
-				<g:upDisabledFace image='{res.noDisabled}' />
-				<g:downDisabledFace image='{res.noDisabled}' />
-			</g:PushButton>
-			-->
-		</g:HorizontalPanel>					
-				</td>
-			</tr>
-		</table>
-
+		</div>
+		
+		<div class="row">
+			<div class="one-half column">
+				
+			</div>
+			<div class="one-half column">
+				
+			</div>
+		</div>
+	
 	<g:HTMLPanel ui:field="definePanel">
 		<g:Anchor ui:field="editAnchor" /> | 
 		<g:Anchor ui:field="lingueeAnchor" /> | 

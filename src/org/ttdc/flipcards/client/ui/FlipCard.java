@@ -66,6 +66,8 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	Label yesDiv;
 	@UiField
 	Label noDiv;
+	@UiField
+	Label logoutLabel;
 	
 	
 //	http://www.linguee.com/english-spanish/search?source=spanish&query=facile

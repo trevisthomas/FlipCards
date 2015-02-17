@@ -21,6 +21,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import org.ttdc.flipcards.client.StudyWordsService;
+import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.PagedWordPair;
@@ -448,7 +449,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	@Override
-	public List<WordPair> getAutoCompleteWordPairs(List<String> owners, String qstr) 
+	public AutoCompleteWordPairList getAutoCompleteWordPairs(List<String> owners, int sequence, String qstr) 
 			throws IllegalArgumentException, NotLoggedInException{
 		PersistenceManager pm = getPersistenceManager();
 		
@@ -475,7 +476,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		} finally {
 			pm.close();
 		}
-		return wordPairs;
+		return new AutoCompleteWordPairList(sequence, wordPairs);
 	}
 
 	private PagedWordPair getWordPairInactive(List<String> owners,

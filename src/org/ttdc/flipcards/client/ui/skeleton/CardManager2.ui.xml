@@ -1,0 +1,89 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		
+	</ui:style>
+	<g:HTMLPanel styleName="container">
+		<div class="row">
+			<div class="twelve columns tt-title tt-underline">
+				¡Enfoca!
+			</div>
+		</div>
+		<nav class="navbar">
+			<div class="container">
+				<ul class="navbar-list">
+					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="quizAnchor">take quiz</g:Anchor></li>
+				</ul>
+			</div>
+		</nav>
+		<div class="row">
+		    <div class="six columns">
+		      <label for="termInput">Term</label>
+		      <g:TextBox styleName="u-full-width" ui:field="termTextBox"/>
+		    </div>
+
+		    <div class="six columns">
+		     	<label for="definitionInput">Definition</label>
+				<g:TextBox styleName="u-full-width" ui:field="definitionTextBox"/>
+		    </div>
+		    
+			<div class="twelve columns">
+				<g:Button styleName="button-primary" ui:field="addCardButton"></g:Button>
+				<g:Button styleName="button" ui:field="spanishDictButton"></g:Button>
+				<g:Button styleName="button" ui:field="clearButton"></g:Button>
+			</div>
+		 </div>
+		 <div class="row">
+		 	<div class="six columns">
+		 		<label for="filterInput">Filter</label>
+		 		<g:ListBox styleName="u-full-width" ui:field="filterListBox"/>
+		 	</div>
+		 </div>
+		 
+		 <div class="row">
+		 	<div class="twelve columns">
+		 		<h6><g:Label styleName="u-full-width" ui:field="dataDetailLabel"/></h6>
+		 	</div>
+		 </div>
+		 
+		 
+					<div class="row">
+						 	<div class="one columns">
+						 		<g:Label styleName="tt-label">#</g:Label>
+						 	</div>
+						 	<div class="three columns">
+						 		<g:Label styleName="tt-label">Term</g:Label>
+						 	</div>
+						 	<div class="five columns">
+						 		<g:Label styleName="tt-label">Definition</g:Label>
+						 	</div>
+						 	<div class="two columns">
+						 		<g:Label styleName="tt-label">Tags</g:Label>
+						 	</div>
+						 	<div class="one columns">
+						 		<g:Label styleName="tt-label">Actions</g:Label>
+						 	</div>
+						 </div>
+					 
+					 <g:HTMLPanel ui:field="autoCompletePanel"/>
+					 <g:HTMLPanel ui:field="cardBrowserPanel"/>
+		
+		<div class="tt-padded"> 
+		 <div class="row">
+		 	<div class="four columns">&nbsp;</div>
+		 	<div class="two columns">
+				<g:Button ui:field="prevButton">Prev</g:Button>
+			</div>
+			<div class="two columns">
+				<g:Button ui:field="nextButton">Next</g:Button>
+			</div>
+			<div class="four columns">&nbsp;</div>
+		 </div>
+		 </div>
+
+	</g:HTMLPanel>
+	
+	
+		 
+</ui:UiBinder> 
