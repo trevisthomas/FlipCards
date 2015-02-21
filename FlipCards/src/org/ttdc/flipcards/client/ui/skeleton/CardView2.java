@@ -1,5 +1,6 @@
 package org.ttdc.flipcards.client.ui.skeleton;
 
+import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -9,6 +10,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -50,11 +52,25 @@ public class CardView2 extends Composite implements CardEdit2.CardEditObserver {
 
 	public CardView2(WordPair card, CardViewOwner owner) {
 		initWidget(uiBinder.createAndBindUi(this));
-		
 		loadCardToUi(card);
 		this.owner = owner;
 		editor = new CardEdit2(this, card);
 		seperator = new Seperator();
+	}
+	
+	public void refresh(){
+		FlipCards.studyWordsService.getStudyItem(card.getId(), new AsyncCallback<WordPair>() {
+			@Override
+			public void onSuccess(WordPair result) {
+				loadCardToUi(result);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	
 	public CardEdit2 getEditor(){

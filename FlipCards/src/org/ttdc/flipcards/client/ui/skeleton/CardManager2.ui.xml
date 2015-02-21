@@ -66,7 +66,7 @@
 						 	</div>
 						 </div>
 					 
-					 <g:HTMLPanel ui:field="autoCompletePanel"/>
+					 <g:HTMLPanel styleName="tt-autoCompletePanel" ui:field="autoCompletePanel"/>
 					 <g:HTMLPanel ui:field="cardBrowserPanel"/>
 		
 		<div class="tt-padded"> 

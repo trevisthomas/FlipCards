@@ -7,9 +7,7 @@ import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ViewName;
-import org.ttdc.flipcards.client.ui.CardEdit.CardEditObserver;
-import org.ttdc.flipcards.shared.CardOrder;
-import org.ttdc.flipcards.shared.CardSide;
+import org.ttdc.flipcards.client.ui.skeleton.TimesUpPopup;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -20,15 +18,14 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -78,6 +75,11 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	private WordPair currentPair;
 	private final QuizOptions options;
 	boolean spanishFirst = false;
+	private long timeStarted;
+	private long duration;
+	private static final long TIMEOUT = 30*1000;
+	private Timer t;
+	
 	
 	private List<WordPair> incorrectWordPairs = new ArrayList<WordPair>();
 
@@ -100,27 +102,12 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		spanishDictAnchor.setTarget("_blank");
 		definePanel.setVisible(false);
 		
-		switch(options.getCardSide()){
-			case TERM:{
-				spanishFirst = true;
-				break;
-			}
-			case RANDOM:{
-				spanishFirst = Random.nextBoolean();
-				break;
-			}
-			case DEFINITION:{
-				spanishFirst = false;
-				break;
-			}
-		}
-		
 		if(wordPairList != null){
 			wordPairs = wordPairList;
+			debugDump(wordPairs);
 			nextWord();
 			return;
-		}
-		else {
+		} else {
 		studyWordsService.generateQuiz(options,
 				new AsyncCallback<List<WordPair>>() {
 					@Override
@@ -146,6 +133,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		debugDumpFlexTable.setText(row, 2, "Tested Count");
 		debugDumpFlexTable.setText(row, 3, "Correct");
 		debugDumpFlexTable.setText(row, 4, "Difficulty");
+		debugDumpFlexTable.setText(row, 5, "AverageTime");
 		
 		for(WordPair word : words){
 			row++;
@@ -154,6 +142,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 			debugDumpFlexTable.setText(row, 2, "" +word.getTestedCount());
 			debugDumpFlexTable.setText(row, 3, "" +word.getCorrectCount());
 			debugDumpFlexTable.setText(row, 4, NumberFormat.getFormat("#0.000000").format(word.getDifficulty()));
+			debugDumpFlexTable.setText(row, 5, ""+word.getAverageTime()+"ms");
 		}
 	}
 	
@@ -179,6 +168,37 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	}
 
 	private void loadWordPair() {
+		t = new Timer() {
+			@Override
+			public void run() {
+				handleFlipButton(null);
+				PopupPanel popup = new PopupPanel(true);
+
+				popup.add(new TimesUpPopup());
+				popup.setGlassEnabled(true);
+				popup.setAnimationEnabled(true);
+				popup.center();
+			}
+		};
+		t.schedule((int) TIMEOUT);
+		    
+		timeStarted = System.currentTimeMillis();
+		duration = 0;
+		switch(options.getCardSide()){
+			case TERM:{
+				spanishFirst = true;
+				break;
+			}
+			case RANDOM:{
+				spanishFirst = Random.nextBoolean();
+				break;
+			}
+			case DEFINITION:{
+				spanishFirst = false;
+				break;
+			}
+		}
+			
 		if(spanishFirst){
 			wordLabel.setText(currentPair.getWord());
 			definitionLabel.setText(currentPair.getDefinition());
@@ -210,13 +230,18 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 
 //	@UiHandler("flipButton")
 	void handleFlipButton(ClickEvent e) {
-		// Window.alert("Hello, AJAX");
+		cancelTimer();
 		wordLabel.setVisible(!wordLabel.isVisible());
 		definitionLabel.setVisible(!definitionLabel.isVisible());
 		yesDiv.setVisible(true);
 		noDiv.setVisible(true);
 		definePanel.setVisible(true);
 		editCardPanel.clear();
+		
+		duration = System.currentTimeMillis() - timeStarted;
+		if(duration > TIMEOUT){
+			duration = TIMEOUT;
+		}
 	}
 
 	
@@ -247,11 +272,19 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	
 	@UiHandler("surrenderAnchor")
 	void surrenderAnchorClicked(ClickEvent e) {
+		cancelTimer();
 		FlipCards.replaceView(ViewName.RESULT, new Results(options, wordPairs, incorrectWordPairs, currentIndex-1));
 	}
 
+	private void cancelTimer() {
+		if(t != null){
+			t.cancel();
+		}
+	}
+
 	private void updateWordScore(boolean correct) {
-		studyWordsService.answerQuestion(currentPair.getId(), correct, new AsyncCallback<Void> (){
+		
+		studyWordsService.answerQuestion(currentPair.getId(), duration, correct, new AsyncCallback<Void> (){
 			@Override
 			public void onFailure(Throwable caught) {
 				FlipCards.showErrorMessage(caught.getMessage());

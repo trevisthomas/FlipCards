@@ -23,6 +23,7 @@ public class WordPair implements Serializable {
 	private List<Tag> tags = new ArrayList<>();
 	private boolean active = false;
 	private boolean deleteAllowed;
+	private long averageTime;
 
 	public WordPair() {
 
@@ -111,6 +112,14 @@ public class WordPair implements Serializable {
 
 	public void setDeleteAllowed(boolean deleteAllowed) {
 		this.deleteAllowed = deleteAllowed;
+	}
+	
+	public long getAverageTime() {
+		return averageTime;
+	}
+
+	public void setAverageTime(long averageTime) {
+		this.averageTime = averageTime;
 	}
 
 	@Override

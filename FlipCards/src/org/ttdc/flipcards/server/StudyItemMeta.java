@@ -23,6 +23,13 @@ public class StudyItemMeta implements Serializable{
 //	private String id;
 	
 	
+	
+	
+	public static class SortAverageTimeDesc implements Comparator<WordPair> {
+		public int compare(WordPair c1, WordPair c2) {
+			return new Long(c2.getAverageTime()).compareTo(c1.getAverageTime());
+		}
+	}
 
 	public static class SortDifficulty implements Comparator<WordPair> {
 		public int compare(WordPair c1, WordPair c2) {
@@ -32,7 +39,12 @@ public class StudyItemMeta implements Serializable{
 
 	public static class SortDifficultyDesc implements Comparator<WordPair> {
 		public int compare(WordPair c1, WordPair c2) {
-			return new Double(c2.getDifficulty()).compareTo(c1.getDifficulty());
+			int firstCompare = new Double(c2.getDifficulty()).compareTo(c1.getDifficulty());
+			if(firstCompare != 0){
+				return firstCompare;
+			} else {
+				return new Long(c2.getAverageTime()).compareTo(c1.getAverageTime());
+			}
 		}
 	}
 	
@@ -89,6 +101,16 @@ public class StudyItemMeta implements Serializable{
 										// good. Values range from 0 - 1, 0 is
 										// total confidence. 1 is infinitely
 										// little confidence
+	
+	@Persistent
+	private Long totalTime = 0L; //The amount of time spent thinking about an answer.
+	
+	@Persistent
+	private Long averageTime = 0L; //The average of the amount of time spent thinking about an answer.
+	
+	@Persistent
+	private Long timedViewCount = 0L;
+	
 	public Key getKey() {
 		return key;
 	}
@@ -144,10 +166,29 @@ public class StudyItemMeta implements Serializable{
 		this.confidence = confidence;
 	}
 	
+	
+	public Long getTimedViewCount() {
+		return timedViewCount == null ? 0L : timedViewCount;
+	}
+	public void setTimedViewCount(Long timedViewCount) {
+		this.timedViewCount = timedViewCount;
+	}
+	public Long getTotalTime() {
+		return totalTime == null ? 0L : totalTime;
+	}
+	public void setTotalTime(Long totalTime) {
+		this.totalTime = totalTime;
+	}
+	public Long getAverageTime() {
+		return averageTime == null ? 0L : averageTime;
+	}
+	public void setAverageTime(Long averageTime) {
+		this.averageTime = averageTime;
+	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(" difficulty:").append(difficulty).append(" created:").append(createDate).append(" lastStudied").append(lastUpdate).append(" Counts:").append(incorrectCount).append("/").append(viewCount);
+		builder.append("AverageTime").append(averageTime).append(" difficulty:").append(difficulty).append(" created:").append(createDate).append(" lastStudied").append(lastUpdate).append(" Counts:").append(incorrectCount).append("/").append(viewCount);
 		return builder.toString();
 	}
 	

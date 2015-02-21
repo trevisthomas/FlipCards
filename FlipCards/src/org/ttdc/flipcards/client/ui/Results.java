@@ -12,6 +12,7 @@ import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -41,6 +42,8 @@ public class Results extends Composite {
 	@UiField
 	Button studyWrongWordsButton;
 	@UiField
+	Button doneButton;
+	@UiField
 	Anchor newQuizButton;
 	
 	
@@ -58,7 +61,8 @@ public class Results extends Composite {
 		correct.setText("Correct: "+(questionsAsked - incorrectWordPairs.size()));
 //		score.setText("Score: "+(((double)((wordPairs.size() - questionsAsked) - incorrectWordPairs.size()) / (double)wordPairs.size()) * 100) +"%");
 		
-		score.setText("Score: "+(((double)(questionsAsked - incorrectWordPairs.size()) / (double)questionsAsked) * 100) +"%");
+		String scoreStr = NumberFormat.getFormat("#0.0").format((((double)(questionsAsked - incorrectWordPairs.size()) / (double)questionsAsked) * 100));
+		score.setText("Score: "+ scoreStr +"%");
 		if( wordPairs.size() - questionsAsked > 0){
 			unanswered.setText("Unanswered: " + (wordPairs.size() - questionsAsked));
 		}
@@ -73,6 +77,11 @@ public class Results extends Composite {
 		FlipCards.replaceView(ViewName.FLIPCARDS, new FlipCard(options, incorrectWordPairs));
 	}
 	
+	@UiHandler("doneButton")
+	void handleDoneButton(ClickEvent e) {
+		FlipCards.loadView(ViewName.QUIZ_SELECTION);
+	}
+	
 	@UiHandler("newQuizButton")
 	void handleNewQuiz(ClickEvent e) {
 		FlipCards.loadView(ViewName.QUIZ_SELECTION);
@@ -82,6 +91,4 @@ public class Results extends Composite {
 	void handleEditCards(ClickEvent e) {
 		FlipCards.loadView(ViewName.CARD_MANAGER);
 	}
-	
-
 }

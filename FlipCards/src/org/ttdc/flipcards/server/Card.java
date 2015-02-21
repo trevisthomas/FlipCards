@@ -86,6 +86,7 @@ public class Card implements Serializable {
 										// good. Values range from 0 - 1, 0 is
 										// total confidence. 1 is infinitely
 										// little confidence
+			
 
 	public Card() {
 		// TODO Auto-generated constructor stub
