@@ -202,6 +202,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 					- studyItemMeta.getIncorrectCount());
 			gwtPair.setTestedCount(studyItemMeta.getViewCount());
 			gwtPair.setDifficulty(studyItemMeta.getDifficulty());
+			gwtPair.setAverageTime(studyItemMeta.getAverageTime());
 			gwtPair.setActive(true);
 		}
 
@@ -487,13 +488,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 		// Fancy fucking cursor bullshit doesn't work when you use contains.
 		try {
-			Query q = pm.newQuery(StudyItem.class, ":p.contains(id)");
+//			Query q = pm.newQuery(StudyItem.class, ":p.contains(id)");
 
 			// Get inactive id's
 			List<String> inactiveIds = getInactiveIds(owners);
 			pagedWordPair.setTotalCardCount(inactiveIds.size());
 
-			q.setOrdering("createDate desc");
+//			q.setOrdering("createDate desc");
 			int start = (pageNumber - 1) * pageSize;
 			int end = start + pageSize;
 
@@ -531,11 +532,19 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 		Query q2 = pm.newQuery(StudyItem.class, "owner == o");
 		q2.declareParameters("java.lang.String o");
-		q2.setResult("id");
-		List<String> allOfMyFriendsCardIds = (List<String>) q2.execute(owners);
-
+		q2.setResult("id, createDate");
+		q2.setOrdering("createDate desc"); //This is how we sort inactives!
+//		List<String> allOfMyFriendsCardIds = (List<String>) q2.execute(owners);
 		List<String> inactive = new ArrayList<>();
-		for (String id : allOfMyFriendsCardIds) {
+//		for (String id : allOfMyFriendsCardIds) {
+//			if (!myActiveCardIs.contains(id)) {
+//				inactive.add(id);
+//			}
+//		}
+		List<Object[]> allOfMyFriendsCardIds = (List<Object[]>)q2.execute(owners);
+
+		for (Object[] o : allOfMyFriendsCardIds) {
+			String id = (String)o[0];
 			if (!myActiveCardIs.contains(id)) {
 				inactive.add(id);
 			}
@@ -1013,7 +1022,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public void answerQuestion(String id, Boolean correct)
+	public void answerQuestion(String id, long duration, Boolean correct)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
@@ -1038,9 +1047,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 			studyItemMeta.setLastUpdate(new Date());
 			studyItemMeta.setViewCount(studyItemMeta.getViewCount() + 1);
+			studyItemMeta.setTimedViewCount(studyItemMeta.getTimedViewCount() + 1); //This was added so that cards that existed before timing mattered will have accurate averages.  It would also allow you to have non-timed runs, but i'm not implementing that now.
+			
 			studyItemMeta.setDifficulty((double) studyItemMeta
 					.getIncorrectCount()
 					/ (double) studyItemMeta.getViewCount());
+			
+			studyItemMeta.setTotalTime(studyItemMeta.getTotalTime() + duration);
+			studyItemMeta.setAverageTime(studyItemMeta.getTotalTime() / studyItemMeta.getTimedViewCount());
 			trans.commit();
 
 			// UserStat userStat;
@@ -1085,6 +1099,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 
 			switch (quizOptions.getCardOrder()) {
+			case SLOWEST:
+				Collections.sort(wordPairs, new StudyItemMeta.SortAverageTimeDesc());
+				break;
 			case EASIEST:
 				Collections.sort(wordPairs, new StudyItemMeta.SortDifficulty());
 				break;

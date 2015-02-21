@@ -45,7 +45,8 @@
   	
   	<div class="row">
   		<div class="twelve columns">
-  			<g:Button styleName="button-primary" ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button> 
+  			<g:Button styleName="button-primary" ui:field='studyWrongWordsButton'>Study Incorrect?</g:Button>
+  			<g:Button styleName="button-primary" ui:field='doneButton'>Done</g:Button>  
   		</div>
 	</div>
   	

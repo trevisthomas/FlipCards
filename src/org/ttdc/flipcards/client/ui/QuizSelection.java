@@ -80,11 +80,15 @@ public class QuizSelection extends Composite {
 		cardCountListBox.addItem("All");
 		cardCountListBox.setSelectedIndex(1);
 		
-		orderListBox.addItem(CardOrder.RANDOM.toString(), CardOrder.RANDOM.name());
-		orderListBox.addItem(CardOrder.EASIEST.toString(), CardOrder.EASIEST.name());
-		orderListBox.addItem(CardOrder.HARDEST.toString(), CardOrder.HARDEST.name());
-		orderListBox.addItem(CardOrder.LEAST_STUDIED.toString(), CardOrder.LEAST_STUDIED.name());
-		orderListBox.addItem(CardOrder.LATEST_ADDED.toString(), CardOrder.LATEST_ADDED.name());
+		for(CardOrder co : CardOrder.values()){
+			orderListBox.addItem(co.toString(), co.name());
+		}
+		
+//		orderListBox.addItem(CardOrder.RANDOM.toString(), CardOrder.RANDOM.name());
+//		orderListBox.addItem(CardOrder.EASIEST.toString(), CardOrder.EASIEST.name());
+//		orderListBox.addItem(CardOrder.HARDEST.toString(), CardOrder.HARDEST.name());
+//		orderListBox.addItem(CardOrder.LEAST_STUDIED.toString(), CardOrder.LEAST_STUDIED.name());
+//		orderListBox.addItem(CardOrder.LATEST_ADDED.toString(), CardOrder.LATEST_ADDED.name());
 		
 		cardSideTerm.setText(CardSide.TERM.toString());
 		cardSideDefinition.setText(CardSide.DEFINITION.toString());

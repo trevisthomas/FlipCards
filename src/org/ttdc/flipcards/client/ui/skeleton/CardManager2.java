@@ -228,6 +228,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	@UiHandler("filterListBox")
 	void onFilterChange(ChangeEvent e) {
 		String selected = filterListBox.getValue(filterListBox.getSelectedIndex());
+		lastSelectedOwner = NONE;
 		boolean isItem = false;
 		for(ItemFilter itemFilter : Arrays.asList(ItemFilter.values())){
 			if(itemFilter.name().equals(selected)){
@@ -254,6 +255,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 			if (!text.isEmpty()) {
 				performAutoComplete(text);
 			} else {
+				sequence = -1; //If any are inflight, screw them.
 				clearAutoComplete();
 			}
 		}
@@ -261,6 +263,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	@UiHandler("termTextBox")
 	void onTermBlurHandler(BlurEvent e){
 		if(termTextBox.getText().trim().isEmpty()){
+			sequence = -1; //If any are inflight, screw them.
 			clearAutoComplete();
 		}
 	}
@@ -300,6 +303,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 								autoCompletePanel.add(viewer.getEditor());
 								
 								autoCompleteEditors.add(viewer.getEditor());
+								
+								viewer.refresh();//This will load the detailed info.
 							}
 						}
 					}
@@ -333,6 +338,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		termTextBox.setText("");
 		definitionTextBox.setText("");
 		clearAutoComplete();
+		termTextBox.setFocus(true);
 	}
 	
 	@UiHandler("addCardButton")

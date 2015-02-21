@@ -22,8 +22,6 @@ public interface StudyWordsService extends RemoteService{
 	WordPair updateWordPair(String id, String word, String definition) throws IllegalArgumentException, NotLoggedInException;
 	Boolean deleteWordPair(String id) throws IllegalArgumentException, NotLoggedInException;
 	List<WordPair> generateQuiz(QuizOptions quizOptions) throws NotLoggedInException;
-	void answerQuestion(String id, Boolean correct) throws IllegalArgumentException, NotLoggedInException;
-//	List<WordPair> getAllWordPairs() throws NotLoggedInException;
 	String getFileUploadUrl() throws NotLoggedInException;
 	void assignSelfToUserlessWords() throws NotLoggedInException;
 	
@@ -46,6 +44,8 @@ public interface StudyWordsService extends RemoteService{
 	AutoCompleteWordPairList getAutoCompleteWordPairs(List<String> owners, int sequence,
 			String qstr) throws IllegalArgumentException, NotLoggedInException;
 	WordPair getStudyItem(String studyItemId) throws IllegalArgumentException, NotLoggedInException;
+	void answerQuestion(String id, long duration, Boolean correct)
+			throws IllegalArgumentException, NotLoggedInException;
 
 }
 

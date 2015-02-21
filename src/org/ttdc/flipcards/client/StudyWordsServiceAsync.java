@@ -28,8 +28,6 @@ public interface StudyWordsServiceAsync {
 	void generateQuiz(QuizOptions quizOptions,
 			AsyncCallback<List<WordPair>> callback);
 
-	void answerQuestion(String id, Boolean correct, AsyncCallback<Void> callback);
-
 	void getFileUploadUrl(AsyncCallback<String> callback);
 
 	void assignSelfToUserlessWords(AsyncCallback<Void> callback);
@@ -58,5 +56,8 @@ public interface StudyWordsServiceAsync {
 			AsyncCallback<AutoCompleteWordPairList> callback);
 
 	void getStudyItem(String studyItemId, AsyncCallback<WordPair> callback);
+
+	void answerQuestion(String id, long duration, Boolean correct,
+			AsyncCallback<Void> callback);
 	
 }

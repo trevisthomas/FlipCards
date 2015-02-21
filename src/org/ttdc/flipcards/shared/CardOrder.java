@@ -2,6 +2,7 @@ package org.ttdc.flipcards.shared;
 
 public enum CardOrder {
 	HARDEST("Hardest"),
+	SLOWEST("Slowest to answer"),
 	EASIEST("Easiest"),
 	LEAST_STUDIED("Least Studied"),
 	LATEST_ADDED("Most Reciently Added"),
