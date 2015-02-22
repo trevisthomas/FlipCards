@@ -76,7 +76,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	boolean spanishFirst = false;
 	private long timeStarted;
 	private long duration;
-	private static final long TIMEOUT = 3*1000;
+	private static final long TIMEOUT = 30*1000;
 	private Timer t;
 	
 	
