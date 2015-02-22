@@ -8,6 +8,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -34,6 +35,12 @@ public class ConfirmationPopup extends Composite {
 	@UiField
 	Label titleLabel;
 	
+	@UiField
+	HTMLPanel okCancelPanel;
+	
+	@UiField
+	HTMLPanel okOnlyPanel;
+	
 	public ConfirmationPopup(Observer observer, String title, String message) {
 		initWidget(uiBinder.createAndBindUi(this));
 		this.observer = observer;
@@ -45,6 +52,14 @@ public class ConfirmationPopup extends Composite {
 		popup.setGlassEnabled(true);
 		popup.setAnimationEnabled(true);
 		
+		if(observer == null){
+			okOnlyPanel.setVisible(true);
+			okCancelPanel.setVisible(false);
+		}
+		else {
+			okOnlyPanel.setVisible(false);
+			okCancelPanel.setVisible(true);
+		}
 		
 		popup.center();
 		popup.addCloseHandler(new CloseHandler<PopupPanel>() {
@@ -69,4 +84,9 @@ public class ConfirmationPopup extends Composite {
 	void onCancelClick(ClickEvent e) {
 		popup.hide();
 	}
+	@UiHandler("onOnlyButton")
+	void onOkOnlyClick(ClickEvent e) {
+		popup.hide();
+	}
+	
 }

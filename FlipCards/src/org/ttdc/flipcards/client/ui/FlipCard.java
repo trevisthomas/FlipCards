@@ -7,7 +7,7 @@ import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ViewName;
-import org.ttdc.flipcards.client.ui.skeleton.TimesUpPopup;
+import org.ttdc.flipcards.client.ui.skeleton.ConfirmationPopup;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -25,7 +25,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -77,7 +76,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	boolean spanishFirst = false;
 	private long timeStarted;
 	private long duration;
-	private static final long TIMEOUT = 30*1000;
+	private static final long TIMEOUT = 3*1000;
 	private Timer t;
 	
 	
@@ -172,13 +171,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 			@Override
 			public void run() {
 				handleFlipButton(null);
-				PopupPanel popup = new PopupPanel(true);
-
-				popup.add(new TimesUpPopup());
-				popup.setGlassEnabled(true);
-				popup.setAnimationEnabled(true);
-				popup.center();
-				
+				new ConfirmationPopup(null, "Time's Up!", "The time allowed for a response has expired.");
 			}
 		};
 		t.schedule((int) TIMEOUT);
