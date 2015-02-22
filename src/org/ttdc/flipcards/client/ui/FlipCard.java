@@ -178,6 +178,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 				popup.setGlassEnabled(true);
 				popup.setAnimationEnabled(true);
 				popup.center();
+				
 			}
 		};
 		t.schedule((int) TIMEOUT);

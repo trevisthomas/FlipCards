@@ -184,39 +184,51 @@ public class CardEdit2 extends Composite {
 	
 	@UiHandler("deactivateButton")
 	void onDeactivateClick(ClickEvent e) {
-		FlipCards.studyWordsService.setActiveStatus(card.getId(), false, new AsyncCallback<WordPair>() {
+		new ConfirmationPopup(new ConfirmationPopup.Observer() {
 			@Override
-			public void onSuccess(WordPair result) {
-				refreshCard();
-				observer.onCardUpdated(result); 
+			public void onPerformAction() {
+				FlipCards.studyWordsService.setActiveStatus(card.getId(), false, new AsyncCallback<WordPair>() {
+					@Override
+					public void onSuccess(WordPair result) {
+						refreshCard();
+						observer.onCardUpdated(result); 
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						FlipCards.showErrorMessage("Server failed to deactivate");
+					}
+				});
 			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				FlipCards.showErrorMessage("Server failed to deactivate");
-			}
-		});
+		} , "Deactivation Confirmation","Are you sure you want to deactivate the card \""+card.getWord()+"\"? Quiz statistics will not be recoverable." );
 	}
 	
 	@UiHandler("deleteButton")
 	void onDeleteClick(ClickEvent e) {
 		//Web service remove
-		FlipCards.studyWordsService.deleteWordPair(card.getId(), new AsyncCallback<Boolean>() {
+		new ConfirmationPopup(new ConfirmationPopup.Observer() {
 			@Override
-			public void onSuccess(Boolean result) {
-				if(result == true){
-					FlipCards.showMessage("Card deleted");
-					observer.onCardDeleted();
-				}
-				else {
-					FlipCards.showErrorMessage("Server failed to remove");
-				}
+			public void onPerformAction() {
+				FlipCards.studyWordsService.deleteWordPair(card.getId(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {
+						if(result == true){
+							FlipCards.showMessage("Card deleted");
+							observer.onCardDeleted();
+						}
+						else {
+							FlipCards.showErrorMessage("Server failed to remove");
+						}
+					}
+					@Override
+					public void onFailure(Throwable caught) {
+						FlipCards.showErrorMessage(caught.getMessage());
+					}
+				});
 			}
-			@Override
-			public void onFailure(Throwable caught) {
-				FlipCards.showErrorMessage(caught.getMessage());
-			}
-		});
+		} , "Delete Confirmation","Are you sure you want to delete the card \""+card.getWord()+"\"? This action can not be undone." );
+		
+		
 	}
 
 	

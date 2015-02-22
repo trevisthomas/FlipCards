@@ -24,7 +24,7 @@
 		    </div>
 	    	<div class="row">
 		    	<div class="ten columns">
-					<g:Button styleName="button-primary" ui:field="updateButton"/><g:Button ui:field="deleteButton"/><g:Button ui:field="activateButton"/><g:Button ui:field="deactivateButton"/>
+					<g:Button styleName="button-primary tt-btn-fix" ui:field="updateButton"/><g:Button styleName="tt-btn-fix" ui:field="deleteButton"/><g:Button styleName="tt-btn-fix" ui:field="activateButton"/><g:Button styleName="tt-btn-fix" ui:field="deactivateButton"/>
 				</div>
 				<div class="two columns">
 					<g:Button styleName="button-primary" ui:field="closeButton"/>
