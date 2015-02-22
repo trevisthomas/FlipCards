@@ -13,12 +13,17 @@
 					<g:Label ui:field="messageLabel"></g:Label>
 				</div>
 			</div>	
-			<div class="row">
+			<g:HTMLPanel styleName="row" ui:field="okCancelPanel">
 				<div class="center" style="width: 15em;">
 					<g:Button ui:field="okButton">Ok</g:Button>
 					<g:Button styleName="button-primary" ui:field="cancelButton">Cancel</g:Button>
 				</div>
-			</div>
+			</g:HTMLPanel>
+			<g:HTMLPanel styleName="row" ui:field="okOnlyPanel">
+				<div class="center" style="width: 7em;">
+					<g:Button styleName="button-primary" ui:field="onOnlyButton">Ok</g:Button>
+				</div>
+			</g:HTMLPanel>
 		</div>
 	</g:HTMLPanel>
 </ui:UiBinder> 
