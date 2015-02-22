@@ -1,6 +1,8 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
-	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:tt="urn:import:org.ttdc.flipcards.client.ui.widgets"
+	>
 	<ui:style>
 		
 	</ui:style>
@@ -67,7 +69,9 @@
 						 </div>
 					 
 					 <g:HTMLPanel styleName="tt-autoCompletePanel" ui:field="autoCompletePanel"/>
-					 <g:HTMLPanel ui:field="cardBrowserPanel"/>
+					 <g:HTMLPanel ui:field="cardBrowserPanel">
+					 	
+					 </g:HTMLPanel>
 		
 		<div class="tt-padded"> 
 		 <div class="row">
@@ -81,7 +85,9 @@
 			<div class="four columns">&nbsp;</div>
 		 </div>
 		 </div>
-
+		 
+		<tt:Footer/>
+		
 	</g:HTMLPanel>
 	
 	
