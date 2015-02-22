@@ -1,0 +1,7 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<g:HTMLPanel >
+		<div class="center" style="width: 15em;"><img style="width: 15em; margin: 5em 0;" src="/img/loading.gif" /></div>
+	</g:HTMLPanel>
+</ui:UiBinder> 

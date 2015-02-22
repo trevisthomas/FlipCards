@@ -1,6 +1,7 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
-	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	xmlns:g="urn:import:com.google.gwt.user.client.ui"
+	xmlns:tt="urn:import:org.ttdc.flipcards.client.ui.widgets">
 
 	<g:HTMLPanel styleName="container">
 		<div class="row">
@@ -65,6 +66,7 @@
 				 -->
 		<g:Button styleName="button-primary" ui:field="goButton" />
 		
+		<tt:Footer/>
 	</g:HTMLPanel>
 </ui:UiBinder> 
 

@@ -158,6 +158,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		cursorStack.push("");
 		dataDetailLabel.setText("Loading...");
 		cardBrowserPanel.clear();
+		cardBrowserPanel.add(new LoadingMessageWidget());
 		currentPage = 1;
 		refresh(cursorString);
 	}
