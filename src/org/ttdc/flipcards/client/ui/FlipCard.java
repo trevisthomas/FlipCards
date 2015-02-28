@@ -63,7 +63,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	@UiField
 	Label noDiv;
 	@UiField
-	Label logoutLabel;
+	Anchor logoffAnchor;
 	
 	
 //	http://www.linguee.com/english-spanish/search?source=spanish&query=facile
@@ -100,6 +100,8 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		lingueeAnchor.setTarget("_blank");
 		spanishDictAnchor.setTarget("_blank");
 		definePanel.setVisible(false);
+		
+		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
 		if(wordPairList != null){
 			wordPairs = wordPairList;

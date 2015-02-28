@@ -56,6 +56,8 @@ public class QuizSelection extends Composite {
 	FlowPanel tagFilterPanel;
 	@UiField
 	CheckBox allCheckbox;
+	@UiField 
+	Anchor logoffAnchor;
 	
 	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
 	
@@ -66,6 +68,7 @@ public class QuizSelection extends Composite {
 		cardCountListBox.getElement().setId("cardCountInput");
 		orderListBox.getElement().setId("orderInput");
 		
+		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
 		goButton.setText("Go!");
 		editCardsButton.setText("Edit Cards");
