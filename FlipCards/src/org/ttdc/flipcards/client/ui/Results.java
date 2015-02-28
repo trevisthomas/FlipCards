@@ -45,6 +45,8 @@ public class Results extends Composite {
 	Button doneButton;
 	@UiField
 	Anchor newQuizButton;
+	@UiField 
+	Anchor logoffAnchor;
 	
 	
 	private final QuizOptions options;
@@ -70,6 +72,7 @@ public class Results extends Composite {
 		if(incorrectWordPairs.size() == 0){
 			studyWrongWordsButton.setVisible(false);
 		}
+		logoffAnchor.setHref(FlipCards.getSignOutHref());
 	}
 	
 	@UiHandler("studyWrongWordsButton")

@@ -10,6 +10,7 @@ import org.ttdc.flipcards.client.services.StagingCardServiceAsync;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.QuizSelection;
 import org.ttdc.flipcards.client.ui.skeleton.CardManager2;
+import org.ttdc.flipcards.client.ui.skeleton.Login;
 import org.ttdc.flipcards.shared.FieldVerifier;
 import org.ttdc.flipcards.shared.LoginInfo;
 import org.ttdc.flipcards.shared.WordPair;
@@ -45,7 +46,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class FlipCards implements EntryPoint {
 
-	private LoginInfo loginInfo = null;
+	private static LoginInfo loginInfo = null;
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private Label loginLabel = new Label(
 			"Please sign in to your Google Account to access ¡Enfoca!");
@@ -144,7 +145,7 @@ public class FlipCards implements EntryPoint {
 						loginInfo = result;
 						if (loginInfo.isLoggedIn()) {
 							signOutLink.setHref(loginInfo.getLogoutUrl());
-							RootPanel.get("logout").add(signOutLink);
+//							RootPanel.get("logout").add(signOutLink);
 //							replaceView(new CardManager());
 							History.fireCurrentHistoryState();
 //							replaceView(ViewName.QUIZ_SELECTION, new QuizSelection());
@@ -156,16 +157,25 @@ public class FlipCards implements EntryPoint {
 
 	}
 	
-	
-
+	public static String getSignOutHref(){
+		if(loginInfo != null){
+			return loginInfo.getLogoutUrl();
+		} else {
+			return "";
+		}
+	}	
 	
 	private void loadLogin() {
 		// Assemble login panel.
-		signInLink.setHref(loginInfo.getLoginUrl());
-		loginPanel.add(loginLabel);
-		loginPanel.add(signInLink);
+		
 		RootPanel.get("flipcards").clear();
-		RootPanel.get("flipcards").add(loginPanel);
+		RootPanel.get("flipcards").add(new Login(loginInfo.getLoginUrl()));
+		
+//		signInLink.setHref(loginInfo.getLoginUrl());
+//		loginPanel.add(loginLabel);
+//		loginPanel.add(signInLink);
+//		RootPanel.get("flipcards").clear();
+//		RootPanel.get("flipcards").add(loginPanel);
 	}
 
 //	public static void showAddWordsView() {

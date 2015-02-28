@@ -15,7 +15,7 @@ import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.WordPair;
 
-import com.google.appengine.api.images.Composite.Anchor;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -29,6 +29,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -67,7 +68,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	Button prevButton;
 	@UiField
 	Button nextButton;
-	
+	@UiField 
+	Anchor logoffAnchor;
 	
 	private static final String NONE = "None";
 	
@@ -112,6 +114,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		addItemFilterItem(ItemFilter.BOTH);
 		addItemFilterItem(ItemFilter.ACTIVE);
 		addItemFilterItem(ItemFilter.INACTIVE);
+		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override

@@ -15,7 +15,12 @@
 		<nav class="navbar">
 			<div class="container">
 				<ul class="navbar-list">
-					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="quizAnchor">take quiz</g:Anchor></li>
+					<li class="navbar-item"><g:Anchor styleName="navbar-link navbar-link-first" ui:field="quizAnchor">take quiz</g:Anchor></li>
+				</ul>
+				<ul class="navbar-list u-pull-right">
+					<li class="navbar-item">
+						<g:Anchor styleName="navbar-link navbar-link-last" ui:field="logoffAnchor">sign out</g:Anchor>
+					</li>
 				</ul>
 			</div>
 		</nav>
