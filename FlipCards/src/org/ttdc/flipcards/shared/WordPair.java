@@ -6,14 +6,17 @@ import java.util.Date;
 import java.util.List;
 
 public class WordPair implements Serializable {
+	
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5138759608971399534L;
+	private static final long serialVersionUID = -3347383363425803403L;
 	
 	private String word;
 	private String definition;
 	private Date createDate = new Date();
+	private Date lastUpdate = new Date();
 	private long testedCount;
 	private long correctCount;
 	private double difficulty;
@@ -120,6 +123,14 @@ public class WordPair implements Serializable {
 
 	public void setAverageTime(long averageTime) {
 		this.averageTime = averageTime;
+	}
+	
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 
 	@Override

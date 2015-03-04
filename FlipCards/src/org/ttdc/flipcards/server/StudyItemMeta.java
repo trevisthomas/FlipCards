@@ -60,6 +60,12 @@ public class StudyItemMeta implements Serializable{
 		}
 	}
 	
+	public static class SortStudyDate implements Comparator<WordPair> {
+		public int compare(WordPair c1, WordPair c2) {
+			return c1.getLastUpdate().compareTo(c2.getLastUpdate());
+		}
+	}
+	
 	public static class SortCreateDateDesc  implements Comparator<WordPair> {
 		public int compare(WordPair c1, WordPair c2) {
 			return c1.getCreateDate().compareTo(c2.getCreateDate());
