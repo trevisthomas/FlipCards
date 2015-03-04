@@ -203,6 +203,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			gwtPair.setTestedCount(studyItemMeta.getViewCount());
 			gwtPair.setDifficulty(studyItemMeta.getDifficulty());
 			gwtPair.setAverageTime(studyItemMeta.getAverageTime());
+			if(studyItemMeta.getLastUpdate() != null){
+				gwtPair.setLastUpdate(new Date(studyItemMeta.getLastUpdate().getTime()));
+			} else {
+				gwtPair.setLastUpdate(new Date());
+			}
 			gwtPair.setActive(true);
 		}
 
@@ -1115,6 +1120,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				break;
 			case LEAST_STUDIED:
 				Collections.sort(wordPairs, new StudyItemMeta.SortStudyCount());
+				break;
+			case LEAST_RECIENTLY_STUDIED:
+				Collections.sort(wordPairs, new StudyItemMeta.SortStudyDate());
 				break;
 			case RANDOM:
 				Collections.shuffle(wordPairs);

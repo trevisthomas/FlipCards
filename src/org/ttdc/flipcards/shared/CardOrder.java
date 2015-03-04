@@ -6,7 +6,7 @@ public enum CardOrder {
 	EASIEST("Easiest"),
 	LEAST_STUDIED("Least Studied"),
 	LATEST_ADDED("Most Reciently Added"),
-	RANDOM("Random"),
+	RANDOM("Random"), LEAST_RECIENTLY_STUDIED("Least Reciently Studied"),
 	;
 	
 	private final String name;
