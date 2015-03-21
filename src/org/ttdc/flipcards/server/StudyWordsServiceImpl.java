@@ -21,6 +21,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import org.ttdc.flipcards.client.StudyWordsService;
+import org.ttdc.flipcards.server.sql.SqlMigrator;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
@@ -1346,6 +1347,12 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			pm.close();
 		}
 		return tagAsses;
+	}
+	
+	@Override
+	public boolean migrate(int table, int pageNumber) throws NotLoggedInException{
+		checkLoggedIn();
+		return SqlMigrator.migrate(table, pageNumber);
 	}
 
 	// @Override

@@ -1,4 +1,11 @@
-<!-- Indices written at Mon, 2 Feb 2015 02:15:53 CST -->
+<!-- Indices written at Sat, 21 Mar 2015 15:39:54 CDT -->
 
-<datastore-indexes/>
+<datastore-indexes>
 
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="StudyItem" ancestor="false" source="auto">
+        <property name="owner" direction="asc"/>
+        <property name="createDate" direction="desc"/>
+    </datastore-index>
+
+</datastore-indexes>

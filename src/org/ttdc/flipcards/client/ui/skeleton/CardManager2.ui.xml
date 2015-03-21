@@ -16,6 +16,7 @@
 			<div class="container">
 				<ul class="navbar-list">
 					<li class="navbar-item"><g:Anchor styleName="navbar-link navbar-link-first" ui:field="quizAnchor">take quiz</g:Anchor></li>
+					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="migrate">MIGRATE</g:Anchor></li>
 				</ul>
 				<ul class="navbar-list u-pull-right">
 					<li class="navbar-item">
@@ -24,6 +25,7 @@
 				</ul>
 			</div>
 		</nav>
+		
 		<div class="row">
 		    <div class="six columns">
 		      <label for="termInput">Term</label>

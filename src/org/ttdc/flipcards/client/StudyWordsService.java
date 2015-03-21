@@ -46,6 +46,7 @@ public interface StudyWordsService extends RemoteService{
 	WordPair getStudyItem(String studyItemId) throws IllegalArgumentException, NotLoggedInException;
 	void answerQuestion(String id, long duration, Boolean correct)
 			throws IllegalArgumentException, NotLoggedInException;
+	boolean migrate(int table, int pageNumber) throws NotLoggedInException;
 
 }
 

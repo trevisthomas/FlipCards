@@ -16,6 +16,8 @@ import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.WordPair;
 
 
+
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -70,6 +72,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	Button nextButton;
 	@UiField 
 	Anchor logoffAnchor;
+	@UiField
+	Anchor migrate;
 	
 	private static final String NONE = "None";
 	
@@ -272,6 +276,36 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		}
 	}
 
+//	private int pageNumber = 1;
+//	private int pageNumberStudyCards = 1;
+	@UiHandler("migrate")
+	void onMigrate(ClickEvent event){
+		FlipCards.showErrorMessage("Starting migration");
+		performMigrate(0, 1);
+		performMigrate(1, 1);
+		performMigrate(2, 1);
+		performMigrate(3, 1);
+	}
+
+
+	private void performMigrate(final int table, final int pageNumber) {
+		FlipCards.studyWordsService.migrate(table, pageNumber, new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				if(result){
+					FlipCards.addErrorMessage("Done table: " + table);
+				} else{
+					FlipCards.addErrorMessage("Finished table: "+table+" page: " + pageNumber);
+//					pageNumber++;
+					performMigrate(table, pageNumber+1);
+				}
+			}
+		});
+	}
 
 	private void clearAutoComplete() {
 		autoCompletePanel.clear();
