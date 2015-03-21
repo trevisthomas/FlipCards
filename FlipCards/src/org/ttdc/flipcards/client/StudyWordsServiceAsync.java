@@ -10,6 +10,10 @@ import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 
+
+
+
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 //Nice, got an error when this didnt exist and then the red dot auto created it for me.
@@ -59,5 +63,7 @@ public interface StudyWordsServiceAsync {
 
 	void answerQuestion(String id, long duration, Boolean correct,
 			AsyncCallback<Void> callback);
+
+	void migrate(int table, int pageNumber, AsyncCallback<Boolean> callback);
 	
 }

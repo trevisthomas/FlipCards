@@ -11,10 +11,19 @@
     <url-pattern>/flipcards/upload</url-pattern>
   </servlet-mapping>
   
+  <!-- 
   <servlet>
     <servlet-name>studyWordsServlet</servlet-name>
     <servlet-class>org.ttdc.flipcards.server.StudyWordsServiceImpl</servlet-class>
   </servlet>
+  -->
+   
+  <servlet>
+    <servlet-name>studyWordsServlet</servlet-name>
+    <servlet-class>org.ttdc.flipcards.server.sql.StudyWordsServiceImpl</servlet-class>
+  </servlet>
+  
+  
   <servlet-mapping>
     <servlet-name>studyWordsServlet</servlet-name>
     <url-pattern>/flipcards/studyWords</url-pattern>

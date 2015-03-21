@@ -69,6 +69,10 @@ public class FlipCards implements EntryPoint {
 		RootPanel.get("systemError").add(new Label(message));
 	}
 	
+	public static void addErrorMessage(String message){
+		RootPanel.get("systemError").add(new Label(message));
+	}
+	
 	public static void showMessage(String message) {
 		//set the style?
 		RootPanel.get("systemError").clear();
