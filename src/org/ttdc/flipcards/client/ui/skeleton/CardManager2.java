@@ -2,8 +2,10 @@ package org.ttdc.flipcards.client.ui.skeleton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -13,7 +15,15 @@ import org.ttdc.flipcards.client.ui.CardView;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
+import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
+
+
+
+
+
+
+
 
 
 
@@ -22,6 +32,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -33,7 +44,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -74,6 +87,9 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	Anchor logoffAnchor;
 	@UiField
 	Anchor migrate;
+	@UiField
+	FlowPanel tagFilterPanel;
+	
 	
 	private static final String NONE = "None";
 	
@@ -91,7 +107,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 	private Set<CardEdit2> cardEditors = new HashSet<>();
 	private Set<CardEdit2> autoCompleteEditors = new HashSet<>();
 	
-
+	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
 
 	interface CardManager2UiBinder extends UiBinder<Widget, CardManager2> {
 	}
@@ -120,6 +136,9 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		addItemFilterItem(ItemFilter.INACTIVE);
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
+//		allCheckbox.setValue(true);
+		setupFilterCheckboxes(true);
+		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override
 			public void onSuccess(List<String> result) {
@@ -142,10 +161,63 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 			}
 		});
 		
+		tagFilterPanel.add(new Label("Loading..."));
+		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
+			
+			@Override
+			public void onSuccess(List<Tag> result) {
+				tagFilterPanel.clear();
+				for(Tag tag : result){
+					CheckBox checkBox = new CheckBox();
+					checkBox.setText(tag.getTagName());
+					tagFilterPanel.add(checkBox);
+					filterCheckBoxesMap.put(tag.getTagId(), checkBox);
+					checkBox.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							boolean filterByTag = false;
+							for(String tagId : filterCheckBoxesMap.keySet()){
+								if(filterCheckBoxesMap.get(tagId).getValue()){
+									filterByTag = true;
+								}
+							}
+							setupFilterCheckboxes(!filterByTag);
+							loadWords();
+						}
+					});
+				}
+				setupFilterCheckboxes(true);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				FlipCards.showErrorMessage(caught.getMessage());
+				
+			}
+		});
+		
 		loadWords("");
 		
 //		filterListBox.addItem(item.toString(), item.name());
 		
+	}
+	
+//	@UiHandler("allCheckbox")
+//	void onCheckAllClicked(ClickEvent e){
+//		setupFilterCheckboxes();
+//	}
+
+	private void setupFilterCheckboxes(boolean enable) {
+		if (enable) {
+			filterListBox.removeStyleName("disabled");
+			filterListBox.setEnabled(true);
+		} else {
+			filterListBox.addStyleName("disabled");
+			filterListBox.setEnabled(false);
+		}
+//		for(String tagId : filterCheckBoxesMap.keySet()){
+//			filterCheckBoxesMap.get(tagId).setEnabled(!allCheckbox.getValue());
+//		}
 	}
 
 	
@@ -172,12 +244,21 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 
 	private void refresh(String cursorString) {
 		List<String> tagIds = new ArrayList<>();
-		if (!NONE.equals(lastSelectedTag)) {
-			tagIds.add(lastSelectedTag);
-			filterListBox.setEnabled(false);
-		} else {
-			filterListBox.setEnabled(true);
-		}
+//		if (!NONE.equals(lastSelectedTag)) {
+//			tagIds.add(lastSelectedTag);
+//			filterListBox.setEnabled(false);
+//		} else {
+//			filterListBox.setEnabled(true);
+//		}
+		
+		//Apply the filter checks only if all is not selected
+		for(String tagId : filterCheckBoxesMap.keySet()){
+			if(filterCheckBoxesMap.get(tagId).getValue()){
+				tagIds.add(tagId);
+			}
+		}	
+		
+		
 		List<String> owners = new ArrayList<>();
 		if (!NONE.equals(lastSelectedOwner)) {
 			owners.add(lastSelectedOwner);

@@ -48,6 +48,10 @@
 		 		<label for="filterInput">Filter</label>
 		 		<g:ListBox styleName="u-full-width" ui:field="filterListBox"/>
 		 	</div>
+		 	<div class="six columns">
+				<label for="tagFilterInput">Tag filters</label>
+      			<g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel>
+			</div>
 		 </div>
 		 
 		 <div class="row">
