@@ -8,16 +8,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
-
 import org.ttdc.flipcards.client.StudyWordsService;
-import org.ttdc.flipcards.server.StudyItem;
 import org.ttdc.flipcards.server.UploadService;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
@@ -65,6 +63,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return conn;
 	}
 	private void closeConnection(Connection conn) {
+		if(conn == null){ 
+			return;
+		}
 		try {
 			conn.close();
 		} catch (SQLException e) {
@@ -130,8 +131,22 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public List<Tag> getAllTagNames() throws IllegalArgumentException,
 			NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		List<Tag> tags = new ArrayList<Tag>();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			String statement = "SELECT * FROM tag";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				tags.add(new Tag(rs.getString("tagId"), rs.getString("tagName")));
+			}
+		} catch (SQLException e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return tags;
 	}
 
 	@Override
@@ -180,8 +195,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	public List<String> getStudyFriends() throws IllegalArgumentException,
 			NotLoggedInException {
 		List<String> users = new ArrayList<String>();
+		Connection conn = null;
 		try {
-			Connection conn = getConnection();
+			conn = getConnection();
 			// At some point this method should probably only find the logged in
 			// users chosen friends.
 			String statement = "SELECT * FROM user";
@@ -192,8 +208,23 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 		} catch (SQLException e) {
 			logException(e);
+		} finally {
+			closeConnection(conn);
 		}
 		return users;
+	}
+	
+	private String getUserIdForEmail(String email) throws SQLException{
+		Connection conn = getConnection();
+		// At some point this method should probably only find the logged in
+		// users chosen friends.
+		String statement = "SELECT * FROM user WHERE user.email='"+email+"'";
+		PreparedStatement stmt = conn.prepareStatement(statement);
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			return rs.getString("userId");
+		}
+		throw new RuntimeException("Email not found: "+email );
 	}
 
 	@Override
@@ -225,10 +256,10 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		if (tagIds.isEmpty()) {
 			switch (filter) {
 			case ACTIVE:
-//				pwp = getWordPairsActive(users, pageNumber, perPage);
+				pwp = getWordPairsActive(users, pageNumber, perPage);
 				break;
 			case INACTIVE:
-//				pwp = getWordPairInactive(users, pageNumber, perPage);
+				pwp = getWordPairInactive(users, pageNumber, perPage);
 				break;
 			case BOTH:
 			default:
@@ -237,11 +268,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 
 		} else {
-//			pwp = getWordPairsWithTags(tagIds, users, filter, pageNumber, perPage);
+			pwp = getWordPairsWithTags(tagIds, users, filter, pageNumber, perPage);
 		}
 		return pwp;
 	}
 	
+	
+
 	private PagedWordPair getWordPairAll(List<String> owners, int pageNumber,
 			int pageSize) throws NotLoggedInException {
 		PagedWordPair pagedWordPair = new PagedWordPair();
@@ -259,64 +292,23 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			
 			
 			int start = (pageNumber - 1) * pageSize;
-//			int end = start + pageSize;
-			
+
 			String statement = 		
 			"SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
 			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
-			"sm.averageTime as 'averageTime', CASE WHEN sm.difficulty IS NOT null THEN true WHEN sm.difficulty IS null THEN false END as 'active', " + 
-			"sm.lastUpdate as 'lastUpdate' " +
+			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' " +
 			"FROM study_item si " +
 				"INNER JOIN user u " +
 					"ON si.ownerId = u.userId " +
 			    "LEFT OUTER JOIN study_item_meta sm " +
-					"ON si.studyItemId = sm.studyItemId " +
-			"ORDER BY si.createDate DESC " +
+					"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
+            "ORDER BY si.createDate DESC " +
 			"LIMIT "+start+","+pageSize ;
 			
-			System.err.println(statement);
+			LOG.info(statement);
 			
-//			q.setRange(start, end);
-
-			PreparedStatement stmt = conn.prepareStatement(statement);
-			ResultSet rs = stmt.executeQuery();
-			while(rs.next()){
-				WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"));
-				pair.setActive(rs.getBoolean("active"));
-				if(pair.isActive()){
-					pair.setCorrectCount(rs.getLong("viewCount")
-							- rs.getLong("incorrectCount"));
-					pair.setTestedCount(rs.getLong("viewCount"));
-					pair.setDifficulty(rs.getDouble("difficulty"));
-					pair.setAverageTime(rs.getLong("averageTime"));
-					if(rs.getTimestamp("lastUpdate") != null){
-						pair.setLastUpdate(new Date(rs.getTimestamp("lastUpdate").getTime()));
-					} else {
-						pair.setLastUpdate(new Date());
-					}
-				}
-				pair.setUser(rs.getString("email"));
-				if (getUser().getEmail().equals(pair.getUser())) {
-					pair.setDeleteAllowed(true);
-				}
-				wordPairs.add(pair);
-			}
+			executeWordPairQueryAndTagResults(wordPairs, conn, statement);
 			
-			
-			
-
-//			q.setOrdering("createDate desc");
-//			int start = (pageNumber - 1) * pageSize;
-//			int end = start + pageSize;
-//			q.setRange(start, end);
-//			List<StudyItem> cards = (List<StudyItem>) q.execute(owners);
-//
-//			for (StudyItem card : cards) {
-//				WordPair pair = convert(card,
-//						findMetaData(card.getId(), card.getOwner()));
-//				wordPairs.add(pair);
-//			}
-//
 			pagedWordPair.setWordPair(wordPairs);
 
 		} catch (Exception e) {
@@ -325,6 +317,221 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			closeConnection(conn);
 		}
 		return pagedWordPair;
+	}
+	
+	private PagedWordPair getWordPairInactive(List<String> owners, int pageNumber,
+			int pageSize) throws NotLoggedInException {
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		Connection conn = null;
+		StringBuilder fromClause = new StringBuilder();
+		
+		try {
+			conn = getConnection();
+			
+			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  "
+					+ "WHERE si.studyItemId NOT IN "
+					+ "(SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
+					
+			if(owners != null){		
+				fromClause.append(" AND u.email IN (");
+				createCommaSeperatedListOfStrings(owners, fromClause);
+				fromClause.append(") ");
+			}
+			
+			if (pageNumber == 1) {
+				StringBuilder statement = new StringBuilder();
+
+				statement.append("SELECT count(*) as total "); 
+				
+				statement.append(fromClause);
+				
+				PreparedStatement stmt = conn.prepareStatement(statement.toString());
+				ResultSet rs = stmt.executeQuery();
+				rs.next();
+				pagedWordPair.setTotalCardCount(rs.getLong("total"));
+			}
+			
+			int start = (pageNumber - 1) * pageSize;
+
+			StringBuilder statement = new StringBuilder();
+			statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
+			statement.append(fromClause)
+			.append("ORDER BY si.createDate DESC ")
+			.append("LIMIT ").append(start).append(",").append(pageSize);
+			
+			LOG.info(statement.toString());
+			
+			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
+			
+			pagedWordPair.setWordPair(wordPairs);
+
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return pagedWordPair;
+	}
+	
+	private PagedWordPair getWordPairsActive(List<String> users, int pageNumber, int pageSize) {
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			if (pageNumber == 1) {
+				String statement = "SELECT count(*) as total FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'";
+				PreparedStatement stmt = conn.prepareStatement(statement);
+				ResultSet rs = stmt.executeQuery();
+				rs.next();
+				pagedWordPair.setTotalCardCount(rs.getLong("total"));
+			}
+			
+			
+			int start = (pageNumber - 1) * pageSize;
+
+			String statement = 		
+			"SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
+			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
+			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' " +
+			"FROM study_item si " +
+				"INNER JOIN user u " +
+					"ON si.ownerId = u.userId " +
+			    "INNER JOIN study_item_meta sm " + //Inner join to exclude words that dont have meta
+					"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
+            "ORDER BY si.createDate DESC " +
+			"LIMIT "+start+","+pageSize ;
+			
+			LOG.info(statement);
+			
+			executeWordPairQueryAndTagResults(wordPairs, conn, statement);
+			
+			pagedWordPair.setWordPair(wordPairs);
+
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return pagedWordPair;
+	}
+	
+	private PagedWordPair getWordPairsWithTags(List<String> tagIds,
+			List<String> owners, ItemFilter filter, int pageNumber, int pageSize) {
+
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		Connection conn = null;
+		StringBuilder fromClause = new StringBuilder();
+		try {
+			conn = getConnection();
+			
+			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  "
+					+ "WHERE si.studyItemId IN "
+					+ "(SELECT ta.studyItemId FROM tag_association ta WHERE ta.tagId IN (");
+					createCommaSeperatedListOfStrings(tagIds, fromClause);	
+					fromClause.append(") )");						
+			if(owners != null){		
+				fromClause.append(" AND u.email IN (");
+				createCommaSeperatedListOfStrings(owners, fromClause);
+				fromClause.append(") ");
+			}
+			
+			if (pageNumber == 1) {
+				StringBuilder statement = new StringBuilder();
+
+				statement.append("SELECT count(*) as total "); 
+				
+				statement.append(fromClause);
+				
+				PreparedStatement stmt = conn.prepareStatement(statement.toString());
+				ResultSet rs = stmt.executeQuery();
+				rs.next();
+				pagedWordPair.setTotalCardCount(rs.getLong("total"));
+			}
+			
+			int start = (pageNumber - 1) * pageSize;
+
+			StringBuilder statement = new StringBuilder();
+			statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
+			statement.append(fromClause)
+			.append("ORDER BY si.createDate DESC ")
+			.append("LIMIT ").append(start).append(",").append(pageSize);
+			
+			LOG.info(statement.toString());
+			
+			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
+			
+			pagedWordPair.setWordPair(wordPairs);
+
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return pagedWordPair;
+		
+	}
+
+	private void executeWordPairQueryAndTagResults(List<WordPair> wordPairs,
+			Connection conn, String statement) throws SQLException {
+		Map<String, WordPair> map = new HashMap<String, WordPair>();
+
+		PreparedStatement stmt = conn.prepareStatement(statement);
+		ResultSet rs = stmt.executeQuery();
+		while(rs.next()){
+			WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"));
+			pair.setActive(rs.getObject("difficulty") != null);
+			if(pair.isActive()){
+				pair.setCorrectCount(rs.getLong("viewCount")
+						- rs.getLong("incorrectCount"));
+				pair.setTestedCount(rs.getLong("viewCount"));
+				pair.setDifficulty(rs.getDouble("difficulty"));
+				pair.setAverageTime(rs.getLong("averageTime"));
+				if(rs.getTimestamp("lastUpdate") != null){
+					pair.setLastUpdate(new Date(rs.getTimestamp("lastUpdate").getTime()));
+				} else {
+					pair.setLastUpdate(new Date());
+				}
+			}
+			pair.setUser(rs.getString("email"));
+			if (getUser().getEmail().equals(pair.getUser())) {
+				pair.setDeleteAllowed(true);
+			}
+			wordPairs.add(pair);
+			map.put(pair.getId(), pair);
+		}
+		
+		//Query for all tags in the above wordPairs
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("SELECT ta.studyItemId as 'studyItemId', t.tagName as 'name', t.tagId as 'tagId' FROM tag_association ta INNER JOIN tag t ON t.tagId=ta.tagId WHERE ta.studyItemId IN(");
+		createCommaSeperatedListOfStrings(map.keySet(), builder);
+		builder.append(")");
+		statement = builder.toString();
+		LOG.info(statement);
+		stmt = conn.prepareStatement(statement);
+		
+		rs = stmt.executeQuery();
+		
+		while(rs.next()){
+			WordPair wp = map.get(rs.getString("studyItemId"));
+			wp.getTags().add(new Tag(rs.getString("tagId"), rs.getString("name")));
+		}
+	}
+
+	private void createCommaSeperatedListOfStrings(Collection<String> collection,
+			StringBuilder builder) {
+		boolean first = true;
+		for(String key : collection){
+			if(!first){
+				builder.append(",");
+			} else {
+				first = !first;
+			}
+			builder.append("'").append(key).append("'");
+		}
 	}
 
 	
