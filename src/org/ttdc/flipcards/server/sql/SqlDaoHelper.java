@@ -107,7 +107,7 @@ public class SqlDaoHelper {
 
 	public void insert(Connection conn, StudyItemMeta item) throws SQLException {
 		String statement = "INSERT INTO study_item_meta (studyItemMetaId, createDate, ownerId, studyItemId,incorrectCount,viewCount,lastUpdate,"
-				+ "difficulty, confidence, totalTime, averageTime, timedViewCount) VALUES( ?, ?, ?,?, ?, ?,?, ?, ?, ?, ?, ?)";
+				+ "difficulty, confidence, totalTime, averageTime, timedViewCount) VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		PreparedStatement stmt = conn.prepareStatement(statement);
 		UUID uuid = java.util.UUID.randomUUID();
 		stmt.setString(1, uuid.toString());

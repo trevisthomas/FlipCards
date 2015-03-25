@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.server.UploadService;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
+import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.PagedWordPair;
@@ -35,6 +36,10 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StudyWordsService {
 	private static final Logger LOG = Logger
 			.getLogger(StudyWordsServiceImpl.class.getName());
+	
+	private final static String SELECT_EVERYTHING = "SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
+			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
+			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' ";
 
 	private String getUrl() {
 		String url = null;
@@ -112,8 +117,66 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public List<WordPair> generateQuiz(QuizOptions quizOptions)
 			throws NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		
+		checkLoggedIn();
+		
+		PagedWordPair pwp = performGetWordPairs(quizOptions.getTagIds(), getStudyFriends(), ItemFilter.ACTIVE, quizOptions.getCardOrder(), 1, quizOptions.getSize());
+		
+		return pwp.getWordPair();
+		
+//		return null;
+//		checkLoggedIn();
+//		PersistenceManager pm = getPersistenceManager();
+//		List<WordPair> wordPairs = new ArrayList<>();
+//		try {
+//			wordPairs = getWordPairsActive(getUser().getEmail());
+//			if (!quizOptions.getTagIds().isEmpty()) {
+//				wordPairs = applyTagFilter(wordPairs, quizOptions.getTagIds());
+//			}
+//
+//			switch (quizOptions.getCardOrder()) {
+//			case SLOWEST:
+//				Collections.sort(wordPairs, new StudyItemMeta.SortAverageTimeDesc());
+//				break;
+//			case EASIEST:
+//				Collections.sort(wordPairs, new StudyItemMeta.SortDifficulty());
+//				break;
+//			case HARDEST:
+//				Collections.sort(wordPairs,
+//						new StudyItemMeta.SortDifficultyDesc());
+//				break;
+//			case LATEST_ADDED:
+//				Collections.sort(wordPairs,
+//						new StudyItemMeta.SortCreateDateDesc());
+//				break;
+//			case LEAST_STUDIED:
+//				Collections.sort(wordPairs, new StudyItemMeta.SortStudyCount());
+//				break;
+//			case LEAST_RECIENTLY_STUDIED:
+//				Collections.sort(wordPairs, new StudyItemMeta.SortStudyDate());
+//				break;
+//			case RANDOM:
+//				Collections.shuffle(wordPairs);
+//				break;
+//			}
+//
+//			if (quizOptions.getSize() > 0
+//					&& wordPairs.size() > quizOptions.getSize()) {
+//				return new ArrayList<>(wordPairs.subList(0,
+//						quizOptions.getSize()));
+//			} else {
+//				return wordPairs;
+//			}
+//
+//		} catch (Exception e) {
+//			logException(e);
+//			throw new RuntimeException("Internal server error.");
+//		}
+//
+//		finally {
+//			pm.close();
+//		}
 	}
 
 	@Override
@@ -250,228 +313,151 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			users = getStudyFriends();
 		}
 
-//		List<WordPair> wordPairs = new ArrayList<>();
 		PagedWordPair pwp = null;
+//		if (tagIds.isEmpty()) {
+//			switch (filter) {
+//			case ACTIVE:
+//				pwp = getWordPairsActive(users, pageNumber, perPage);
+//				break;
+//			case INACTIVE:
+//				pwp = getWordPairInactive(users, pageNumber, perPage);
+//				break;
+//			case BOTH:
+//			default:
+//				pwp = getWordPairAll(users, pageNumber, perPage);
+//				break;
+//			}
+//
+//		} else {
+//			pwp = getWordPairsWithTags(tagIds, users, filter, pageNumber, perPage);
+//		}
+//		return pwp;
+		return performGetWordPairs(tagIds, users, filter, CardOrder.LATEST_ADDED, pageNumber, perPage);
+	}
+	
+	
 
-		if (tagIds.isEmpty()) {
+	/**
+	 * One query to rule them all!
+	 * 
+	 * @param tagIds
+	 * @param owners
+	 * @param filter
+	 * @param order
+	 * @param pageNumber
+	 * @param pageSize
+	 * @return
+	 */
+	private PagedWordPair performGetWordPairs(List<String> tagIds,
+			List<String> owners, ItemFilter filter, CardOrder order, int pageNumber, int pageSize) {
+
+		PagedWordPair pagedWordPair = new PagedWordPair();
+		List<WordPair> wordPairs = new ArrayList<>();
+		Connection conn = null;
+		StringBuilder fromClause = new StringBuilder();
+		StringBuilder whereClause = new StringBuilder();
+		try {
+			conn = getConnection();
+			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  ");
+			
 			switch (filter) {
 			case ACTIVE:
-				pwp = getWordPairsActive(users, pageNumber, perPage);
+				fromClause.append("INNER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
 				break;
 			case INACTIVE:
-				pwp = getWordPairInactive(users, pageNumber, perPage);
-				break;
 			case BOTH:
 			default:
-				pwp = getWordPairAll(users, pageNumber, perPage);
+				fromClause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
 				break;
 			}
+			
+			if(ItemFilter.INACTIVE.equals(filter)){
+				appendWhereOrAnd(whereClause);
+				whereClause.append("si.studyItemId NOT IN (SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
+			}
+			if(!tagIds.isEmpty()){
+				appendWhereOrAnd(whereClause);
+				whereClause.append("si.studyItemId IN (SELECT ta.studyItemId FROM tag_association ta WHERE ta.tagId IN (");
+						createCommaSeperatedListOfStrings(tagIds, whereClause);	
+						whereClause.append(") ) ");						
+			}
+			if(owners != null){		
+				appendWhereOrAnd(whereClause);
+				whereClause.append(" u.email IN (");
+				createCommaSeperatedListOfStrings(owners, whereClause);
+				whereClause.append(") ");
+			}
+			
+			if (pageNumber == 1) {
+				StringBuilder statement = new StringBuilder();
 
+				statement.append("SELECT count(*) as total ") 
+				.append(fromClause)
+				.append(whereClause);
+				
+				LOG.info(statement.toString());
+				
+				PreparedStatement stmt = conn.prepareStatement(statement.toString());
+				ResultSet rs = stmt.executeQuery();
+				rs.next();
+				pagedWordPair.setTotalCardCount(rs.getLong("total"));
+			}
+			
+			int start = (pageNumber - 1) * pageSize;
+
+			StringBuilder statement = new StringBuilder();
+			statement.append(SELECT_EVERYTHING);
+			statement.append(fromClause)
+			.append(whereClause);
+			switch(order){
+				case HARDEST:
+					statement.append("ORDER BY sm.difficulty DESC ");
+					break;
+				case EASIEST:
+					statement.append("ORDER BY sm.difficulty ASC ");
+					break;
+				case LATEST_ADDED:
+					statement.append("ORDER BY si.createDate DESC ");
+					break;
+				case LEAST_RECIENTLY_STUDIED:
+					statement.append("ORDER BY sm.lastUpdate ASC ");
+					break;
+				case LEAST_STUDIED:
+					statement.append("ORDER BY sm.viewCount ASC ");
+					break;
+				case RANDOM:
+					statement.append("ORDER BY RAND() ");
+					break;
+				case SLOWEST:
+					statement.append("ORDER BY sm.averageTime DESC ");
+					break;
+				default:
+					statement.append("ORDER BY si.createDate DESC ");
+			}
+			
+			statement.append("LIMIT ").append(start).append(",").append(pageSize);
+			
+			LOG.info(statement.toString());
+			
+			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
+			
+			pagedWordPair.setWordPair(wordPairs);
+
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return pagedWordPair;
+		
+	}
+
+	private void appendWhereOrAnd(StringBuilder stringBuilder) {
+		if(stringBuilder.toString().isEmpty()){
+			stringBuilder.append(" WHERE ");
 		} else {
-			pwp = getWordPairsWithTags(tagIds, users, filter, pageNumber, perPage);
+			stringBuilder.append(" AND ");
 		}
-		return pwp;
-	}
-	
-	
-
-	private PagedWordPair getWordPairAll(List<String> owners, int pageNumber,
-			int pageSize) throws NotLoggedInException {
-		PagedWordPair pagedWordPair = new PagedWordPair();
-		List<WordPair> wordPairs = new ArrayList<>();
-		Connection conn = null;
-		try {
-			conn = getConnection();
-			if (pageNumber == 1) {
-				String statement = "SELECT count(*) as total FROM study_item";
-				PreparedStatement stmt = conn.prepareStatement(statement);
-				ResultSet rs = stmt.executeQuery();
-				rs.next();
-				pagedWordPair.setTotalCardCount(rs.getLong("total"));
-			}
-			
-			
-			int start = (pageNumber - 1) * pageSize;
-
-			String statement = 		
-			"SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
-			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
-			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' " +
-			"FROM study_item si " +
-				"INNER JOIN user u " +
-					"ON si.ownerId = u.userId " +
-			    "LEFT OUTER JOIN study_item_meta sm " +
-					"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
-            "ORDER BY si.createDate DESC " +
-			"LIMIT "+start+","+pageSize ;
-			
-			LOG.info(statement);
-			
-			executeWordPairQueryAndTagResults(wordPairs, conn, statement);
-			
-			pagedWordPair.setWordPair(wordPairs);
-
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			closeConnection(conn);
-		}
-		return pagedWordPair;
-	}
-	
-	private PagedWordPair getWordPairInactive(List<String> owners, int pageNumber,
-			int pageSize) throws NotLoggedInException {
-		PagedWordPair pagedWordPair = new PagedWordPair();
-		List<WordPair> wordPairs = new ArrayList<>();
-		Connection conn = null;
-		StringBuilder fromClause = new StringBuilder();
-		
-		try {
-			conn = getConnection();
-			
-			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  "
-					+ "WHERE si.studyItemId NOT IN "
-					+ "(SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
-					
-			if(owners != null){		
-				fromClause.append(" AND u.email IN (");
-				createCommaSeperatedListOfStrings(owners, fromClause);
-				fromClause.append(") ");
-			}
-			
-			if (pageNumber == 1) {
-				StringBuilder statement = new StringBuilder();
-
-				statement.append("SELECT count(*) as total "); 
-				
-				statement.append(fromClause);
-				
-				PreparedStatement stmt = conn.prepareStatement(statement.toString());
-				ResultSet rs = stmt.executeQuery();
-				rs.next();
-				pagedWordPair.setTotalCardCount(rs.getLong("total"));
-			}
-			
-			int start = (pageNumber - 1) * pageSize;
-
-			StringBuilder statement = new StringBuilder();
-			statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
-			statement.append(fromClause)
-			.append("ORDER BY si.createDate DESC ")
-			.append("LIMIT ").append(start).append(",").append(pageSize);
-			
-			LOG.info(statement.toString());
-			
-			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
-			
-			pagedWordPair.setWordPair(wordPairs);
-
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			closeConnection(conn);
-		}
-		return pagedWordPair;
-	}
-	
-	private PagedWordPair getWordPairsActive(List<String> users, int pageNumber, int pageSize) {
-		PagedWordPair pagedWordPair = new PagedWordPair();
-		List<WordPair> wordPairs = new ArrayList<>();
-		Connection conn = null;
-		try {
-			conn = getConnection();
-			if (pageNumber == 1) {
-				String statement = "SELECT count(*) as total FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'";
-				PreparedStatement stmt = conn.prepareStatement(statement);
-				ResultSet rs = stmt.executeQuery();
-				rs.next();
-				pagedWordPair.setTotalCardCount(rs.getLong("total"));
-			}
-			
-			
-			int start = (pageNumber - 1) * pageSize;
-
-			String statement = 		
-			"SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
-			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
-			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' " +
-			"FROM study_item si " +
-				"INNER JOIN user u " +
-					"ON si.ownerId = u.userId " +
-			    "INNER JOIN study_item_meta sm " + //Inner join to exclude words that dont have meta
-					"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
-            "ORDER BY si.createDate DESC " +
-			"LIMIT "+start+","+pageSize ;
-			
-			LOG.info(statement);
-			
-			executeWordPairQueryAndTagResults(wordPairs, conn, statement);
-			
-			pagedWordPair.setWordPair(wordPairs);
-
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			closeConnection(conn);
-		}
-		return pagedWordPair;
-	}
-	
-	private PagedWordPair getWordPairsWithTags(List<String> tagIds,
-			List<String> owners, ItemFilter filter, int pageNumber, int pageSize) {
-
-		PagedWordPair pagedWordPair = new PagedWordPair();
-		List<WordPair> wordPairs = new ArrayList<>();
-		Connection conn = null;
-		StringBuilder fromClause = new StringBuilder();
-		try {
-			conn = getConnection();
-			
-			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  "
-					+ "WHERE si.studyItemId IN "
-					+ "(SELECT ta.studyItemId FROM tag_association ta WHERE ta.tagId IN (");
-					createCommaSeperatedListOfStrings(tagIds, fromClause);	
-					fromClause.append(") )");						
-			if(owners != null){		
-				fromClause.append(" AND u.email IN (");
-				createCommaSeperatedListOfStrings(owners, fromClause);
-				fromClause.append(") ");
-			}
-			
-			if (pageNumber == 1) {
-				StringBuilder statement = new StringBuilder();
-
-				statement.append("SELECT count(*) as total "); 
-				
-				statement.append(fromClause);
-				
-				PreparedStatement stmt = conn.prepareStatement(statement.toString());
-				ResultSet rs = stmt.executeQuery();
-				rs.next();
-				pagedWordPair.setTotalCardCount(rs.getLong("total"));
-			}
-			
-			int start = (pageNumber - 1) * pageSize;
-
-			StringBuilder statement = new StringBuilder();
-			statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
-			statement.append(fromClause)
-			.append("ORDER BY si.createDate DESC ")
-			.append("LIMIT ").append(start).append(",").append(pageSize);
-			
-			LOG.info(statement.toString());
-			
-			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
-			
-			pagedWordPair.setWordPair(wordPairs);
-
-		} catch (Exception e) {
-			logException(e);
-		} finally {
-			closeConnection(conn);
-		}
-		return pagedWordPair;
-		
 	}
 
 	private void executeWordPairQueryAndTagResults(List<WordPair> wordPairs,
@@ -501,6 +487,10 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			}
 			wordPairs.add(pair);
 			map.put(pair.getId(), pair);
+		}
+		
+		if(map.isEmpty()){
+			return;
 		}
 		
 		//Query for all tags in the above wordPairs
@@ -533,8 +523,6 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			builder.append("'").append(key).append("'");
 		}
 	}
-
-	
 
 	@Override
 	public AutoCompleteWordPairList getAutoCompleteWordPairs(
@@ -572,3 +560,205 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 }
+
+
+
+//private PagedWordPair getWordPairAll(List<String> owners, int pageNumber,
+//int pageSize) throws NotLoggedInException {
+//PagedWordPair pagedWordPair = new PagedWordPair();
+//List<WordPair> wordPairs = new ArrayList<>();
+//Connection conn = null;
+//try {
+//conn = getConnection();
+//if (pageNumber == 1) {
+//	String statement = "SELECT count(*) as total FROM study_item";
+//	PreparedStatement stmt = conn.prepareStatement(statement);
+//	ResultSet rs = stmt.executeQuery();
+//	rs.next();
+//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
+//}
+//
+//
+//int start = (pageNumber - 1) * pageSize;
+//
+//String statement = 		
+//SELECT_EVERYTHING +
+//"FROM study_item si " +
+//	"INNER JOIN user u " +
+//		"ON si.ownerId = u.userId " +
+//    "LEFT OUTER JOIN study_item_meta sm " +
+//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
+//"ORDER BY si.createDate DESC " +
+//"LIMIT "+start+","+pageSize ;
+//
+//LOG.info(statement);
+//
+//executeWordPairQueryAndTagResults(wordPairs, conn, statement);
+//
+//pagedWordPair.setWordPair(wordPairs);
+//
+//} catch (Exception e) {
+//logException(e);
+//} finally {
+//closeConnection(conn);
+//}
+//return pagedWordPair;
+//}
+//
+//private PagedWordPair getWordPairInactive(List<String> owners, int pageNumber,
+//int pageSize) throws NotLoggedInException {
+//PagedWordPair pagedWordPair = new PagedWordPair();
+//List<WordPair> wordPairs = new ArrayList<>();
+//Connection conn = null;
+//StringBuilder fromClause = new StringBuilder();
+//
+//try {
+//conn = getConnection();
+//
+//fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  " +
+//		"WHERE si.studyItemId NOT IN " +
+//			"(SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
+//		
+//if(owners != null){		
+//	fromClause.append(" AND u.email IN (");
+//	createCommaSeperatedListOfStrings(owners, fromClause);
+//	fromClause.append(") ");
+//}
+//
+//if (pageNumber == 1) {
+//	StringBuilder statement = new StringBuilder();
+//
+//	statement.append("SELECT count(*) as total "); 
+//	
+//	statement.append(fromClause);
+//	
+//	LOG.info(statement.toString());
+//	
+//	PreparedStatement stmt = conn.prepareStatement(statement.toString());
+//	ResultSet rs = stmt.executeQuery();
+//	rs.next();
+//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
+//}
+//
+//int start = (pageNumber - 1) * pageSize;
+//
+//StringBuilder statement = new StringBuilder();
+//statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
+//
+//statement.append(fromClause)
+//.append("ORDER BY si.createDate DESC ")
+//.append("LIMIT ").append(start).append(",").append(pageSize);
+//
+//LOG.info(statement.toString());
+//
+//executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
+//
+//pagedWordPair.setWordPair(wordPairs);
+//
+//} catch (Exception e) {
+//logException(e);
+//} finally {
+//closeConnection(conn);
+//}
+//return pagedWordPair;
+//}
+//
+//private PagedWordPair getWordPairsActive(List<String> users, int pageNumber, int pageSize) {
+//PagedWordPair pagedWordPair = new PagedWordPair();
+//List<WordPair> wordPairs = new ArrayList<>();
+//Connection conn = null;
+//try {
+//conn = getConnection();
+//if (pageNumber == 1) {
+//	String statement = "SELECT count(*) as total FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'";
+//	PreparedStatement stmt = conn.prepareStatement(statement);
+//	ResultSet rs = stmt.executeQuery();
+//	rs.next();
+//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
+//}
+//
+//int start = (pageNumber - 1) * pageSize;
+//
+//String statement = 		
+//		SELECT_EVERYTHING +
+//"FROM study_item si " +
+//	"INNER JOIN user u " +
+//		"ON si.ownerId = u.userId " +
+//    "INNER JOIN study_item_meta sm " + //Inner join to exclude words that dont have meta
+//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
+//"ORDER BY si.createDate DESC " +
+//"LIMIT "+start+","+pageSize ;
+//
+//LOG.info(statement);
+//
+//executeWordPairQueryAndTagResults(wordPairs, conn, statement);
+//
+//pagedWordPair.setWordPair(wordPairs);
+//
+//} catch (Exception e) {
+//logException(e);
+//} finally {
+//closeConnection(conn);
+//}
+//return pagedWordPair;
+//}
+//
+//private PagedWordPair getWordPairsWithTags(List<String> tagIds,
+//List<String> owners, ItemFilter filter, int pageNumber, int pageSize) {
+//
+//PagedWordPair pagedWordPair = new PagedWordPair();
+//List<WordPair> wordPairs = new ArrayList<>();
+//Connection conn = null;
+//StringBuilder fromClause = new StringBuilder();
+//try {
+//conn = getConnection();
+//
+//fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  " +
+//		"LEFT OUTER JOIN study_item_meta sm " +
+//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' " +
+//		"WHERE si.studyItemId IN " +
+//			"(SELECT ta.studyItemId FROM tag_association ta WHERE ta.tagId IN (");
+//		createCommaSeperatedListOfStrings(tagIds, fromClause);	
+//		fromClause.append(") )");						
+//if(owners != null){		
+//	fromClause.append(" AND u.email IN (");
+//	createCommaSeperatedListOfStrings(owners, fromClause);
+//	fromClause.append(") ");
+//}
+//
+//if (pageNumber == 1) {
+//	StringBuilder statement = new StringBuilder();
+//
+//	statement.append("SELECT count(*) as total "); 
+//	
+//	statement.append(fromClause);
+//	
+//	PreparedStatement stmt = conn.prepareStatement(statement.toString());
+//	ResultSet rs = stmt.executeQuery();
+//	rs.next();
+//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
+//}
+//
+//int start = (pageNumber - 1) * pageSize;
+//
+//StringBuilder statement = new StringBuilder();
+//statement.append(SELECT_EVERYTHING);
+//statement.append(fromClause)
+//.append("ORDER BY si.createDate DESC ")
+//.append("LIMIT ").append(start).append(",").append(pageSize);
+//
+//LOG.info(statement.toString());
+//
+//executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
+//
+//pagedWordPair.setWordPair(wordPairs);
+//
+//} catch (Exception e) {
+//logException(e);
+//} finally {
+//closeConnection(conn);
+//}
+//return pagedWordPair;
+//
+//}
+//

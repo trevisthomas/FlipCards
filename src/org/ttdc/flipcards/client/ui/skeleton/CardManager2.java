@@ -136,8 +136,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 		addItemFilterItem(ItemFilter.INACTIVE);
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
-//		allCheckbox.setValue(true);
-		setupFilterCheckboxes(true);
+//		setupFilterCheckboxes(true);
 		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override
@@ -181,12 +180,12 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 									filterByTag = true;
 								}
 							}
-							setupFilterCheckboxes(!filterByTag);
+//							setupFilterCheckboxes(!filterByTag);
 							loadWords();
 						}
 					});
 				}
-				setupFilterCheckboxes(true);
+//				setupFilterCheckboxes(true);
 			}
 			
 			@Override
@@ -207,18 +206,15 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 //		setupFilterCheckboxes();
 //	}
 
-	private void setupFilterCheckboxes(boolean enable) {
-		if (enable) {
-			filterListBox.removeStyleName("disabled");
-			filterListBox.setEnabled(true);
-		} else {
-			filterListBox.addStyleName("disabled");
-			filterListBox.setEnabled(false);
-		}
-//		for(String tagId : filterCheckBoxesMap.keySet()){
-//			filterCheckBoxesMap.get(tagId).setEnabled(!allCheckbox.getValue());
+//	private void setupFilterCheckboxes(boolean enable) {
+//		if (enable) {
+//			filterListBox.removeStyleName("disabled");
+//			filterListBox.setEnabled(true);
+//		} else {
+//			filterListBox.addStyleName("disabled");
+//			filterListBox.setEnabled(false);
 //		}
-	}
+//	}
 
 	
 	private void addItemFilterItem(ItemFilter item) {
