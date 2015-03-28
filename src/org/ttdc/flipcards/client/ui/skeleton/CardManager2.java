@@ -12,11 +12,13 @@ import java.util.Stack;
 import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.CardView;
+import org.ttdc.flipcards.client.ui.skeleton.TagManagerPopup.TagManagerPopupUiBinder;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
+
 
 
 
@@ -54,7 +56,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class CardManager2 extends Composite implements CardView2.CardViewOwner {
+public class CardManager2 extends Composite implements CardView2.CardViewOwner, TagManagerPopup.Observer {
 
 	private static CardManager2UiBinder uiBinder = GWT
 			.create(CardManager2UiBinder.class);
@@ -160,6 +162,15 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 			}
 		});
 		
+		reloadTags();
+		
+		loadWords("");
+		
+//		filterListBox.addItem(item.toString(), item.name());
+		
+	}
+	private void reloadTags() {
+		tagFilterPanel.clear();
 		tagFilterPanel.add(new Label("Loading..."));
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
 			
@@ -174,18 +185,19 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 					checkBox.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							boolean filterByTag = false;
-							for(String tagId : filterCheckBoxesMap.keySet()){
-								if(filterCheckBoxesMap.get(tagId).getValue()){
-									filterByTag = true;
-								}
-							}
-//							setupFilterCheckboxes(!filterByTag);
 							loadWords();
 						}
 					});
 				}
-//				setupFilterCheckboxes(true);
+				
+				Anchor editTagAnchor = new Anchor("edit");
+				tagFilterPanel.add(editTagAnchor);
+				editTagAnchor.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						new TagManagerPopup(CardManager2.this);							
+					}
+				});
 			}
 			
 			@Override
@@ -194,11 +206,10 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner {
 				
 			}
 		});
-		
-		loadWords("");
-		
-//		filterListBox.addItem(item.toString(), item.name());
-		
+	}
+	@Override
+	public void onClosePopup() {
+		reloadTags();
 	}
 	
 //	@UiHandler("allCheckbox")

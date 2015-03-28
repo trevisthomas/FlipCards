@@ -19,6 +19,7 @@ public class WordPair implements Serializable {
 	private Date lastUpdate = new Date();
 	private long testedCount;
 	private long correctCount;
+	private long incorrectCount;
 	private double difficulty;
 	private String id;
 	private String user;
@@ -27,6 +28,11 @@ public class WordPair implements Serializable {
 	private boolean active = false;
 	private boolean deleteAllowed;
 	private long averageTime;
+	
+	private double confidence;
+	private long totalTime;
+	private long timedViewCount;
+	
 
 	public WordPair() {
 
@@ -132,24 +138,70 @@ public class WordPair implements Serializable {
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
+	
+
+	public long getIncorrectCount() {
+		return incorrectCount;
+	}
+
+	public void setIncorrectCount(long incorrectCount) {
+		this.incorrectCount = incorrectCount;
+	}
+	
+	
+
+	public double getConfidence() {
+		return confidence;
+	}
+
+	public void setConfidence(double confidence) {
+		this.confidence = confidence;
+	}
+
+	public long getTotalTime() {
+		return totalTime;
+	}
+
+	public void setTotalTime(long totalTime) {
+		this.totalTime = totalTime;
+	}
+
+	public long getTimedViewCount() {
+		return timedViewCount;
+	}
+
+	public void setTimedViewCount(long timedViewCount) {
+		this.timedViewCount = timedViewCount;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (active ? 1231 : 1237);
+		result = prime * result + (int) (averageTime ^ (averageTime >>> 32));
+		long temp;
+		temp = Double.doubleToLongBits(confidence);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + (int) (correctCount ^ (correctCount >>> 32));
 		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result
 				+ ((definition == null) ? 0 : definition.hashCode());
-		long temp;
+		result = prime * result + (deleteAllowed ? 1231 : 1237);
 		temp = Double.doubleToLongBits(difficulty);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + (int) (displayOrder ^ (displayOrder >>> 32));
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ (int) (incorrectCount ^ (incorrectCount >>> 32));
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((tags == null) ? 0 : tags.hashCode());
 		result = prime * result + (int) (testedCount ^ (testedCount >>> 32));
+		result = prime * result
+				+ (int) (timedViewCount ^ (timedViewCount >>> 32));
+		result = prime * result + (int) (totalTime ^ (totalTime >>> 32));
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		result = prime * result + ((word == null) ? 0 : word.hashCode());
 		return result;
@@ -166,6 +218,11 @@ public class WordPair implements Serializable {
 		WordPair other = (WordPair) obj;
 		if (active != other.active)
 			return false;
+		if (averageTime != other.averageTime)
+			return false;
+		if (Double.doubleToLongBits(confidence) != Double
+				.doubleToLongBits(other.confidence))
+			return false;
 		if (correctCount != other.correctCount)
 			return false;
 		if (createDate == null) {
@@ -178,6 +235,8 @@ public class WordPair implements Serializable {
 				return false;
 		} else if (!definition.equals(other.definition))
 			return false;
+		if (deleteAllowed != other.deleteAllowed)
+			return false;
 		if (Double.doubleToLongBits(difficulty) != Double
 				.doubleToLongBits(other.difficulty))
 			return false;
@@ -188,12 +247,23 @@ public class WordPair implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
+		if (incorrectCount != other.incorrectCount)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
 		if (tags == null) {
 			if (other.tags != null)
 				return false;
 		} else if (!tags.equals(other.tags))
 			return false;
 		if (testedCount != other.testedCount)
+			return false;
+		if (timedViewCount != other.timedViewCount)
+			return false;
+		if (totalTime != other.totalTime)
 			return false;
 		if (user == null) {
 			if (other.user != null)
@@ -207,6 +277,10 @@ public class WordPair implements Serializable {
 			return false;
 		return true;
 	}
+
+	
+	
+	
 
 	
 	

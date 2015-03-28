@@ -1,0 +1,21 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<g:HTMLPanel styleName="row">
+		<div class="twelve colums">
+			<div class="row">
+			    <div class="six columns">
+			      	<g:TextBox ui:field="tagNameEditor" />
+			    </div>
+			    <div class="three columns">
+			     	<g:Button ui:field="updateButton" />
+			     	<g:Button ui:field="addButton" />
+				</div> 
+				<div class="three columns">
+					<g:Button  ui:field="deleteButton" />
+			    </div> 
+		    </div>
+		</div>
+		
+	</g:HTMLPanel>
+</ui:UiBinder> 

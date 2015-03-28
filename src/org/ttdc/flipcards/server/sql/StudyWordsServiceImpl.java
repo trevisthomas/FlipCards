@@ -19,9 +19,11 @@ import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.Transaction;
 
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.server.StudyItem;
+import org.ttdc.flipcards.server.StudyItemMeta;
 import org.ttdc.flipcards.server.UploadService;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.CardOrder;
@@ -46,7 +48,8 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	
 	private final static String SELECT_EVERYTHING = "SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
 			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
-			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate' ";
+			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate', " +
+			"sm.confidence as 'confidence', sm.totalTime as 'totalTime', sm.timedViewCount as 'timedViewCount' ";
 
 	private String getUrl() {
 		String url = null;
@@ -177,19 +180,17 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			int success = 2;
 			success = stmt.executeUpdate();
 			if (success == 0) {
-				throw new RuntimeException("Failed to insert StudyItem");
+				throw new IllegalArgumentException("Failed to insert StudyItem");
 			}
 			
 			return performGetWordPair(id, conn);
 			
 		} catch (SQLException e) {
 			logException(e);
-			throw new RuntimeException("Internal error data not updated.");
+			throw new IllegalArgumentException("Internal error data not updated.");
 		} finally {
 			closeConnection(conn);
 		}
-
-
 	}
 
 	private WordPair performGetWordPair(String id, Connection conn) throws SQLException {
@@ -207,85 +208,74 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Boolean deleteWordPair(String id) throws IllegalArgumentException,
 			NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		
+		try {
+			conn = getConnection();
+			
+			String statement = "SELECT u.email FROM study_item_meta sm INNER JOIN user u ON sm.ownerId = u.userId  WHERE studyItemId = ?";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, id);
+			ResultSet rs = stmt.executeQuery();
+			String pwnedError = "";
+			while(rs.next()){
+				if(!pwnedError.isEmpty()){
+					pwnedError += ", ";
+				}
+				pwnedError += rs.getString(1);
+			}
+			
+			if(!pwnedError.isEmpty()){
+				throw new IllegalArgumentException("Can't delete.  Word is still active by " + pwnedError +".");
+			}
+			
+			
+			conn.setAutoCommit(false);
+			
+			statement = "DELETE FROM study_item WHERE studyItemId = ?";
+			PreparedStatement stmtStudyItem = conn.prepareStatement(statement);
+			stmtStudyItem.setString(1, id);
+			stmtStudyItem.executeUpdate();
+			
+			statement = "DELETE FROM tag_association WHERE studyItemId = ?";
+			PreparedStatement stmtTagAss = conn.prepareStatement(statement);
+			stmtTagAss.setString(1, id);
+			stmtTagAss.executeUpdate();
+			
+			conn.commit();
+			return true;
+			
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				LOG.severe("Rollback threw an error!");
+			}
+			logException(e);
+			throw new IllegalArgumentException("Internal error data not updated.");
+		} finally {
+			closeConnection(conn);
+		}
 	}
 
 	@Override
 	public List<WordPair> generateQuiz(QuizOptions quizOptions)
 			throws NotLoggedInException {
 		
-		
 		checkLoggedIn();
-		
 		PagedWordPair pwp = performGetWordPairs(quizOptions.getTagIds(), getStudyFriends(), ItemFilter.ACTIVE, quizOptions.getCardOrder(), 1, quizOptions.getSize());
-		
 		return pwp.getWordPair();
-		
-//		return null;
-//		checkLoggedIn();
-//		PersistenceManager pm = getPersistenceManager();
-//		List<WordPair> wordPairs = new ArrayList<>();
-//		try {
-//			wordPairs = getWordPairsActive(getUser().getEmail());
-//			if (!quizOptions.getTagIds().isEmpty()) {
-//				wordPairs = applyTagFilter(wordPairs, quizOptions.getTagIds());
-//			}
-//
-//			switch (quizOptions.getCardOrder()) {
-//			case SLOWEST:
-//				Collections.sort(wordPairs, new StudyItemMeta.SortAverageTimeDesc());
-//				break;
-//			case EASIEST:
-//				Collections.sort(wordPairs, new StudyItemMeta.SortDifficulty());
-//				break;
-//			case HARDEST:
-//				Collections.sort(wordPairs,
-//						new StudyItemMeta.SortDifficultyDesc());
-//				break;
-//			case LATEST_ADDED:
-//				Collections.sort(wordPairs,
-//						new StudyItemMeta.SortCreateDateDesc());
-//				break;
-//			case LEAST_STUDIED:
-//				Collections.sort(wordPairs, new StudyItemMeta.SortStudyCount());
-//				break;
-//			case LEAST_RECIENTLY_STUDIED:
-//				Collections.sort(wordPairs, new StudyItemMeta.SortStudyDate());
-//				break;
-//			case RANDOM:
-//				Collections.shuffle(wordPairs);
-//				break;
-//			}
-//
-//			if (quizOptions.getSize() > 0
-//					&& wordPairs.size() > quizOptions.getSize()) {
-//				return new ArrayList<>(wordPairs.subList(0,
-//						quizOptions.getSize()));
-//			} else {
-//				return wordPairs;
-//			}
-//
-//		} catch (Exception e) {
-//			logException(e);
-//			throw new RuntimeException("Internal server error.");
-//		}
-//
-//		finally {
-//			pm.close();
-//		}
 	}
 
 	@Override
 	public String getFileUploadUrl() throws NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("Deprecated");
 	}
 
 	@Override
 	public void assignSelfToUserlessWords() throws NotLoggedInException {
 		throw new RuntimeException("Deprecated");
-
 	}
 
 	@Override
@@ -312,35 +302,158 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Tag createTag(String name) throws IllegalArgumentException,
 			NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			if(name == null || name.trim().isEmpty()){
+				throw new IllegalArgumentException("Tag's can't be blank!");
+			}
+			conn = getConnection();
+			UUID uuid = java.util.UUID.randomUUID();
+			
+			String statement = "INSERT INTO tag (tagId, tagName, ownerId) VALUES(?, ?, ?)";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, uuid.toString());
+			stmt.setString(2, name);
+			stmt.setString(3, getUserIdForEmail(getUser().getEmail()));
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				throw new RuntimeException("Failed to create tag.");
+			}
+			return new Tag(uuid.toString(), name);
+			
+		} catch (SQLException e) {
+			logException(e);
+			throw new RuntimeException("Database error. Failed to create tag.");
+		} finally {
+			closeConnection(conn);
+		}
 	}
 
 	@Override
 	public void deleteTagName(String tagId) throws IllegalArgumentException,
 			NotLoggedInException {
-		// TODO Auto-generated method stub
+		checkLoggedIn();
+		Connection conn = null;
+		
+		try {
+			conn = getConnection();
+			
+			conn.setAutoCommit(false);
+			
+			String statement = "DELETE FROM tag WHERE tagId = ?";
+			PreparedStatement stmtStudyItem = conn.prepareStatement(statement);
+			stmtStudyItem.setString(1, tagId);
+			stmtStudyItem.executeUpdate();
+			
+			statement = "DELETE FROM tag_association WHERE tagId = ?";
+			PreparedStatement stmtTagAss = conn.prepareStatement(statement);
+			stmtTagAss.setString(1, tagId);
+			stmtTagAss.executeUpdate();
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				LOG.severe("Rollback threw an error!");
+			}
+			logException(e);
+			throw new IllegalArgumentException("Internal error data not updated.");
+		} finally {
+			closeConnection(conn);
+		}
 
 	}
 
 	@Override
 	public Tag updateTagName(String tagId, String name)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		
+		if(name == null || name.trim().isEmpty()){
+			throw new IllegalArgumentException("Tag's can't be blank!");
+		}
+		
+		try {
+			conn = getConnection();
+			
+			String statement = "UPDATE tag SET tagName = ? WHERE tagId = ?";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, name);
+			stmt.setString(2, tagId);
+			
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				throw new IllegalArgumentException("Failed to update tag");
+			}
+			
+			return new Tag(tagId, name);
+		} catch (SQLException e) {
+			logException(e);
+			throw new IllegalArgumentException("Internal error data not updated.");
+		} finally {
+			closeConnection(conn);
+		}
 	}
 
 	@Override
-	public void deTag(String tagId, String cardId)
+	public void deTag(String tagId, String studyItemId)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			
+			String statement = "DELETE FROM tag_association WHERE studyItemId = ? && tagId= ?";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, studyItemId);
+			stmt.setString(2, tagId);
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success != 1) {
+				throw new RuntimeException("Failed to remove tag");
+			}
+			
+		} catch (SQLException e) {
+			logException(e);
+			throw new RuntimeException("Database error. Failed to remove tag");
+		} finally {
+			closeConnection(conn);
+		}
 	}
 
 	@Override
-	public void applyTag(String tagId, String cardId)
+	public void applyTag(String tagId, String studyItemId)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			UUID uuid = java.util.UUID.randomUUID();
+			
+			String statement = "INSERT INTO tag_association (tagAssId, studyItemId, ownerId, tagId) VALUES( ?, ?, ?, ?)";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, uuid.toString());
+			stmt.setString(2, studyItemId);
+			stmt.setString(3, getUserIdForEmail(getUser().getEmail()));
+			stmt.setString(4, tagId);
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				throw new RuntimeException("Failed to apply tag");
+			}
+			
+		} catch (SQLException e) {
+			logException(e);
+			throw new RuntimeException("Database error. Failed to apply tag");
+		} finally {
+			closeConnection(conn);
+		}
 
 	}
 
@@ -390,9 +503,48 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public WordPair setActiveStatus(String id, boolean active)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		
+		try {
+			conn = getConnection();
+			
+			if (active) {
+				String statement = "INSERT INTO study_item_meta (studyItemMetaId, ownerId, studyItemId) VALUES( ?, ?, ?)";
+				PreparedStatement stmt = conn.prepareStatement(statement);
+				
+				UUID uuid = java.util.UUID.randomUUID();
+				stmt.setString(1, uuid.toString());
+				stmt.setString(2, getUserIdForEmail(getUser().getEmail()));
+				stmt.setString(3, id);
+				int success = 2;
+				success = stmt.executeUpdate();
+				if (success == 0) {
+					throw new IllegalArgumentException("Failed to activate"); 
+				}
+				
+			} else {
+				String statement = "DELETE FROM study_item_meta WHERE studyItemId = ? && ownerId= ?";
+				PreparedStatement stmtStudyItemMeta = conn.prepareStatement(statement);
+				stmtStudyItemMeta.setString(1, id);
+				stmtStudyItemMeta.setString(2, getUserIdForEmail(getUser().getEmail()));
+				int success = 2;
+				success = stmtStudyItemMeta.executeUpdate();
+				if (success != 1) {
+					throw new IllegalArgumentException("Failed to deactivate"); 
+				}
+			}
+			
+			return performGetWordPair(id, conn);
+			
+		} catch (SQLException e) {
+			logException(e);
+			throw new IllegalArgumentException("Internal error data not updated.");
+		} finally {
+			closeConnection(conn);
+		}
 	}
+	
 
 	@Override
 	public List<WordPair> getWordPairsForPage(int pageNumber)
@@ -409,26 +561,6 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		if (users.isEmpty()) {
 			users = getStudyFriends();
 		}
-
-		PagedWordPair pwp = null;
-//		if (tagIds.isEmpty()) {
-//			switch (filter) {
-//			case ACTIVE:
-//				pwp = getWordPairsActive(users, pageNumber, perPage);
-//				break;
-//			case INACTIVE:
-//				pwp = getWordPairInactive(users, pageNumber, perPage);
-//				break;
-//			case BOTH:
-//			default:
-//				pwp = getWordPairAll(users, pageNumber, perPage);
-//				break;
-//			}
-//
-//		} else {
-//			pwp = getWordPairsWithTags(tagIds, users, filter, pageNumber, perPage);
-//		}
-//		return pwp;
 		return performGetWordPairs(tagIds, users, filter, CardOrder.LATEST_ADDED, pageNumber, perPage);
 	}
 	
@@ -566,6 +698,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"));
 			pair.setActive(rs.getObject("difficulty") != null);
 			if(pair.isActive()){
+				pair.setIncorrectCount(rs.getLong("incorrectCount"));
 				pair.setCorrectCount(rs.getLong("viewCount")
 						- rs.getLong("incorrectCount"));
 				pair.setTestedCount(rs.getLong("viewCount"));
@@ -576,6 +709,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				} else {
 					pair.setLastUpdate(new Date());
 				}
+				pair.setConfidence(rs.getDouble("confidence"));
+				pair.setTotalTime(rs.getLong("totalTime"));
+				pair.setTimedViewCount(rs.getLong("timedViewCount"));
+				
+				
 			}
 			pair.setUser(rs.getString("email"));
 			if (getUser().getEmail().equals(pair.getUser())) {
@@ -648,8 +786,64 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public void answerQuestion(String id, long duration, Boolean correct)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			
+			WordPair wp = getStudyItem(id);
+			if (wp == null) {
+				throw new IllegalArgumentException("Failed to update score.");
+			}
+			
+			
+			if (!correct) {
+				wp.setIncorrectCount(wp.getIncorrectCount() + 1);
+			}
+			wp.setLastUpdate(new Date());
+			wp.setTestedCount(wp.getTestedCount() + 1);
+			wp.setTimedViewCount(wp.getTimedViewCount() + 1); //This was added so that cards that existed before timing mattered will have accurate averages.  It would also allow you to have non-timed runs, but i'm not implementing that now.
+			
+			wp.setDifficulty((double) wp
+					.getIncorrectCount()
+					/ (double) wp.getTestedCount());
+			
+			wp.setTotalTime(wp.getTotalTime() + duration);
+			wp.setAverageTime(wp.getTotalTime() / wp.getTimedViewCount());
+			
+			//Now apply the update
 
+			String statement = "UPDATE study_item_meta SET incorrectCount = ?, viewCount = ?, lastUpdate=?,"
+					+ "difficulty = ?, confidence = ?, totalTime = ?, averageTime = ?, timedViewCount = ?";
+			
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			
+			stmt.setLong(1, wp.getIncorrectCount());
+			stmt.setLong(2, wp.getTestedCount());
+			if(wp.getLastUpdate() != null){
+				stmt.setTimestamp(3, new java.sql.Timestamp(wp.getLastUpdate().getTime()));
+			}
+			else {
+				stmt.setTimestamp(3, null);
+			}
+			stmt.setDouble(4, wp.getDifficulty());
+			stmt.setDouble(5, wp.getConfidence());
+			stmt.setLong(6, wp.getTotalTime());
+			stmt.setLong(7, wp.getAverageTime());
+			stmt.setLong(8, wp.getTimedViewCount());
+
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				LOG.severe("Failed to insert study_item_meta");
+			}
+		} catch (Exception e) {
+			logException(e);
+			throw new IllegalArgumentException("Failed to update score!");
+		} finally {
+			closeConnection(conn);
+		}
+	
 	}
 	
 	private void logException(Exception e) {
@@ -667,204 +861,3 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 }
 
-
-
-//private PagedWordPair getWordPairAll(List<String> owners, int pageNumber,
-//int pageSize) throws NotLoggedInException {
-//PagedWordPair pagedWordPair = new PagedWordPair();
-//List<WordPair> wordPairs = new ArrayList<>();
-//Connection conn = null;
-//try {
-//conn = getConnection();
-//if (pageNumber == 1) {
-//	String statement = "SELECT count(*) as total FROM study_item";
-//	PreparedStatement stmt = conn.prepareStatement(statement);
-//	ResultSet rs = stmt.executeQuery();
-//	rs.next();
-//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
-//}
-//
-//
-//int start = (pageNumber - 1) * pageSize;
-//
-//String statement = 		
-//SELECT_EVERYTHING +
-//"FROM study_item si " +
-//	"INNER JOIN user u " +
-//		"ON si.ownerId = u.userId " +
-//    "LEFT OUTER JOIN study_item_meta sm " +
-//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
-//"ORDER BY si.createDate DESC " +
-//"LIMIT "+start+","+pageSize ;
-//
-//LOG.info(statement);
-//
-//executeWordPairQueryAndTagResults(wordPairs, conn, statement);
-//
-//pagedWordPair.setWordPair(wordPairs);
-//
-//} catch (Exception e) {
-//logException(e);
-//} finally {
-//closeConnection(conn);
-//}
-//return pagedWordPair;
-//}
-//
-//private PagedWordPair getWordPairInactive(List<String> owners, int pageNumber,
-//int pageSize) throws NotLoggedInException {
-//PagedWordPair pagedWordPair = new PagedWordPair();
-//List<WordPair> wordPairs = new ArrayList<>();
-//Connection conn = null;
-//StringBuilder fromClause = new StringBuilder();
-//
-//try {
-//conn = getConnection();
-//
-//fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  " +
-//		"WHERE si.studyItemId NOT IN " +
-//			"(SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
-//		
-//if(owners != null){		
-//	fromClause.append(" AND u.email IN (");
-//	createCommaSeperatedListOfStrings(owners, fromClause);
-//	fromClause.append(") ");
-//}
-//
-//if (pageNumber == 1) {
-//	StringBuilder statement = new StringBuilder();
-//
-//	statement.append("SELECT count(*) as total "); 
-//	
-//	statement.append(fromClause);
-//	
-//	LOG.info(statement.toString());
-//	
-//	PreparedStatement stmt = conn.prepareStatement(statement.toString());
-//	ResultSet rs = stmt.executeQuery();
-//	rs.next();
-//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
-//}
-//
-//int start = (pageNumber - 1) * pageSize;
-//
-//StringBuilder statement = new StringBuilder();
-//statement.append("SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', null as 'viewCount', null as 'incorrectCount', null as 'difficulty', null as 'averageTime', null as 'lastUpdate' ");
-//
-//statement.append(fromClause)
-//.append("ORDER BY si.createDate DESC ")
-//.append("LIMIT ").append(start).append(",").append(pageSize);
-//
-//LOG.info(statement.toString());
-//
-//executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
-//
-//pagedWordPair.setWordPair(wordPairs);
-//
-//} catch (Exception e) {
-//logException(e);
-//} finally {
-//closeConnection(conn);
-//}
-//return pagedWordPair;
-//}
-//
-//private PagedWordPair getWordPairsActive(List<String> users, int pageNumber, int pageSize) {
-//PagedWordPair pagedWordPair = new PagedWordPair();
-//List<WordPair> wordPairs = new ArrayList<>();
-//Connection conn = null;
-//try {
-//conn = getConnection();
-//if (pageNumber == 1) {
-//	String statement = "SELECT count(*) as total FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'";
-//	PreparedStatement stmt = conn.prepareStatement(statement);
-//	ResultSet rs = stmt.executeQuery();
-//	rs.next();
-//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
-//}
-//
-//int start = (pageNumber - 1) * pageSize;
-//
-//String statement = 		
-//		SELECT_EVERYTHING +
-//"FROM study_item si " +
-//	"INNER JOIN user u " +
-//		"ON si.ownerId = u.userId " +
-//    "INNER JOIN study_item_meta sm " + //Inner join to exclude words that dont have meta
-//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"'"+
-//"ORDER BY si.createDate DESC " +
-//"LIMIT "+start+","+pageSize ;
-//
-//LOG.info(statement);
-//
-//executeWordPairQueryAndTagResults(wordPairs, conn, statement);
-//
-//pagedWordPair.setWordPair(wordPairs);
-//
-//} catch (Exception e) {
-//logException(e);
-//} finally {
-//closeConnection(conn);
-//}
-//return pagedWordPair;
-//}
-//
-//private PagedWordPair getWordPairsWithTags(List<String> tagIds,
-//List<String> owners, ItemFilter filter, int pageNumber, int pageSize) {
-//
-//PagedWordPair pagedWordPair = new PagedWordPair();
-//List<WordPair> wordPairs = new ArrayList<>();
-//Connection conn = null;
-//StringBuilder fromClause = new StringBuilder();
-//try {
-//conn = getConnection();
-//
-//fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  " +
-//		"LEFT OUTER JOIN study_item_meta sm " +
-//		"ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' " +
-//		"WHERE si.studyItemId IN " +
-//			"(SELECT ta.studyItemId FROM tag_association ta WHERE ta.tagId IN (");
-//		createCommaSeperatedListOfStrings(tagIds, fromClause);	
-//		fromClause.append(") )");						
-//if(owners != null){		
-//	fromClause.append(" AND u.email IN (");
-//	createCommaSeperatedListOfStrings(owners, fromClause);
-//	fromClause.append(") ");
-//}
-//
-//if (pageNumber == 1) {
-//	StringBuilder statement = new StringBuilder();
-//
-//	statement.append("SELECT count(*) as total "); 
-//	
-//	statement.append(fromClause);
-//	
-//	PreparedStatement stmt = conn.prepareStatement(statement.toString());
-//	ResultSet rs = stmt.executeQuery();
-//	rs.next();
-//	pagedWordPair.setTotalCardCount(rs.getLong("total"));
-//}
-//
-//int start = (pageNumber - 1) * pageSize;
-//
-//StringBuilder statement = new StringBuilder();
-//statement.append(SELECT_EVERYTHING);
-//statement.append(fromClause)
-//.append("ORDER BY si.createDate DESC ")
-//.append("LIMIT ").append(start).append(",").append(pageSize);
-//
-//LOG.info(statement.toString());
-//
-//executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
-//
-//pagedWordPair.setWordPair(wordPairs);
-//
-//} catch (Exception e) {
-//logException(e);
-//} finally {
-//closeConnection(conn);
-//}
-//return pagedWordPair;
-//
-//}
-//
