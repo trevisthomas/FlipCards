@@ -13,9 +13,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+
 import org.ttdc.flipcards.client.StudyWordsService;
+import org.ttdc.flipcards.server.StudyItem;
 import org.ttdc.flipcards.server.UploadService;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.CardOrder;
@@ -31,6 +37,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.mysql.fabric.xmlrpc.base.Array;
 
 public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StudyWordsService {
@@ -96,15 +103,105 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public WordPair addWordPair(String word, String definition)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			
+			validate(word, definition);
+			
+			conn = getConnection();
+			exists(word, conn); 
+			UUID uuid = java.util.UUID.randomUUID();
+			
+			String statement = "INSERT INTO study_item (studyItemId, ownerId, createDate, word, definition) VALUES( ?, ?, ?, ?, ?)";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, uuid.toString());
+			stmt.setString(2, getUserIdForEmail(getUser().getEmail()));
+			stmt.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
+			stmt.setString(4, word);
+			stmt.setString(5, definition);
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				throw new RuntimeException("Failed to insert StudyItem");
+			}
+			
+			return new WordPair(uuid.toString(), word, definition);
+		} catch (SQLException e) {
+			logException(e);
+			throw new RuntimeException("Database error. Failed to insert StudyItem");
+		} finally {
+			closeConnection(conn);
+		}
+	}
+
+	private void validate(String word, String definition) {
+		if(word.trim().isEmpty()){
+			throw new IllegalArgumentException("Word is invalid");
+		}
+		
+		if(definition.trim().isEmpty()){
+			throw new IllegalArgumentException("Definition is invalid");
+		}
+	}
+	
+	private void exists(String word, Connection conn) throws SQLException{
+		StringBuilder statement = new StringBuilder("SELECT si.word FROM study_item si WHERE si.word='");
+		statement.append(word).append("'");
+		PreparedStatement stmt = conn.prepareStatement(statement.toString());
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			String str = rs.getString(1);
+			if(str.equals(word)){
+				throw new IllegalArgumentException("Already exists");
+			}
+		}
 	}
 
 	@Override
 	public WordPair updateWordPair(String id, String word, String definition)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		checkLoggedIn();
+		Connection conn = null;
+		
+		try {
+			validate(word, definition);
+			conn = getConnection();
+			exists(word, conn);
+			
+			String statement = "UPDATE study_item SET word = ?, definition=? WHERE studyItemId = ?";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			stmt.setString(1, word);
+			stmt.setString(2, definition);
+			stmt.setString(3, id);
+			int success = 2;
+			success = stmt.executeUpdate();
+			if (success == 0) {
+				throw new RuntimeException("Failed to insert StudyItem");
+			}
+			
+			return performGetWordPair(id, conn);
+			
+		} catch (SQLException e) {
+			logException(e);
+			throw new RuntimeException("Internal error data not updated.");
+		} finally {
+			closeConnection(conn);
+		}
+
+
+	}
+
+	private WordPair performGetWordPair(String id, Connection conn) throws SQLException {
+		List<WordPair> wordPairs = new ArrayList<>();
+		StringBuffer clause = new StringBuffer();
+		clause.append(SELECT_EVERYTHING);
+		clause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  ");
+		clause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
+		clause.append("WHERE si.studyItemId='").append(id).append("'");
+		
+		executeWordPairQueryAndTagResults(wordPairs, conn, clause.toString());
+		return wordPairs.get(0);
 	}
 
 	@Override
@@ -437,8 +534,6 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			
 			statement.append("LIMIT ").append(start).append(",").append(pageSize);
 			
-			LOG.info(statement.toString());
-			
 			executeWordPairQueryAndTagResults(wordPairs, conn, statement.toString());
 			
 			pagedWordPair.setWordPair(wordPairs);
@@ -464,6 +559,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			Connection conn, String statement) throws SQLException {
 		Map<String, WordPair> map = new HashMap<String, WordPair>();
 
+		LOG.info(statement.toString());
 		PreparedStatement stmt = conn.prepareStatement(statement);
 		ResultSet rs = stmt.executeQuery();
 		while(rs.next()){
@@ -535,8 +631,18 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public WordPair getStudyItem(String studyItemId)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		checkLoggedIn();
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			return performGetWordPair(studyItemId, conn);
+		} catch (Exception e) {
+			logException(e);
+			throw new IllegalArgumentException("Failed to load data from database.");
+		} finally {
+			closeConnection(conn);
+		}
 	}
 
 	@Override
