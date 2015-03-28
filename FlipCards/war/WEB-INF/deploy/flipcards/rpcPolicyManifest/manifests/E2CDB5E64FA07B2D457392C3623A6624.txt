@@ -1,2 +1,0 @@
-serviceClass: org.ttdc.flipcards.client.services.StagingCardService
-path: 32C7FB691022410854B34198B00D71E1.gwt.rpc
