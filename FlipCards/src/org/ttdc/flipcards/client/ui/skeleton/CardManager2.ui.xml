@@ -66,7 +66,7 @@
 						 		<g:Label styleName="tt-label">#</g:Label>
 						 	</div>
 						 	<div class="three columns">
-						 		<g:Label styleName="tt-label">Term</g:Label>
+						 		<g:Label ui:field="termLabel" styleName="tt-label">Term</g:Label>
 						 	</div>
 						 	<div class="five columns">
 						 		<g:Label styleName="tt-label">Definition</g:Label>

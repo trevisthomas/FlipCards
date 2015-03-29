@@ -8,7 +8,7 @@
 					<g:Label ui:field="titleLabel">Tag Name Editor</g:Label>
 				</div>
 			</div>
-			<div class="row"  style="margin-bottom: 2em; max-height: 20em; overflow: auto;">
+			<div class="row"  style="margin-bottom: 2em; max-height: 30em; overflow: auto;">
 				<div class="twelve columns">
 					<g:HTMLPanel ui:field="tagNamesPanel"></g:HTMLPanel>
 					<g:Anchor ui:field="createTagAnchor" />

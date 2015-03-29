@@ -23,6 +23,7 @@ import javax.jdo.Transaction;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.server.sql.SqlMigrator;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
+import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.NotLoggedInException;
 import org.ttdc.flipcards.shared.PagedWordPair;
@@ -274,7 +275,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, int pageNumber, int perPage)
+			ItemFilter filter, CardOrder cardOrder, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		// loadMetaDataToCache(); //Brute force. Just build the cache every

@@ -14,10 +14,12 @@ import org.ttdc.flipcards.client.ViewName;
 import org.ttdc.flipcards.client.ui.CardView;
 import org.ttdc.flipcards.client.ui.skeleton.TagManagerPopup.TagManagerPopupUiBinder;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
+import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
+
 
 
 
@@ -91,12 +93,11 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 	Anchor migrate;
 	@UiField
 	FlowPanel tagFilterPanel;
-	
+	@UiField
+	Label termLabel;
 	
 	private static final String NONE = "None";
 	
-	private long lastIndex;
-	private String lastSelectedTag = NONE;
 	private String lastSelectedOwner = NONE;
 	private ItemFilter lastSelectedFilter = ItemFilter.INACTIVE;
 	private int currentPage = 1;
@@ -109,7 +110,9 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 	private Set<CardEdit2> cardEditors = new HashSet<>();
 	private Set<CardEdit2> autoCompleteEditors = new HashSet<>();
 	
-	Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
+	private Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
+	private List<CardOrder> termOrderList = Arrays.asList(CardOrder.LATEST_ADDED, CardOrder.TERM, CardOrder.TERM_DES);
+	private int termOrderListNdx = 0;
 
 	interface CardManager2UiBinder extends UiBinder<Widget, CardManager2> {
 	}
@@ -124,6 +127,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		addCardButton.setText("add card");
 		spanishDictButton.setText("lookup");
 		clearButton.setText("clear");
+		termLabel.addStyleName("cursorPoiner");
 		
 		TextBoxKeyDownHandler keyDownHandler = new TextBoxKeyDownHandler();
 		termTextBox.addKeyDownHandler(keyDownHandler);
@@ -138,24 +142,13 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		addItemFilterItem(ItemFilter.INACTIVE);
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
-//		setupFilterCheckboxes(true);
-		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override
 			public void onSuccess(List<String> result) {
-//				filterListBox.clear();
-//				ownerListBox.addItem("All", NONE);
-//				for (String owner : result) {
-//					ownerListBox.addItem(owner, owner);
-//				}
-//				// ownerListBox.setSelectedIndex(1);
-//				
 				for (String owner : result) {
 					filterListBox.addItem(owner);
 				}
-				
 			}
-
 			@Override
 			public void onFailure(Throwable caught) {
 				FlipCards.showErrorMessage(caught.getMessage());
@@ -273,7 +266,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		
 		
 
-		FlipCards.studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter,
+		FlipCards.studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, termOrderList.get(termOrderListNdx % termOrderList.size()),
 				currentPage, cardsPerPage, new AsyncCallback<PagedWordPair>() {
 					@Override
 					public void onSuccess(PagedWordPair result) {
@@ -343,6 +336,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		cardBrowserPanel.clear(); // Show wait icon.
 		loadWords();
 	}
+	
+	
 	
 	@UiHandler("termTextBox")
 	void onTermKeyDown(KeyUpEvent e) {
@@ -442,6 +437,12 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 					}
 				});
 
+	}
+	
+	@UiHandler("termLabel")
+	void onSortTermClick(ClickEvent e) {
+		termOrderListNdx++;
+		refresh("");
 	}
 	
 	@UiHandler("nextButton")
