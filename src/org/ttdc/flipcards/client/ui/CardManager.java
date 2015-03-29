@@ -189,7 +189,7 @@ public class CardManager extends Composite {
 			owners.add(lastSelectedOwner);
 		}
 
-		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter,
+		studyWordsService.getWordPairs(tagIds, owners, lastSelectedFilter, CardOrder.LATEST_ADDED,
 				currentPage, cardsPerPage, new AsyncCallback<PagedWordPair>() {
 					@Override
 					public void onSuccess(PagedWordPair result) {

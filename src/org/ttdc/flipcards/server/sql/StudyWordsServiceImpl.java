@@ -113,7 +113,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			validate(word, definition);
 			
 			conn = getConnection();
-			exists(word, conn); 
+			exists("", word, conn); 
 			UUID uuid = java.util.UUID.randomUUID();
 			
 			String statement = "INSERT INTO study_item (studyItemId, ownerId, createDate, word, definition) VALUES( ?, ?, ?, ?, ?)";
@@ -148,15 +148,18 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		}
 	}
 	
-	private void exists(String word, Connection conn) throws SQLException{
-		StringBuilder statement = new StringBuilder("SELECT si.word FROM study_item si WHERE si.word='");
+	private void exists(String studyItemId, String word, Connection conn) throws SQLException{
+		StringBuilder statement = new StringBuilder("SELECT si.studyItemId, si.word FROM study_item si WHERE si.word='");
 		statement.append(word).append("'");
 		PreparedStatement stmt = conn.prepareStatement(statement.toString());
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			String str = rs.getString(1);
+			String id = rs.getString(1);
+			String str = rs.getString(2);
 			if(str.equals(word)){
-				throw new IllegalArgumentException("Already exists");
+				if(!id.equals(studyItemId)){
+					throw new IllegalArgumentException("Already exists");
+				}
 			}
 		}
 	}
@@ -170,7 +173,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		try {
 			validate(word, definition);
 			conn = getConnection();
-			exists(word, conn);
+			exists(id, word, conn);
 			
 			String statement = "UPDATE study_item SET word = ?, definition=? WHERE studyItemId = ?";
 			PreparedStatement stmt = conn.prepareStatement(statement);
@@ -510,13 +513,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			conn = getConnection();
 			
 			if (active) {
-				String statement = "INSERT INTO study_item_meta (studyItemMetaId, ownerId, studyItemId) VALUES( ?, ?, ?)";
+				String statement = "INSERT INTO study_item_meta (studyItemMetaId, ownerId, studyItemId, createDate) VALUES( ?, ?, ?, ?)";
 				PreparedStatement stmt = conn.prepareStatement(statement);
 				
 				UUID uuid = java.util.UUID.randomUUID();
 				stmt.setString(1, uuid.toString());
 				stmt.setString(2, getUserIdForEmail(getUser().getEmail()));
 				stmt.setString(3, id);
+				stmt.setTimestamp(4, new java.sql.Timestamp(System.currentTimeMillis()));
 				int success = 2;
 				success = stmt.executeUpdate();
 				if (success == 0) {
@@ -554,14 +558,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public PagedWordPair getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, int pageNumber, int perPage)
+			ItemFilter filter, CardOrder cardOrder, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 
 		if (users.isEmpty()) {
 			users = getStudyFriends();
 		}
-		return performGetWordPairs(tagIds, users, filter, CardOrder.LATEST_ADDED, pageNumber, perPage);
+		return performGetWordPairs(tagIds, users, filter, cardOrder, pageNumber, perPage);
 	}
 	
 	
@@ -660,6 +664,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				case SLOWEST:
 					statement.append("ORDER BY sm.averageTime DESC ");
 					break;
+				case TERM:
+					statement.append("ORDER BY si.word ");
+					break;
+					
+				case TERM_DES:
+					statement.append("ORDER BY si.word DESC ");
+					break;	
 				default:
 					statement.append("ORDER BY si.createDate DESC ");
 			}
@@ -762,8 +773,26 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	public AutoCompleteWordPairList getAutoCompleteWordPairs(
 			List<String> owners, int sequence, String qstr)
 			throws IllegalArgumentException, NotLoggedInException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		Connection conn = null;
+		AutoCompleteWordPairList list = null;
+		try{
+			conn = getConnection();
+			List<WordPair> wordPairs = new ArrayList<WordPair>();
+			StringBuilder statement = new StringBuilder("SELECT si.studyItemId, si.word, si.definition FROM study_item si WHERE si.word LIKE ? LIMIT 10");
+			PreparedStatement stmt = conn.prepareStatement(statement.toString());
+			stmt.setString(1, qstr+"%");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){
+				wordPairs.add(new WordPair(rs.getString(1), rs.getString(2), rs.getString(3)));
+			}
+			list = new AutoCompleteWordPairList(sequence, wordPairs);
+		} catch (Exception e) {
+			logException(e);
+		} finally {
+			closeConnection(conn);
+		}
+		return list;
 	}
 
 	@Override

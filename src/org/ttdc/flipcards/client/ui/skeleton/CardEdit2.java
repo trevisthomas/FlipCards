@@ -8,6 +8,8 @@ import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -38,8 +40,8 @@ public class CardEdit2 extends Composite {
 	@UiField
 	TextBox definitionTextBox;
 	
-	@UiField
-	Button updateButton;
+//	@UiField
+//	Button updateButton;
 //	@UiField
 //	Anchor spanishDictButton;
 	@UiField
@@ -68,13 +70,11 @@ public class CardEdit2 extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 		setVisible(false);
 		
-		updateButton.setText("Update");
+//		updateButton.setText("Update");
 		deleteButton.setText("Delete");
 		activateButton.setText("Activate!");
 		deactivateButton.setText("Deactivate");
 		closeButton.setText("Close");
-//		spanishDictButton.setText("Spanish Dict");
-//		spanishDictButton.setText("Spanish Dict");
 		
 		termTextBox.getElement().setId("termInput");
 		definitionTextBox.getElement().setId("definitionInput");
@@ -83,14 +83,43 @@ public class CardEdit2 extends Composite {
 		definitionTextBox.addKeyDownHandler(handler);
 		termTextBox.addKeyDownHandler(handler);
 		
-//		addCardButton.setText("add card");
-//		spanishDictButton.setText("lookup");
-//		clearButton.setText("clear");
 		deleteButton.setVisible(false);
 		activateButton.setVisible(false);
 		deactivateButton.setVisible(false);
+		
+		termTextBox.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				if(!termTextBox.getText().trim().toLowerCase().equals(CardEdit2.this.card.getWord())){
+					performUpdate();
+				} 
+			}
+		});
+		
+		definitionTextBox.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				if(!definitionTextBox.getText().trim().toLowerCase().equals(CardEdit2.this.card.getDefinition())){
+					performUpdate();
+				} 
+			}
+		});
 
 	}
+	
+//	class MyBlurHandler implements BlurHandler {
+//		private TextBox textBox;
+//		public MyBlurHandler(final TextBox textBox) {
+//			this.textBox = textBox;
+//		}
+//		
+//		@Override
+//		public void onBlur(BlurEvent event) {
+//			if()
+//			
+//		}
+//	}
+	
 
 	private void loadWordPairToUi(final WordPair c) {
 		termTextBox.getElement().setPropertyString("placeholder", c.getWord());
@@ -122,10 +151,10 @@ public class CardEdit2 extends Composite {
 		});
 	}
 
-	@UiHandler("updateButton")
-	void onUpdateClick(ClickEvent e) {
-		performUpdate();
-	}
+//	@UiHandler("updateButton")
+//	void onUpdateClick(ClickEvent e) {
+//		performUpdate();
+//	}
 
 	private void performUpdate() {
 		String word = termTextBox.getText().trim();

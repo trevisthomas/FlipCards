@@ -3,11 +3,13 @@ package org.ttdc.flipcards.client;
 import java.util.List;
 
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
+import org.ttdc.flipcards.shared.CardOrder;
 import org.ttdc.flipcards.shared.ItemFilter;
 import org.ttdc.flipcards.shared.PagedWordPair;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
+
 
 
 
@@ -21,8 +23,8 @@ public interface StudyWordsServiceAsync {
 	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
 
 	void getWordPairs(List<String> tagIds, List<String> users,
-			ItemFilter filter, int pageNumber, int perPage, 
-			AsyncCallback<PagedWordPair> callback);
+			ItemFilter filter, CardOrder cardOrder, int pageNumber,
+			int perPage, AsyncCallback<PagedWordPair> callback);
 
 	void updateWordPair(String id, String word, String definition,
 			AsyncCallback<WordPair> callback);

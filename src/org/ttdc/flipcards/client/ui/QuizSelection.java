@@ -84,7 +84,9 @@ public class QuizSelection extends Composite {
 		cardCountListBox.setSelectedIndex(1);
 		
 		for(CardOrder co : CardOrder.values()){
-			orderListBox.addItem(co.toString(), co.name());
+			if(co.isQuizable()){
+				orderListBox.addItem(co.toString(), co.name());
+			}
 		}
 		
 //		orderListBox.addItem(CardOrder.RANDOM.toString(), CardOrder.RANDOM.name());

@@ -94,7 +94,7 @@ public class FlipCards implements EntryPoint {
 			      String historyToken = event.getValue();
 			      ViewName viewName;
 			      if(historyToken.trim().isEmpty()){
-			    	  viewName = ViewName.QUIZ_SELECTION;
+			    	  viewName = ViewName.CARD_MANAGER;
 			      }
 			      else{
 			    	  viewName = ViewName.valueOf(historyToken);
