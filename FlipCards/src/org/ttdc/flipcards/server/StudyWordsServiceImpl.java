@@ -97,7 +97,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public WordPair addWordPair(String word, String definition)
+	public WordPair addWordPair(String word, String definition, List<String> tagIds)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		UUID uuid = java.util.UUID.randomUUID();

@@ -16,11 +16,12 @@ import org.ttdc.flipcards.shared.WordPair;
 
 
 
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 //Nice, got an error when this didnt exist and then the red dot auto created it for me.
 public interface StudyWordsServiceAsync {
-	void addWordPair(String word, String definition, AsyncCallback<WordPair> callback);
+	void addWordPair(String word, String definition, List<String> tagIds, AsyncCallback<WordPair> callback);
 
 	void getWordPairs(List<String> tagIds, List<String> users,
 			ItemFilter filter, CardOrder cardOrder, int pageNumber,

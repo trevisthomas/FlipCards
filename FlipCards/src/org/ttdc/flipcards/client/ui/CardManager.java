@@ -283,7 +283,7 @@ public class CardManager extends Composite {
 			return;
 		}
 
-		studyWordsService.addWordPair(word, definition,
+		studyWordsService.addWordPair(word, definition, new ArrayList<String>(),
 				new AsyncCallback<WordPair>() {
 					@Override
 					public void onSuccess(WordPair card) {

@@ -104,7 +104,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public WordPair addWordPair(String word, String definition)
+	public WordPair addWordPair(String word, String definition, List<String> tagIds)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		Connection conn = null;
@@ -129,7 +129,12 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				throw new RuntimeException("Failed to insert StudyItem");
 			}
 			
-			return new WordPair(uuid.toString(), word, definition);
+			for(String tagId : tagIds){
+				applyTag(tagId, uuid.toString());
+			}
+			
+			return performGetWordPair(uuid.toString(), conn);
+			
 		} catch (SQLException e) {
 			logException(e);
 			throw new RuntimeException("Database error. Failed to insert StudyItem");
@@ -843,7 +848,8 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			//Now apply the update
 
 			String statement = "UPDATE study_item_meta SET incorrectCount = ?, viewCount = ?, lastUpdate=?,"
-					+ "difficulty = ?, confidence = ?, totalTime = ?, averageTime = ?, timedViewCount = ?";
+					+ "difficulty = ?, confidence = ?, totalTime = ?, averageTime = ?, timedViewCount = ? "
+					+ "WHERE study_item_meta.studyItemId = ?";
 			
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			
@@ -860,10 +866,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			stmt.setLong(6, wp.getTotalTime());
 			stmt.setLong(7, wp.getAverageTime());
 			stmt.setLong(8, wp.getTimedViewCount());
+			stmt.setString(9, id);
 
 			int success = 2;
 			success = stmt.executeUpdate();
-			if (success == 0) {
+			if (success == 1) {
 				LOG.severe("Failed to insert study_item_meta");
 			}
 		} catch (Exception e) {
