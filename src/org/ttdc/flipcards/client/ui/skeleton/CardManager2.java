@@ -32,6 +32,7 @@ import org.ttdc.flipcards.shared.WordPair;
 
 
 
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -54,6 +55,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -94,7 +96,11 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 	@UiField
 	FlowPanel tagFilterPanel;
 	@UiField
+	FlowPanel tagCreatePanel; 
+	@UiField
 	Label termLabel;
+	@UiField
+	TabPanel mainTab;
 	
 	private static final String NONE = "None";
 	
@@ -110,6 +116,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 	private Set<CardEdit2> cardEditors = new HashSet<>();
 	private Set<CardEdit2> autoCompleteEditors = new HashSet<>();
 	
+	
+	private Map<String, CheckBox> createTagCheckBoxesMap = new HashMap<>();
 	private Map<String, CheckBox> filterCheckBoxesMap = new HashMap<>();
 	private List<CardOrder> termOrderList = Arrays.asList(CardOrder.LATEST_ADDED, CardOrder.TERM, CardOrder.TERM_DES);
 	private int termOrderListNdx = 0;
@@ -142,6 +150,8 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		addItemFilterItem(ItemFilter.INACTIVE);
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
+		mainTab.selectTab(0);
+		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override
 			public void onSuccess(List<String> result) {
@@ -164,6 +174,9 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 	}
 	private void reloadTags() {
 		tagFilterPanel.clear();
+		tagCreatePanel.clear();
+		createTagCheckBoxesMap.clear();
+		filterCheckBoxesMap.clear();
 		tagFilterPanel.add(new Label("Loading..."));
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
 			
@@ -181,6 +194,10 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 							loadWords();
 						}
 					});
+					
+					checkBox = new CheckBox(tag.getTagName());
+					tagCreatePanel.add(checkBox);
+					createTagCheckBoxesMap.put(tag.getTagId(), checkBox);
 				}
 				
 				Anchor editTagAnchor = new Anchor("edit");
@@ -466,6 +483,10 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		definitionTextBox.setText("");
 		clearAutoComplete();
 		termTextBox.setFocus(true);
+		for(String key : createTagCheckBoxesMap.keySet()){
+			CheckBox cb = createTagCheckBoxesMap.get(key);
+			cb.setValue(false);
+		}
 	}
 	
 	@UiHandler("addCardButton")
@@ -519,16 +540,20 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 			FlipCards.showErrorMessage("Definition can't be blank");
 			return;
 		}
+		
+		List<String> tagIds = new ArrayList<String>();
+		for(String key : createTagCheckBoxesMap.keySet()){
+			CheckBox cb = createTagCheckBoxesMap.get(key);
+			if(cb.getValue()){
+				tagIds.add(key);
+			}
+		}
 
-		FlipCards.studyWordsService.addWordPair(word, definition,
+		FlipCards.studyWordsService.addWordPair(word, definition, tagIds,
 				new AsyncCallback<WordPair>() {
 					@Override
 					public void onSuccess(WordPair card) {
-						termTextBox.setText("");
-						definitionTextBox.setText("");
-						termTextBox.setFocus(true);
-//						card.setDisplayOrder(lastIndex); // So lame.
-						
+						onClearClick(null);
 						//This madness is because there is no insert for HTMLPanel like there was for VerticalPanel (but it's a table which doesnt work with the new css)
 						List<Widget> widgets = evacuate(cardBrowserPanel);
 						

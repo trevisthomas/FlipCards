@@ -24,13 +24,17 @@ public class SqlMigrator {
 	public static boolean migrate(int table, int pageNumber){
 		SqlMigrator migrator = new SqlMigrator();
 		if(table == 0){
-			return migrator.migrateTagAsses(pageNumber);
+//			return migrator.migrateTagAsses(pageNumber);
+			return true;
 		} else if(table == 1){
-			return migrator.migrateStudyWords(pageNumber);
+//			return migrator.migrateStudyWords(pageNumber);
+			return true;
 		} else if(table == 2){
 			return migrator.migrateMetaItem(pageNumber);
+			
 		} else if(table == 3){
-			return migrator.migrateTags(pageNumber);
+//			return migrator.migrateTags(pageNumber);
+			return true;
 		}
 		
 		
