@@ -272,7 +272,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			throws NotLoggedInException {
 		
 		checkLoggedIn();
-		PagedWordPair pwp = performGetWordPairs(quizOptions.getTagIds(), getStudyFriends(), ItemFilter.ACTIVE, quizOptions.getCardOrder(), 1, quizOptions.getSize());
+		PagedWordPair pwp = performGetWordPairs(quizOptions.getTagIds(), null, ItemFilter.ACTIVE, quizOptions.getCardOrder(), 1, quizOptions.getSize());
 		return pwp.getWordPair();
 	}
 
@@ -485,7 +485,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
-				users.add(rs.getString("email"));
+				users.add(rs.getString("userId"));
 			}
 		} catch (SQLException e) {
 			logException(e);
@@ -518,6 +518,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			conn = getConnection();
 			
 			if (active) {
+				
+				WordPair wp = performGetWordPair(id, conn);
+				
+				//Somehow this happened in prod so i coded the backend not to allow it.
+				if(wp.isActive()){
+					throw new IllegalArgumentException("Already active!");
+				}
+				
 				String statement = "INSERT INTO study_item_meta (studyItemMetaId, ownerId, studyItemId, createDate) VALUES( ?, ?, ?, ?)";
 				PreparedStatement stmt = conn.prepareStatement(statement);
 				
@@ -566,10 +574,15 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			ItemFilter filter, CardOrder cardOrder, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
-
-		if (users.isEmpty()) {
-			users = getStudyFriends();
-		}
+		List<String> userIds = new ArrayList<String>();
+//		if (users.isEmpty()) {
+//			userIds = getStudyFriends();
+//		} else {
+//			for(String email : users){
+//				userIds.add(getUserIdForEmail(email));
+//			}
+//		}
+		
 		return performGetWordPairs(tagIds, users, filter, cardOrder, pageNumber, perPage);
 	}
 	
@@ -587,7 +600,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	 * @return
 	 */
 	private PagedWordPair performGetWordPairs(List<String> tagIds,
-			List<String> owners, ItemFilter filter, CardOrder order, int pageNumber, int pageSize) {
+			List<String> users, ItemFilter filter, CardOrder order, int pageNumber, int pageSize) {
 
 		PagedWordPair pagedWordPair = new PagedWordPair();
 		List<WordPair> wordPairs = new ArrayList<>();
@@ -596,7 +609,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StringBuilder whereClause = new StringBuilder();
 		try {
 			conn = getConnection();
-			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  ");
+			fromClause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId ");
 			
 			switch (filter) {
 			case ACTIVE:
@@ -619,10 +632,22 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 						createCommaSeperatedListOfStrings(tagIds, whereClause);	
 						whereClause.append(") ) ");						
 			}
-			if(owners != null){		
+			
+			
+			List<String> userIds = new ArrayList<String>();
+			if(users == null || users.isEmpty()){
+				userIds = getStudyFriends();
+			}
+			else {
+				for(String email : users){
+					userIds.add(getUserIdForEmail(email));
+				}
+			}
+			
+			if(userIds != null){		
 				appendWhereOrAnd(whereClause);
-				whereClause.append(" u.email IN (");
-				createCommaSeperatedListOfStrings(owners, whereClause);
+				whereClause.append(" si.ownerId IN (");
+				createCommaSeperatedListOfStrings(userIds, whereClause);
 				whereClause.append(") ");
 			}
 			
@@ -649,10 +674,10 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			.append(whereClause);
 			switch(order){
 				case HARDEST:
-					statement.append("ORDER BY sm.difficulty DESC ");
+					statement.append("ORDER BY sm.difficulty DESC, sm.createDate DESC  ");
 					break;
 				case EASIEST:
-					statement.append("ORDER BY sm.difficulty ASC ");
+					statement.append("ORDER BY sm.difficulty ASC, sm.createDate DESC  ");
 					break;
 				case LATEST_ADDED:
 					statement.append("ORDER BY si.createDate DESC ");
@@ -661,13 +686,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 					statement.append("ORDER BY sm.lastUpdate ASC ");
 					break;
 				case LEAST_STUDIED:
-					statement.append("ORDER BY sm.viewCount ASC ");
+					statement.append("ORDER BY sm.viewCount ASC, sm.createDate DESC  ");
 					break;
 				case RANDOM:
 					statement.append("ORDER BY RAND() ");
 					break;
 				case SLOWEST:
-					statement.append("ORDER BY sm.averageTime DESC ");
+					statement.append("ORDER BY sm.averageTime DESC, sm.createDate DESC  ");
 					break;
 				case TERM:
 					statement.append("ORDER BY si.word ");
@@ -677,7 +702,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 					statement.append("ORDER BY si.word DESC ");
 					break;	
 				default:
-					statement.append("ORDER BY si.createDate DESC ");
+					statement.append("ORDER BY si.createDate DESC, sm.createDate DESC  ");
 			}
 			
 			statement.append("LIMIT ").append(start).append(",").append(pageSize);
@@ -847,11 +872,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			
 			//Now apply the update
 
-			String statement = "UPDATE study_item_meta SET incorrectCount = ?, viewCount = ?, lastUpdate=?,"
+			String statement = "UPDATE study_item_meta sm SET incorrectCount = ?, viewCount = ?, lastUpdate=?,"
 					+ "difficulty = ?, confidence = ?, totalTime = ?, averageTime = ?, timedViewCount = ? "
-					+ "WHERE study_item_meta.studyItemId = ?";
+					+ "WHERE sm.studyItemId = ? AND sm.ownerId = ?";
 			
 			PreparedStatement stmt = conn.prepareStatement(statement);
+			conn.setAutoCommit(false);
+			
 			
 			stmt.setLong(1, wp.getIncorrectCount());
 			stmt.setLong(2, wp.getTestedCount());
@@ -867,11 +894,16 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			stmt.setLong(7, wp.getAverageTime());
 			stmt.setLong(8, wp.getTimedViewCount());
 			stmt.setString(9, id);
+			stmt.setString(10, getUserIdForEmail(getUser().getEmail()));
 
 			int success = 2;
 			success = stmt.executeUpdate();
 			if (success == 1) {
-				LOG.severe("Failed to insert study_item_meta");
+				conn.commit();
+			}
+			else {
+				conn.rollback();
+				throw new IllegalArgumentException("Update failed to update one record!");
 			}
 		} catch (Exception e) {
 			logException(e);
