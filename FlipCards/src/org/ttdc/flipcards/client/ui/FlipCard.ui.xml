@@ -1,5 +1,6 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-	xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+	xmlns:g='urn:import:com.google.gwt.user.client.ui'
+	xmlns:tt="urn:import:org.ttdc.flipcards.client.ui.widgets">
 	<ui:with field='res' type='org.ttdc.flipcards.client.ui.Resources' />
 
 	<g:HTMLPanel styleName="container">
@@ -13,6 +14,7 @@
 				<ul class="navbar-list">
 					<li class="navbar-item"><g:Anchor styleName="navbar-link  navbar-link-first" ui:field="surrenderAnchor" /></li>
 					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="debugAnchor" /></li>
+					<li class="navbar-item"><g:Anchor styleName="navbar-link" ui:field="editAnchor" /></li>
 				</ul>
 				<ul class="navbar-list u-pull-right">
 					<li class="navbar-item">
@@ -29,35 +31,26 @@
 			
 		</div>
 		
-		<div class="row">
+		<div class="row tt-center">
 			<div class="twelve columns">
 				<g:Label styleName="flipCardText" ui:field='wordLabel' />
 				<g:Label styleName="flipCardText" ui:field='definitionLabel' />
 			</div>
 		</div>
 		
-		<div class="u-full-width">
+		<div class="u-full-width tt-center">
 			<g:Label ui:field="yesDiv" styleName="flipButtonYes flipButton"></g:Label>
 			<g:Label ui:field="noDiv" styleName="flipButtonNo flipButton"></g:Label>
 		</div>
-		
-		<div class="row">
-			<div class="one-half column">
-				
-			</div>
-			<div class="one-half column">
-				
-			</div>
-		</div>
 	
-	<g:HTMLPanel ui:field="definePanel">
-		<g:Anchor ui:field="editAnchor" /> | 
-		<g:Anchor ui:field="lingueeAnchor" /> | 
-		<g:Anchor ui:field="spanishDictAnchor" />
+	<g:HTMLPanel styleName="container">
+		<g:HTMLPanel ui:field="editCardPanel"></g:HTMLPanel>		
 	</g:HTMLPanel>
-	<g:VerticalPanel ui:field="editCardPanel"></g:VerticalPanel>		
+	
 
-		<g:FlexTable ui:field="debugDumpFlexTable" />
+	<g:FlexTable ui:field="debugDumpFlexTable" />
+	
+	<tt:Footer />
 
 	</g:HTMLPanel>
 

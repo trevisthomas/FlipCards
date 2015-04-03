@@ -28,6 +28,21 @@
 		
 		<div class="row">
 		<g:TabPanel ui:field="mainTab" styleName="twelve columns tt-blue-bottom">
+		    
+		    <g:Tab text="Browse">
+		    	<g:HTMLPanel styleName="container">
+				<div class="row">
+				 	<div class="six columns">
+				 		<label for="filterInput">Filter</label>
+				 		<g:ListBox styleName="u-full-width" ui:field="filterListBox"/>
+				 	</div>
+				 	<div class="six columns">
+						<label for="tagFilterInput">Tag filters</label>
+		      			<g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel>
+					</div>
+				</div>
+				</g:HTMLPanel>
+		    </g:Tab>
 		    <g:Tab text="Create">
 		    	<g:HTMLPanel styleName="container">
 		        <div class="row">
@@ -51,20 +66,6 @@
 					</div>
 				 </div>
 				 </g:HTMLPanel>
-		    </g:Tab>
-		    <g:Tab text="Browse">
-		    	<g:HTMLPanel styleName="container">
-				<div class="row">
-				 	<div class="six columns">
-				 		<label for="filterInput">Filter</label>
-				 		<g:ListBox styleName="u-full-width" ui:field="filterListBox"/>
-				 	</div>
-				 	<div class="six columns">
-						<label for="tagFilterInput">Tag filters</label>
-		      			<g:FlowPanel ui:field="tagFilterPanel"></g:FlowPanel>
-					</div>
-				</div>
-				</g:HTMLPanel>
 		    </g:Tab>
 		</g:TabPanel>
 		</div>

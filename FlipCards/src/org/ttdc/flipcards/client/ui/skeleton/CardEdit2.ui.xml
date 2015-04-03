@@ -5,7 +5,7 @@
 		
 	</ui:style>
 	<g:HTMLPanel styleName="row">
-		<div class="twelve colums, tt-padded">
+		<div class="twelve colums tt-cardEditor">
 			<div class="row">
 			    <div class="six columns">
 			      <label for="termInput">Term</label>
@@ -24,7 +24,7 @@
 		    </div>
 	    	<div class="row">
 		    	<div class="ten columns">
-					<g:Button styleName="tt-btn-fix" ui:field="deleteButton"/><g:Button styleName="tt-btn-fix" ui:field="activateButton"/><g:Button styleName="tt-btn-fix" ui:field="deactivateButton"/>
+					<g:Button styleName="tt-btn-fix button-primary" ui:field="activateButton"/><g:Button styleName="tt-btn-fix" ui:field="deactivateButton"/><g:Button styleName="tt-btn-fix" ui:field="deleteButton"/>
 				</div>
 				<div class="two columns">
 					<g:Button styleName="button-primary" ui:field="closeButton"/>

@@ -40,7 +40,10 @@ public class ConfirmationPopup extends Composite {
 	
 	@UiField
 	HTMLPanel okOnlyPanel;
-	
+
+	public ConfirmationPopup(String title, String message) {
+		this(null,title,message);
+	}
 	public ConfirmationPopup(Observer observer, String title, String message) {
 		initWidget(uiBinder.createAndBindUi(this));
 		this.observer = observer;

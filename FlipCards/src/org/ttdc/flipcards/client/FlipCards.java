@@ -10,6 +10,7 @@ import org.ttdc.flipcards.client.services.StagingCardServiceAsync;
 import org.ttdc.flipcards.client.ui.CardManager;
 import org.ttdc.flipcards.client.ui.QuizSelection;
 import org.ttdc.flipcards.client.ui.skeleton.CardManager2;
+import org.ttdc.flipcards.client.ui.skeleton.ConfirmationPopup;
 import org.ttdc.flipcards.client.ui.skeleton.Login;
 import org.ttdc.flipcards.shared.FieldVerifier;
 import org.ttdc.flipcards.shared.LoginInfo;
@@ -65,8 +66,10 @@ public class FlipCards implements EntryPoint {
 	public final static StagingCardServiceAsync stagingCardService = GWT.create(StagingCardService.class);
 	
 	public static void showErrorMessage(String message){
-		RootPanel.get("systemError").clear();
-		RootPanel.get("systemError").add(new Label(message));
+//		RootPanel.get("systemError").clear();
+//		RootPanel.get("systemError").add(new Label(message));
+		
+		new ConfirmationPopup("Error", message);
 	}
 	
 	public static void addErrorMessage(String message){
@@ -75,8 +78,9 @@ public class FlipCards implements EntryPoint {
 	
 	public static void showMessage(String message) {
 		//set the style?
-		RootPanel.get("systemError").clear();
-		RootPanel.get("systemError").add(new Label(message));
+//		RootPanel.get("systemError").clear();
+//		RootPanel.get("systemError").add(new Label(message));
+		new ConfirmationPopup("Info", message);
 	}
 
 	
