@@ -3,7 +3,6 @@ package org.ttdc.flipcards.client.ui.skeleton;
 import java.util.List;
 
 import org.ttdc.flipcards.client.FlipCards;
-import org.ttdc.flipcards.client.ui.TagEditor;
 import org.ttdc.flipcards.shared.Tag;
 import org.ttdc.flipcards.shared.WordPair;
 
@@ -58,7 +57,7 @@ public class CardEdit2 extends Composite {
 	private CardEditObserver observer;
 	
 	
-	interface CardEditObserver{
+	public interface CardEditObserver{
 		void onCardUpdated(WordPair result);
 		void onCardDeleted();
 		void onCardEditClose(WordPair card);

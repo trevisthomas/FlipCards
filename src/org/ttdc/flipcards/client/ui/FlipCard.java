@@ -7,6 +7,7 @@ import org.ttdc.flipcards.client.FlipCards;
 import org.ttdc.flipcards.client.StudyWordsService;
 import org.ttdc.flipcards.client.StudyWordsServiceAsync;
 import org.ttdc.flipcards.client.ViewName;
+import org.ttdc.flipcards.client.ui.skeleton.CardEdit2;
 import org.ttdc.flipcards.client.ui.skeleton.ConfirmationPopup;
 import org.ttdc.flipcards.shared.QuizOptions;
 import org.ttdc.flipcards.shared.WordPair;
@@ -28,7 +29,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class FlipCard extends Composite implements CardEdit.CardEditObserver{
+public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 	interface MyUiBinder extends UiBinder<Widget, FlipCard> {
 	}
 
@@ -48,16 +49,16 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	FlexTable debugDumpFlexTable;
 	@UiField
 	Anchor debugAnchor; 
-	@UiField
-	Anchor lingueeAnchor;
-	@UiField
-	Anchor spanishDictAnchor;
-	@UiField
-	HTMLPanel definePanel;
+//	@UiField
+//	Anchor lingueeAnchor;
+//	@UiField
+//	Anchor spanishDictAnchor;
+//	@UiField
+//	HTMLPanel definePanel;
 	@UiField
 	Anchor editAnchor;
 	@UiField
-	VerticalPanel editCardPanel;
+	HTMLPanel editCardPanel;
 	@UiField
 	Label yesDiv;
 	@UiField
@@ -95,11 +96,11 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		debugDumpFlexTable.setVisible(false);
 		debugAnchor.setText("debug");
 		editAnchor.setText("Edit");
-		lingueeAnchor.setText("Linguee");
-		spanishDictAnchor.setText("Spanish Dict");
-		lingueeAnchor.setTarget("_blank");
-		spanishDictAnchor.setTarget("_blank");
-		definePanel.setVisible(false);
+//		lingueeAnchor.setText("Linguee");
+//		spanishDictAnchor.setText("Spanish Dict");
+//		lingueeAnchor.setTarget("_blank");
+//		spanishDictAnchor.setTarget("_blank");
+//		definePanel.setVisible(false);
 		
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
@@ -159,7 +160,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 			showScore();
 		} else {
 			
-			definePanel.setVisible(false);
+//			definePanel.setVisible(false);
 			
 			currentPair = wordPairs.get(currentIndex++); 
 			definitionLabel.setVisible(false);
@@ -204,8 +205,8 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 			definitionLabel.setText(currentPair.getWord());
 		}
 		
-		spanishDictAnchor.setHref("http://www.spanishdict.com/translate/"+currentPair.getWord());
-		lingueeAnchor.setHref("http://www.linguee.com/english-spanish/search?source=spanish&query="+currentPair.getWord());
+//		spanishDictAnchor.setHref("http://www.spanishdict.com/translate/"+currentPair.getWord());
+//		lingueeAnchor.setHref("http://www.linguee.com/english-spanish/search?source=spanish&query="+currentPair.getWord());
 	}
 	
 	@UiHandler("wordLabel")
@@ -231,7 +232,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 		definitionLabel.setVisible(!definitionLabel.isVisible());
 		yesDiv.setVisible(true);
 		noDiv.setVisible(true);
-		definePanel.setVisible(true);
+//		definePanel.setVisible(true);
 		editCardPanel.clear();
 		
 		duration = System.currentTimeMillis() - timeStarted;
@@ -245,7 +246,9 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	@UiHandler("editAnchor")
 	void handleEditAnchorClick(ClickEvent e) {
 		editCardPanel.clear();
-		editCardPanel.add(new CardEdit(this, currentPair));
+		CardEdit2 ce = new CardEdit2(this, currentPair);
+		ce.show();
+		editCardPanel.add(ce);
 	}
 	
 	@UiHandler("noDiv")
@@ -310,4 +313,7 @@ public class FlipCard extends Composite implements CardEdit.CardEditObserver{
 	public void onCardEditClose(WordPair card) {
 		editCardPanel.clear();
 	}
+	
+	
+	
 }

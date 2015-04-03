@@ -14,16 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
-import javax.jdo.Transaction;
-
 import org.ttdc.flipcards.client.StudyWordsService;
-import org.ttdc.flipcards.server.StudyItem;
-import org.ttdc.flipcards.server.StudyItemMeta;
 import org.ttdc.flipcards.server.UploadService;
 import org.ttdc.flipcards.shared.AutoCompleteWordPairList;
 import org.ttdc.flipcards.shared.CardOrder;
@@ -39,7 +32,6 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.mysql.fabric.xmlrpc.base.Array;
 
 public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StudyWordsService {
@@ -73,8 +65,28 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return url;
 	}
 
-	private Connection getConnection() throws SQLException {
-		Connection conn = DriverManager.getConnection(getUrl());
+//	private final static int MAX_ATTEMPTS = 10;
+	private Connection getConnection() throws SQLException{
+		Connection conn = DriverManager.getConnection(getUrl());;
+//		int count = 0;
+//		while(conn == null){
+//			try {
+//				//This was me forcing it to fail to test it out.
+////				conn = DriverManager.getConnection(count < 2 ? "" : getUrl());
+//				conn = DriverManager.getConnection(getUrl());
+//			} catch (SQLException e) {	
+//				count++;
+//				if(MAX_ATTEMPTS < count){
+//					throw e;
+//				}
+//				logException(new Exception("Attempt to get connection failed: " + count,e));	
+//				try {
+//					Thread.sleep(2);
+//				} catch (InterruptedException e1) {
+//					//Dont care.
+//				}
+//			}
+//		}
 		return conn;
 	}
 	private void closeConnection(Connection conn) {
@@ -119,7 +131,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			String statement = "INSERT INTO study_item (studyItemId, ownerId, createDate, word, definition) VALUES( ?, ?, ?, ?, ?)";
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			stmt.setString(1, uuid.toString());
-			stmt.setString(2, getUserIdForEmail(getUser().getEmail()));
+			stmt.setString(2, getUserIdForEmail(conn, getUser().getEmail()));
 			stmt.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
 			stmt.setString(4, word);
 			stmt.setString(5, definition);
@@ -206,7 +218,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		StringBuffer clause = new StringBuffer();
 		clause.append(SELECT_EVERYTHING);
 		clause.append("FROM study_item si INNER JOIN user u ON si.ownerId = u.userId  ");
-		clause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
+		clause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(conn, getUser().getEmail())+"' ");
 		clause.append("WHERE si.studyItemId='").append(id).append("'");
 		
 		executeWordPairQueryAndTagResults(wordPairs, conn, clause.toString());
@@ -323,7 +335,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			stmt.setString(1, uuid.toString());
 			stmt.setString(2, name);
-			stmt.setString(3, getUserIdForEmail(getUser().getEmail()));
+			stmt.setString(3, getUserIdForEmail(conn, getUser().getEmail()));
 			int success = 2;
 			success = stmt.executeUpdate();
 			if (success == 0) {
@@ -448,7 +460,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			stmt.setString(1, uuid.toString());
 			stmt.setString(2, studyItemId);
-			stmt.setString(3, getUserIdForEmail(getUser().getEmail()));
+			stmt.setString(3, getUserIdForEmail(conn, getUser().getEmail()));
 			stmt.setString(4, tagId);
 			int success = 2;
 			success = stmt.executeUpdate();
@@ -485,7 +497,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			ResultSet rs = stmt.executeQuery();
 			while (rs.next()) {
-				users.add(rs.getString("userId"));
+				users.add(rs.getString("email"));
 			}
 		} catch (SQLException e) {
 			logException(e);
@@ -495,8 +507,20 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		return users;
 	}
 	
-	private String getUserIdForEmail(String email) throws SQLException{
-		Connection conn = getConnection();
+	public List<String> getStudyFriendIds(Connection conn) throws SQLException {
+		List<String> users = new ArrayList<String>();
+		// At some point this method should probably only find the logged in
+		// users chosen friends.
+		String statement = "SELECT * FROM user";
+		PreparedStatement stmt = conn.prepareStatement(statement);
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			users.add(rs.getString("userId"));
+		}
+		return users;
+	}
+	
+	private String getUserIdForEmail(Connection conn, String email) throws SQLException{
 		// At some point this method should probably only find the logged in
 		// users chosen friends.
 		String statement = "SELECT * FROM user WHERE user.email='"+email+"'";
@@ -531,7 +555,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				
 				UUID uuid = java.util.UUID.randomUUID();
 				stmt.setString(1, uuid.toString());
-				stmt.setString(2, getUserIdForEmail(getUser().getEmail()));
+				stmt.setString(2, getUserIdForEmail(conn, getUser().getEmail()));
 				stmt.setString(3, id);
 				stmt.setTimestamp(4, new java.sql.Timestamp(System.currentTimeMillis()));
 				int success = 2;
@@ -544,7 +568,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				String statement = "DELETE FROM study_item_meta WHERE studyItemId = ? && ownerId= ?";
 				PreparedStatement stmtStudyItemMeta = conn.prepareStatement(statement);
 				stmtStudyItemMeta.setString(1, id);
-				stmtStudyItemMeta.setString(2, getUserIdForEmail(getUser().getEmail()));
+				stmtStudyItemMeta.setString(2, getUserIdForEmail(conn, getUser().getEmail()));
 				int success = 2;
 				success = stmtStudyItemMeta.executeUpdate();
 				if (success != 1) {
@@ -574,15 +598,6 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			ItemFilter filter, CardOrder cardOrder, int pageNumber, int perPage)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
-		List<String> userIds = new ArrayList<String>();
-//		if (users.isEmpty()) {
-//			userIds = getStudyFriends();
-//		} else {
-//			for(String email : users){
-//				userIds.add(getUserIdForEmail(email));
-//			}
-//		}
-		
 		return performGetWordPairs(tagIds, users, filter, cardOrder, pageNumber, perPage);
 	}
 	
@@ -613,18 +628,18 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			
 			switch (filter) {
 			case ACTIVE:
-				fromClause.append("INNER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
+				fromClause.append("INNER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(conn, getUser().getEmail())+"' ");
 				break;
 			case INACTIVE:
 			case BOTH:
 			default:
-				fromClause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"' ");
+				fromClause.append("LEFT OUTER JOIN study_item_meta sm ON si.studyItemId = sm.studyItemId AND sm.ownerId='"+getUserIdForEmail(conn, getUser().getEmail())+"' ");
 				break;
 			}
 			
 			if(ItemFilter.INACTIVE.equals(filter)){
 				appendWhereOrAnd(whereClause);
-				whereClause.append("si.studyItemId NOT IN (SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(getUser().getEmail())+"') ");
+				whereClause.append("si.studyItemId NOT IN (SELECT sm.studyItemId FROM study_item_meta sm WHERE sm.ownerId='"+getUserIdForEmail(conn, getUser().getEmail())+"') ");
 			}
 			if(!tagIds.isEmpty()){
 				appendWhereOrAnd(whereClause);
@@ -636,11 +651,11 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			
 			List<String> userIds = new ArrayList<String>();
 			if(users == null || users.isEmpty()){
-				userIds = getStudyFriends();
+				userIds = getStudyFriendIds(conn);
 			}
 			else {
 				for(String email : users){
-					userIds.add(getUserIdForEmail(email));
+					userIds.add(getUserIdForEmail(conn, email));
 				}
 			}
 			
@@ -850,9 +865,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		try {
 			conn = getConnection();
 			
-			WordPair wp = getStudyItem(id);
+			WordPair wp = performGetWordPair(id, conn);
 			if (wp == null) {
-				throw new IllegalArgumentException("Failed to update score.");
+				throw new IllegalArgumentException("Word not located.");
 			}
 			
 			
@@ -894,7 +909,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			stmt.setLong(7, wp.getAverageTime());
 			stmt.setLong(8, wp.getTimedViewCount());
 			stmt.setString(9, id);
-			stmt.setString(10, getUserIdForEmail(getUser().getEmail()));
+			stmt.setString(10, getUserIdForEmail(conn, getUser().getEmail()));
 
 			int success = 2;
 			success = stmt.executeUpdate();
@@ -906,8 +921,9 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 				throw new IllegalArgumentException("Update failed to update one record!");
 			}
 		} catch (Exception e) {
-			logException(e);
-			throw new IllegalArgumentException("Failed to update score!");
+			IllegalArgumentException e2 = new IllegalArgumentException("Failed to update score!",e);
+			logException(e2);
+			throw e2;
 		} finally {
 			closeConnection(conn);
 		}
@@ -917,7 +933,8 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	private void logException(Exception e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		e.printStackTrace(pw);
+		Exception e2 = new Exception("TT Wrapped Exception", e);
+		e2.printStackTrace(pw);
 		LOG.severe(sw.toString());
 	}
 

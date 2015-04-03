@@ -33,6 +33,8 @@ import org.ttdc.flipcards.shared.WordPair;
 
 
 
+
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -42,6 +44,8 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -151,6 +155,13 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 		logoffAnchor.setHref(FlipCards.getSignOutHref());
 		
 		mainTab.selectTab(0);
+		mainTab.addSelectionHandler(new SelectionHandler<Integer>() {
+			@Override
+			public void onSelection(SelectionEvent<Integer> event) {
+//				clearAutoComplete();
+				onClearClick(null);
+			}
+		});
 		
 		FlipCards.studyWordsService.getStudyFriends(new AsyncCallback<List<String>>() {
 			@Override
@@ -201,7 +212,7 @@ public class CardManager2 extends Composite implements CardView2.CardViewOwner, 
 				}
 				
 				Anchor editTagAnchor = new Anchor("edit");
-				tagFilterPanel.add(editTagAnchor);
+				tagCreatePanel.add(editTagAnchor);
 				editTagAnchor.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
