@@ -2,11 +2,14 @@ package org.ttdc.flipcards.client.ui.skeleton;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -40,6 +43,12 @@ public class ConfirmationPopup extends Composite {
 	
 	@UiField
 	HTMLPanel okOnlyPanel;
+	
+	@UiField 
+	Button okButton;
+	
+	@UiField 
+	Button onOnlyButton;
 
 	public ConfirmationPopup(String title, String message) {
 		this(null,title,message);
@@ -65,17 +74,17 @@ public class ConfirmationPopup extends Composite {
 		}
 		
 		popup.center();
-		popup.addCloseHandler(new CloseHandler<PopupPanel>() {
-			@Override
-			public void onClose(CloseEvent<PopupPanel> event) {
-//				event.
-				// TODO Auto-generated method stub
-				
-			}
-		});
 		
 		popup.show();
+		
+		if(observer == null) {
+			onOnlyButton.setFocus(true);
+		}
+		else {
+			okButton.setFocus(true);
+		}
 	}
+	
 
 	@UiHandler("okButton")
 	void onOkClick(ClickEvent e) {

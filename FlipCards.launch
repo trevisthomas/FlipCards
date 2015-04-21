@@ -16,7 +16,7 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="com.google.gdt.eclipse.suite.appengineClasspathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.google.gwt.dev.DevMode"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-superDevMode -startupUrl FlipCards.html -war C:\Projects\FlipCards\war -remoteUI &quot;${gwt_remote_ui_server_port}:${unique_id}&quot; -logLevel INFO -server com.google.appengine.tools.development.gwt.AppEngineLauncher -port 8888 -codeServerPort 9997 org.ttdc.flipcards.FlipCards"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-superDevMode -startupUrl FlipCards.html -war C:\ProjectsGit\FlipCards\war -remoteUI &quot;${gwt_remote_ui_server_port}:${unique_id}&quot; -logLevel INFO -server com.google.appengine.tools.development.gwt.AppEngineLauncher -port 8888 -codeServerPort 9997 org.ttdc.flipcards.FlipCards"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="FlipCards"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:C:\Development\eclipse-luna\plugins\com.google.appengine.eclipse.sdkbundle_1.9.18\appengine-java-sdk-1.9.18\lib\agent\appengine-agent.jar -Ddatastore.default_high_rep_job_policy_unapplied_job_pct=50 -Xmx512m"/>
 </launchConfiguration>

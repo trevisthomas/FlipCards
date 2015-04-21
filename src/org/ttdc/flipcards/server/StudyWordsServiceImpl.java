@@ -38,7 +38,6 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.datanucleus.query.JDOCursorHelper;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import net.sf.jsr107cache.Cache;
