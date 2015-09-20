@@ -695,7 +695,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 					statement.append("ORDER BY sm.difficulty ASC, sm.createDate DESC  ");
 					break;
 				case LATEST_ADDED:
-					statement.append("ORDER BY si.createDate DESC ");
+					statement.append("ORDER BY sm.createDate DESC ");
 					break;
 				case LEAST_RECIENTLY_STUDIED:
 					statement.append("ORDER BY sm.lastUpdate ASC ");
