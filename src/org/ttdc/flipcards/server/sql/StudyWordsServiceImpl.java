@@ -38,7 +38,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	private static final Logger LOG = Logger
 			.getLogger(StudyWordsServiceImpl.class.getName());
 	
-	private final static String SELECT_EVERYTHING = "SELECT si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
+	private final static String SELECT_EVERYTHING = "SELECT si.createDate as 'createDate', si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
 			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
 			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate', " +
 			"sm.confidence as 'confidence', sm.totalTime as 'totalTime', sm.timedViewCount as 'timedViewCount' ";
@@ -695,7 +695,16 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 					statement.append("ORDER BY sm.difficulty ASC, sm.createDate DESC  ");
 					break;
 				case LATEST_ADDED:
-					statement.append("ORDER BY sm.createDate DESC ");
+					switch (filter) {
+					case ACTIVE:
+						statement.append("ORDER BY sm.createDate DESC ");
+						break;
+					case INACTIVE:
+					case BOTH:
+					default:
+						statement.append("ORDER BY si.createDate DESC ");
+						break;
+					}
 					break;
 				case LEAST_RECIENTLY_STUDIED:
 					statement.append("ORDER BY sm.lastUpdate ASC ");
@@ -752,6 +761,14 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		ResultSet rs = stmt.executeQuery();
 		while(rs.next()){
 			WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"));
+			
+			//Trevis added this in Jan 2016 to inspect why the sort order is hosed.
+			if(rs.getTimestamp("createDate") != null){
+				pair.setCreateDate(new Date(rs.getTimestamp("createDate").getTime()));
+			} else {
+				pair.setLastUpdate(new Date());
+			}
+			
 			pair.setActive(rs.getObject("difficulty") != null);
 			if(pair.isActive()){
 				pair.setIncorrectCount(rs.getLong("incorrectCount"));

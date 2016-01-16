@@ -83,6 +83,10 @@ public class WordPair implements Serializable {
 	public Date getCreateDate() {
 		return createDate;
 	}
+	
+	public void setCreateDate(Date createDate){
+		this.createDate = createDate;
+	}
 
 	public String getUser() {
 		return user;
