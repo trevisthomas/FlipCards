@@ -38,7 +38,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	private static final Logger LOG = Logger
 			.getLogger(StudyWordsServiceImpl.class.getName());
 	
-	private final static String SELECT_EVERYTHING = "SELECT si.createDate as 'createDate', si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', u.email as 'email', " +
+	private final static String SELECT_EVERYTHING = "SELECT si.createDate as 'createDate', si.studyItemId as 'studyItemId', si.word as 'word', si.definition as 'definition', si.example as 'example', u.email as 'email', " +
 			"sm.viewCount as 'viewCount', sm.incorrectCount as 'incorrectCount', sm.difficulty as 'difficulty', " + 
 			"sm.averageTime as 'averageTime', sm.lastUpdate as 'lastUpdate', " +
 			"sm.confidence as 'confidence', sm.totalTime as 'totalTime', sm.timedViewCount as 'timedViewCount' ";
@@ -182,8 +182,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public WordPair updateWordPair(String id, String word, String definition)
-			throws IllegalArgumentException, NotLoggedInException {
+	public WordPair updateWordPair(String id, String word, String definition, String example) throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		Connection conn = null;
 		
@@ -192,12 +191,13 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			conn = getConnection();
 			exists(id, word, conn);
 			
-			String statement = "UPDATE study_item SET word = ?, definition=? WHERE studyItemId = ?";
+			String statement = "UPDATE study_item SET word = ?, definition=?, example=? WHERE studyItemId = ?";
 			PreparedStatement stmt = conn.prepareStatement(statement);
 			stmt.setString(1, word);
 			stmt.setString(2, definition);
-			stmt.setString(3, id);
-			int success = 2;
+			stmt.setString(3, example);
+			stmt.setString(4, id);
+			int success = 2;//WTF?
 			success = stmt.executeUpdate();
 			if (success == 0) {
 				throw new IllegalArgumentException("Failed to insert StudyItem");
@@ -760,7 +760,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		PreparedStatement stmt = conn.prepareStatement(statement);
 		ResultSet rs = stmt.executeQuery();
 		while(rs.next()){
-			WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"));
+			WordPair pair = new WordPair(rs.getString("studyItemId"), rs.getString("word"), rs.getString("definition"), rs.getString("example"));
 			
 			//Trevis added this in Jan 2016 to inspect why the sort order is hosed.
 			if(rs.getTimestamp("createDate") != null){
@@ -841,12 +841,12 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		try{
 			conn = getConnection();
 			List<WordPair> wordPairs = new ArrayList<WordPair>();
-			StringBuilder statement = new StringBuilder("SELECT si.studyItemId, si.word, si.definition FROM study_item si WHERE si.word LIKE ? LIMIT 10");
+			StringBuilder statement = new StringBuilder("SELECT si.studyItemId, si.word, si.definition, si.example FROM study_item si WHERE si.word LIKE ? LIMIT 10");
 			PreparedStatement stmt = conn.prepareStatement(statement.toString());
 			stmt.setString(1, qstr+"%");
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next()){
-				wordPairs.add(new WordPair(rs.getString(1), rs.getString(2), rs.getString(3)));
+				wordPairs.add(new WordPair(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)));
 			}
 			list = new AutoCompleteWordPairList(sequence, wordPairs);
 		} catch (Exception e) {

@@ -44,6 +44,8 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 	@UiField
 	Label definitionLabel;
 	@UiField
+	Label exampleLabel;
+	@UiField
 	Anchor surrenderAnchor;
 	@UiField
 	FlexTable debugDumpFlexTable;
@@ -92,6 +94,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 		wordLabel.setVisible(true);
 		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
+		exampleLabel.setVisible(false);
 		surrenderAnchor.setText("I Surrender");
 		debugDumpFlexTable.setVisible(false);
 		debugAnchor.setText("debug");
@@ -164,6 +167,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 			
 			currentPair = wordPairs.get(currentIndex++); 
 			definitionLabel.setVisible(false);
+			exampleLabel.setVisible(false);
 			wordLabel.setVisible(true);
 			loadWordPair();
 		}
@@ -204,6 +208,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 			wordLabel.setText(currentPair.getDefinition());
 			definitionLabel.setText(currentPair.getWord());
 		}
+		exampleLabel.setText(currentPair.getExample());
 		
 //		spanishDictAnchor.setHref("http://www.spanishdict.com/translate/"+currentPair.getWord());
 //		lingueeAnchor.setHref("http://www.linguee.com/english-spanish/search?source=spanish&query="+currentPair.getWord());
@@ -230,6 +235,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 		cancelTimer();
 		wordLabel.setVisible(!wordLabel.isVisible());
 		definitionLabel.setVisible(!definitionLabel.isVisible());
+		exampleLabel.setVisible(!exampleLabel.isVisible());
 		yesDiv.setVisible(true);
 		noDiv.setVisible(true);
 //		definePanel.setVisible(true);
@@ -245,6 +251,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 	
 	@UiHandler("editAnchor")
 	void handleEditAnchorClick(ClickEvent e) {
+		cancelTimer();
 		editCardPanel.clear();
 		CardEdit2 ce = new CardEdit2(this, currentPair);
 		ce.show();

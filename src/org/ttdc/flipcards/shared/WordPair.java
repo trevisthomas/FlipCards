@@ -28,6 +28,7 @@ public class WordPair implements Serializable {
 	private boolean active = false;
 	private boolean deleteAllowed;
 	private long averageTime;
+	private String example;
 	
 	private double confidence;
 	private long totalTime;
@@ -42,10 +43,11 @@ public class WordPair implements Serializable {
 		return id;
 	}
 
-	public WordPair(String id, String word, String definition) {
+	public WordPair(String id, String word, String definition, String example) {
 		this.id = id;
 		this.word = word;
 		this.definition = definition;
+		this.example = example;
 	}
 
 	public List<Tag> getTags() {
@@ -178,6 +180,14 @@ public class WordPair implements Serializable {
 		this.timedViewCount = timedViewCount;
 	}
 
+	public String getExample() {
+		return example;
+	}
+
+	public void setExample(String example) {
+		this.example = example;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -196,6 +206,7 @@ public class WordPair implements Serializable {
 		temp = Double.doubleToLongBits(difficulty);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + (int) (displayOrder ^ (displayOrder >>> 32));
+		result = prime * result + ((example == null) ? 0 : example.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ (int) (incorrectCount ^ (incorrectCount >>> 32));
@@ -246,6 +257,11 @@ public class WordPair implements Serializable {
 			return false;
 		if (displayOrder != other.displayOrder)
 			return false;
+		if (example == null) {
+			if (other.example != null)
+				return false;
+		} else if (!example.equals(other.example))
+			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -282,6 +298,7 @@ public class WordPair implements Serializable {
 		return true;
 	}
 
+	
 	
 	
 	

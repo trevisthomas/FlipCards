@@ -122,7 +122,7 @@ public class UploadService extends HttpServlet {
 						term = line.substring(1, line.indexOf("\",\""));
 						
 					}
-					WordPair wp = new WordPair(null, term.trim(), definition.trim());
+					WordPair wp = new WordPair(null, term.trim(), definition.trim(), "");
 					wordPairs.add(wp);
 				}
 				catch (Exception e) {

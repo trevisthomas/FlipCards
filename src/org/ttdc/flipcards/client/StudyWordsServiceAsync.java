@@ -17,6 +17,7 @@ import org.ttdc.flipcards.shared.WordPair;
 
 
 
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 //Nice, got an error when this didnt exist and then the red dot auto created it for me.
@@ -28,7 +29,7 @@ public interface StudyWordsServiceAsync {
 			int perPage, AsyncCallback<PagedWordPair> callback);
 
 	void updateWordPair(String id, String word, String definition,
-			AsyncCallback<WordPair> callback);
+			String example, AsyncCallback<WordPair> callback);
 
 	void deleteWordPair(String id, AsyncCallback<Boolean> callback);
 

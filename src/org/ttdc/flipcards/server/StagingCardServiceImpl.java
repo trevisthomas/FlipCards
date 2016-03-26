@@ -326,7 +326,7 @@ public class StagingCardServiceImpl extends RemoteServiceServlet implements
 	WordPair convert(CardStaging pair) {
 		WordPair gwtPair;
 		gwtPair = new WordPair(pair.getId(), pair.getWord(),
-				pair.getDefinition());
+				pair.getDefinition(), "");
 		gwtPair.setUser(pair.getOwner());
 		return gwtPair;
 	}

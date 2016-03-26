@@ -196,7 +196,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 		WordPair gwtPair;
 
 		gwtPair = new WordPair(studyItem.getId(), studyItem.getWord(),
-				studyItem.getDefinition());
+				studyItem.getDefinition(), "");
 
 		if (studyItemMeta != null) {
 			gwtPair.setCorrectCount(studyItemMeta.getViewCount()
@@ -474,7 +474,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 			for (StudyItem card : cards) {
 //				WordPair pair = convert(card,
 //						findMetaData(card.getId(), card.getOwner()));
-				WordPair pair = new WordPair(card.getId(), card.getWord(), card.getDefinition());
+				WordPair pair = new WordPair(card.getId(), card.getWord(), card.getDefinition(), "");  //I think that this class is deprecated
 				wordPairs.add(pair);
 			}
 
@@ -913,7 +913,7 @@ public class StudyWordsServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public WordPair updateWordPair(String id, String word, String definition)
+	public WordPair updateWordPair(String id, String word, String definition, String example)
 			throws IllegalArgumentException, NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();

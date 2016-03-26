@@ -21,6 +21,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -38,6 +39,8 @@ public class CardEdit2 extends Composite {
 	TextBox termTextBox;
 	@UiField
 	TextBox definitionTextBox;
+	@UiField
+	TextArea exampleTextArea;
 	
 //	@UiField
 //	Button updateButton;
@@ -53,6 +56,7 @@ public class CardEdit2 extends Composite {
 	Button closeButton;
 	@UiField
 	HTMLPanel tagMePanel;
+	
 	
 	private CardEditObserver observer;
 	
@@ -103,6 +107,15 @@ public class CardEdit2 extends Composite {
 				} 
 			}
 		});
+		
+		exampleTextArea.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				if(!exampleTextArea.getText().trim().toLowerCase().equals(CardEdit2.this.card.getExample())){
+					performUpdate();
+				} 
+			}
+		});
 
 	}
 	
@@ -133,6 +146,8 @@ public class CardEdit2 extends Composite {
 		activateButton.setVisible(!c.isActive());
 		deactivateButton.setVisible(c.isActive());
 		
+		exampleTextArea.setText(c.getExample());
+		
 		//Load tags
 		FlipCards.studyWordsService.getAllTagNames(new AsyncCallback<List<Tag>>() {
 			@Override
@@ -158,6 +173,7 @@ public class CardEdit2 extends Composite {
 	private void performUpdate() {
 		String word = termTextBox.getText().trim();
 		String definition = definitionTextBox.getText().trim();
+		String example = exampleTextArea.getText().trim();
 
 		if (word.length() == 0) {
 			FlipCards.showErrorMessage("Word can't be blank");
@@ -167,10 +183,14 @@ public class CardEdit2 extends Composite {
 			FlipCards.showErrorMessage("Definition can't be blank");
 		}
 		
-		FlipCards.studyWordsService.updateWordPair(card.getId(), word, definition, new AsyncCallback<WordPair>() {
+//		if( exa){
+//			
+//		}
+		
+		FlipCards.studyWordsService.updateWordPair(card.getId(), word, definition, example, new AsyncCallback<WordPair>() {
 			@Override
 			public void onSuccess(WordPair result) {
-				FlipCards.showMessage("Card updated");
+//				FlipCards.showMessage("Card updated");
 				result.setDisplayOrder(card.getDisplayOrder()); //This is probably dumb.
 				observer.onCardUpdated(result); 
 			}

@@ -135,7 +135,7 @@ public class CardEdit extends Composite {
 			FlipCards.showErrorMessage("Definition can't be blank");
 		}
 		
-		FlipCards.studyWordsService.updateWordPair(card.getId(), word, definition, new AsyncCallback<WordPair>() {
+		FlipCards.studyWordsService.updateWordPair(card.getId(), word, definition, "", new AsyncCallback<WordPair>() {
 			@Override
 			public void onSuccess(WordPair result) {
 				FlipCards.showMessage("Card updated");

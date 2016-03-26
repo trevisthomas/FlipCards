@@ -16,6 +16,12 @@
 			     	<label for="definitionInput">Definition</label>
 					<g:TextBox styleName="u-full-width" ui:field="definitionTextBox"/>
 			    </div>
+			    
+			    <div class="twelve columns">
+				    <label for="exampleInput">Example usage</label>
+					<g:TextArea styleName="u-full-width" ui:field="exampleTextArea"/>
+			    </div>
+				
 		    </div>
 		    <div class="row">
 		    	<div class="twelve columns tt-lookupLinkFix">
