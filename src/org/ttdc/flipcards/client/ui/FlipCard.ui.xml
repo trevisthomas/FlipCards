@@ -37,7 +37,7 @@
 				<g:Label styleName="flipCardText" ui:field='definitionLabel' />
 			</div>
 			<div class="twelve columns">
-				<g:Label ui:field='exampleLabel' />
+				<g:TextArea styleName="u-full-width" ui:field='exampleLabel' />
 			</div>
 		</div>
 		

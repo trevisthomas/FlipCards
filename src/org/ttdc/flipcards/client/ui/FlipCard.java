@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -44,7 +45,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 	@UiField
 	Label definitionLabel;
 	@UiField
-	Label exampleLabel;
+	TextArea exampleLabel;
 	@UiField
 	Anchor surrenderAnchor;
 	@UiField
@@ -95,6 +96,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 		wordLabel.setText("Loading...");
 		definitionLabel.setVisible(false);
 		exampleLabel.setVisible(false);
+		exampleLabel.setReadOnly(true);
 		surrenderAnchor.setText("I Surrender");
 		debugDumpFlexTable.setVisible(false);
 		debugAnchor.setText("debug");
@@ -208,6 +210,7 @@ public class FlipCard extends Composite implements CardEdit2.CardEditObserver{
 			wordLabel.setText(currentPair.getDefinition());
 			definitionLabel.setText(currentPair.getWord());
 		}
+		
 		exampleLabel.setText(currentPair.getExample());
 		
 //		spanishDictAnchor.setHref("http://www.spanishdict.com/translate/"+currentPair.getWord());
